@@ -54,6 +54,10 @@ public class Application {
 
     // ------------- Геттеры ----------------
 
+    public String getId() {
+        return id;
+    }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
