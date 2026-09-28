@@ -20,7 +20,7 @@ public class ApplicationControllerTests {
     }
 
     private Application create(String title) {
-        return controller.postApplication(request(title)).getBody();
+        return controller.submit(request(title)).getBody();
     }
 
     /** Считает количество заявок в контроллере. */
@@ -84,7 +84,7 @@ public class ApplicationControllerTests {
 
     @Test
     void test_postApplication_returns201() {
-        ResponseEntity<Application> response = controller.postApplication(request("Тема"));
+        ResponseEntity<Application> response = controller.submit(request("Тема"));
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -107,7 +107,7 @@ public class ApplicationControllerTests {
     void test_putApplication_updatesExisting() {
         Application created = create("Старая");
 
-        ResponseEntity<Application> response = controller.putApplication(created.getId(), request("Новая"));
+        ResponseEntity<Application> response = controller.edit(created.getId(), request("Новая"));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -127,7 +127,7 @@ public class ApplicationControllerTests {
 
     @Test
     void test_putApplication_createsWhenNotFound() {
-        ResponseEntity<Application> response = controller.putApplication("0987654321", request("Новая"));
+        ResponseEntity<Application> response = controller.edit("0987654321", request("Новая"));
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -142,7 +142,7 @@ public class ApplicationControllerTests {
 
         assertEquals(1, count());
 
-        ResponseEntity<Application> response2 = controller.putApplication("1234567890", request("Еще одна"));
+        ResponseEntity<Application> response2 = controller.edit("1234567890", request("Еще одна"));
 
         assertEquals(HttpStatus.CREATED, response2.getStatusCode());
         assertNotNull(response2.getBody());
@@ -168,7 +168,7 @@ public class ApplicationControllerTests {
         assertEquals("88000000000", a.getAuthorPhone());
         assertEquals(ApplicationStatus.WITHDRAWN, a.getStatus());
 
-        ResponseEntity<Application> response = controller.putApplication(created.getId(), request("Другая"));
+        ResponseEntity<Application> response = controller.edit(created.getId(), request("Другая"));
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNull(response.getBody());
