@@ -59,6 +59,25 @@ public class ApplicationController {
     }
 
     /**
+     * Отзывает заявку по id
+     * 
+     * @param id - идентификатор заявки
+     * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена
+     */
+    @PatchMapping("/{id}/withdraw")
+    ResponseEntity<Application> withdraw(@PathVariable String id) {
+        Optional<Application> found = find(id);
+        if (found.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        application.withdraw(); // Отзываем заявку
+
+        return new ResponseEntity<>(application, HttpStatus.OK);
+    }
+
+    /**
      * Ищет заявку по id
      * 
      * @param id - идентификатор заявки
