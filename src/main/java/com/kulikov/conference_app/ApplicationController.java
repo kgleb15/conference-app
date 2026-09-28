@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,6 +30,12 @@ public class ApplicationController {
      */
     @GetMapping("/{id}")
     Optional<Application> getApplication(@PathVariable String id) {
+    @PostMapping
+    ResponseEntity<Application> postApplication(@RequestBody ApplicationRequest request) {
+        Application application = new Application(request);
+        applications.add(application);
+        return new ResponseEntity<>(application, HttpStatus.CREATED);
+    }
         for (Application application : applications) {
             if (application.getId().equals(id)) {
                 return Optional.of(application);
