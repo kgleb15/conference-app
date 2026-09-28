@@ -39,6 +39,25 @@ public class ApplicationController {
         applications.add(application);
         return new ResponseEntity<>(application, HttpStatus.CREATED);
     }
+
+    @PutMapping("/{id}")
+    ResponseEntity<Application> putApplication(@PathVariable String id, @RequestBody ApplicationRequest request) {
+        Optional<Application> found = find(id);
+
+        if (found.isEmpty()) {
+            return postApplication(request); // Создание новой заявки
+        }
+
+        Application application = found.get();
+
+        if (application.getStatus() == ApplicationStatus.WITHDRAWN) { // Если отозвана
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+
+        application.update(request);
+        return new ResponseEntity<>(application, HttpStatus.OK);
+    }
+
     /**
      * Ищет заявку по id
      * 
