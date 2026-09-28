@@ -1,10 +1,16 @@
 package com.kulikov.conference_app;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
 import java.time.Instant;
 import java.util.UUID;
 
+@Entity
 public class Application {
-    private final String id = UUID.randomUUID().toString();
+    @Id
+    private String id = UUID.randomUUID().toString();
+
     private final Instant createdAt = Instant.now();
     private Instant updatedAt = createdAt;
     private ApplicationStatus status = ApplicationStatus.SUBMITTED;
@@ -15,6 +21,9 @@ public class Application {
     private String authorGroup;
     private String authorEmail;
     private String authorPhone;
+
+    protected Application() {
+    }
 
     public Application(ApplicationRequest r) {
         apply(r);
