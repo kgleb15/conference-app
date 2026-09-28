@@ -92,20 +92,4 @@ public class ApplicationController {
 
         return new ResponseEntity<>(application, HttpStatus.OK);
     }
-
-    /**
-     * Ищет заявку по id
-     * 
-     * @param id - идентификатор заявки
-     * @return найденная заявка или empty
-     */
-    private Optional<Application> find(String id) {
-        for (Application application : applications) {
-            if (application.getId().equals(id)) {
-                return Optional.of(application);
-            }
-        }
-
-        return Optional.empty();
-    }
 }
