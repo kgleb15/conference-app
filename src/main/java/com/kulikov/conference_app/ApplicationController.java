@@ -1,7 +1,5 @@
 package com.kulikov.conference_app;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -12,14 +10,18 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/applications")
 public class ApplicationController {
 
-    private final List<Application> applications = new ArrayList<>();
+    private final ApplicationRepository applicationRepository;
+
+    public ApplicationController(ApplicationRepository applicationRepository) {
+        this.applicationRepository = applicationRepository;
+    }
 
     /**
      * Возвращает список всех заявок
      */
     @GetMapping
     Iterable<Application> getApplications() {
-        return applications;
+        return applicationRepository.findAll();
     }
 
     /**
@@ -30,7 +32,7 @@ public class ApplicationController {
      */
     @GetMapping("/{id}")
     Optional<Application> getApplication(@PathVariable String id) {
-        return find(id);
+        return applicationRepository.findById(id);
     }
 
     /**
@@ -41,8 +43,7 @@ public class ApplicationController {
      */
     @PostMapping
     ResponseEntity<Application> submit(@RequestBody ApplicationRequest request) {
-        Application application = new Application(request);
-        applications.add(application);
+        Application application = applicationRepository.save(new Application(request));
         return new ResponseEntity<>(application, HttpStatus.CREATED);
     }
 
@@ -55,7 +56,7 @@ public class ApplicationController {
      */
     @PutMapping("/{id}")
     ResponseEntity<Application> edit(@PathVariable String id, @RequestBody ApplicationRequest request) {
-        Optional<Application> found = find(id);
+        Optional<Application> found = applicationRepository.findById(id);
 
         if (found.isEmpty()) {
             return submit(request); // Создание новой заявки
@@ -68,6 +69,7 @@ public class ApplicationController {
         }
 
         application.update(request);
+        applicationRepository.save(application);
         return new ResponseEntity<>(application, HttpStatus.OK);
     }
 
@@ -79,13 +81,14 @@ public class ApplicationController {
      */
     @PatchMapping("/{id}/withdraw")
     ResponseEntity<Application> withdraw(@PathVariable String id) {
-        Optional<Application> found = find(id);
+        Optional<Application> found = applicationRepository.findById(id);
         if (found.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         Application application = found.get();
         application.withdraw(); // Отзываем заявку
+        applicationRepository.save(application);
 
         return new ResponseEntity<>(application, HttpStatus.OK);
     }
