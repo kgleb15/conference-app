@@ -30,12 +30,22 @@ public class ApplicationController {
      */
     @GetMapping("/{id}")
     Optional<Application> getApplication(@PathVariable String id) {
+        return find(id);
+    }
+
     @PostMapping
     ResponseEntity<Application> postApplication(@RequestBody ApplicationRequest request) {
         Application application = new Application(request);
         applications.add(application);
         return new ResponseEntity<>(application, HttpStatus.CREATED);
     }
+    /**
+     * Ищет заявку по id
+     * 
+     * @param id - идентификатор заявки
+     * @return найденная заявка или empty
+     */
+    private Optional<Application> find(String id) {
         for (Application application : applications) {
             if (application.getId().equals(id)) {
                 return Optional.of(application);
