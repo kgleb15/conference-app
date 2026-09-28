@@ -33,6 +33,12 @@ public class ApplicationController {
         return find(id);
     }
 
+    /**
+     * Создает новую заявку
+     * 
+     * @param request - данные новой заявки
+     * @return 201 с созданной заявкой
+     */
     @PostMapping
     ResponseEntity<Application> postApplication(@RequestBody ApplicationRequest request) {
         Application application = new Application(request);
@@ -40,6 +46,13 @@ public class ApplicationController {
         return new ResponseEntity<>(application, HttpStatus.CREATED);
     }
 
+    /**
+     * Обновляет заявку или создает новую
+     * 
+     * @param id - идентификатор заявки
+     * @param request - новые данные заявки
+     * @return 201 если создана новая; 409 если отозвана; 200 если успешно обновлена
+     */
     @PutMapping("/{id}")
     ResponseEntity<Application> putApplication(@PathVariable String id, @RequestBody ApplicationRequest request) {
         Optional<Application> found = find(id);
