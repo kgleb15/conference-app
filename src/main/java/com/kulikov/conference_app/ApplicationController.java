@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/applications")
 public class ApplicationController {
@@ -46,7 +48,7 @@ public class ApplicationController {
      * @return 201 с созданной заявкой
      */
     @PostMapping
-    ResponseEntity<Application> submit(@RequestBody ApplicationRequest request) {
+    ResponseEntity<Application> submit(@Valid @RequestBody ApplicationRequest request) {
         if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
@@ -63,7 +65,7 @@ public class ApplicationController {
      * @return 201 если создана новая; 409 если отозвана; 200 если успешно обновлена
      */
     @PutMapping("/{id}")
-    ResponseEntity<Application> edit(@PathVariable String id, @RequestBody ApplicationRequest request) {
+    ResponseEntity<Application> edit(@PathVariable String id, @Valid @RequestBody ApplicationRequest request) {
         if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
