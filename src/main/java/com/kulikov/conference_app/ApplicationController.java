@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/applications")
 public class ApplicationController {
 
-    private final ApplicationRepository applicationRepository;
-    private final ConferenceProperties conferenceProperties;
+    private final ApplicationRepository _applicationRepository;
+    private final ConferenceProperties _conferenceProperties;
 
     public ApplicationController(ApplicationRepository applicationRepository,
             ConferenceProperties conferenceProperties) {
-        this.applicationRepository = applicationRepository;
-        this.conferenceProperties = conferenceProperties;
+        this._applicationRepository = applicationRepository;
+        this._conferenceProperties = conferenceProperties;
     }
 
     /**
@@ -25,7 +25,7 @@ public class ApplicationController {
      */
     @GetMapping
     Iterable<Application> getApplications() {
-        return applicationRepository.findAll();
+        return _applicationRepository.findAll();
     }
 
     /**
@@ -36,7 +36,7 @@ public class ApplicationController {
      */
     @GetMapping("/{id}")
     Optional<Application> getApplication(@PathVariable String id) {
-        return applicationRepository.findById(id);
+        return _applicationRepository.findById(id);
     }
 
     /**
@@ -47,11 +47,11 @@ public class ApplicationController {
      */
     @PostMapping
     ResponseEntity<Application> submit(@RequestBody ApplicationRequest request) {
-        if (Instant.now().isAfter(conferenceProperties.getDeadlineT1())) {
+        if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        Application application = applicationRepository.save(new Application(request));
+        Application application = _applicationRepository.save(new Application(request));
         return new ResponseEntity<>(application, HttpStatus.CREATED);
     }
 
@@ -64,11 +64,11 @@ public class ApplicationController {
      */
     @PutMapping("/{id}")
     ResponseEntity<Application> edit(@PathVariable String id, @RequestBody ApplicationRequest request) {
-        if (Instant.now().isAfter(conferenceProperties.getDeadlineT1())) {
+        if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        Optional<Application> found = applicationRepository.findById(id);
+        Optional<Application> found = _applicationRepository.findById(id);
 
         if (found.isEmpty()) {
             return submit(request); // Создание новой заявки
@@ -81,7 +81,7 @@ public class ApplicationController {
         }
 
         application.update(request);
-        applicationRepository.save(application);
+        _applicationRepository.save(application);
         return new ResponseEntity<>(application, HttpStatus.OK);
     }
 
@@ -93,18 +93,18 @@ public class ApplicationController {
      */
     @PatchMapping("/{id}/withdraw")
     ResponseEntity<Application> withdraw(@PathVariable String id) {
-        if (Instant.now().isAfter(conferenceProperties.getDeadlineT1())) {
+        if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        Optional<Application> found = applicationRepository.findById(id);
+        Optional<Application> found = _applicationRepository.findById(id);
         if (found.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         Application application = found.get();
         application.withdraw(); // Отзываем заявку
-        applicationRepository.save(application);
+        _applicationRepository.save(application);
 
         return new ResponseEntity<>(application, HttpStatus.OK);
     }
