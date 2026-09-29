@@ -1,5 +1,6 @@
 package com.kulikov.conference_app;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -11,9 +12,12 @@ import org.springframework.web.bind.annotation.*;
 public class ApplicationController {
 
     private final ApplicationRepository applicationRepository;
+    private final ConferenceProperties conferenceProperties;
 
-    public ApplicationController(ApplicationRepository applicationRepository) {
+    public ApplicationController(ApplicationRepository applicationRepository,
+            ConferenceProperties conferenceProperties) {
         this.applicationRepository = applicationRepository;
+        this.conferenceProperties = conferenceProperties;
     }
 
     /**
@@ -43,6 +47,10 @@ public class ApplicationController {
      */
     @PostMapping
     ResponseEntity<Application> submit(@RequestBody ApplicationRequest request) {
+        if (Instant.now().isAfter(conferenceProperties.getDeadlineT1())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         Application application = applicationRepository.save(new Application(request));
         return new ResponseEntity<>(application, HttpStatus.CREATED);
     }
@@ -56,6 +64,10 @@ public class ApplicationController {
      */
     @PutMapping("/{id}")
     ResponseEntity<Application> edit(@PathVariable String id, @RequestBody ApplicationRequest request) {
+        if (Instant.now().isAfter(conferenceProperties.getDeadlineT1())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         Optional<Application> found = applicationRepository.findById(id);
 
         if (found.isEmpty()) {
@@ -81,6 +93,10 @@ public class ApplicationController {
      */
     @PatchMapping("/{id}/withdraw")
     ResponseEntity<Application> withdraw(@PathVariable String id) {
+        if (Instant.now().isAfter(conferenceProperties.getDeadlineT1())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         Optional<Application> found = applicationRepository.findById(id);
         if (found.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
