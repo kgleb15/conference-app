@@ -45,7 +45,7 @@ public class ApplicationController {
      * Создает новую заявку
      * 
      * @param request - данные новой заявки
-     * @return 201 с созданной заявкой
+     * @return 201 с созданной заявкой; 403 если дата некорректна; 400 если некорректны поля запроса
      */
     @PostMapping
     ResponseEntity<Application> submit(@Valid @RequestBody ApplicationRequest request) {
@@ -62,7 +62,7 @@ public class ApplicationController {
      * 
      * @param id      - идентификатор заявки
      * @param request - новые данные заявки
-     * @return 201 если создана новая; 409 если отозвана; 200 если успешно обновлена
+     * @return 201 если создана новая; 409 если отозвана; 200 если успешно обновлена; 403 если дата некорректна; 400 если некорректны поля запроса
      */
     @PutMapping("/{id}")
     ResponseEntity<Application> edit(@PathVariable String id, @Valid @RequestBody ApplicationRequest request) {
@@ -91,7 +91,7 @@ public class ApplicationController {
      * Отзывает заявку по id
      * 
      * @param id - идентификатор заявки
-     * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена
+     * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена;  403 если дата некорректна
      */
     @PatchMapping("/{id}/withdraw")
     ResponseEntity<Application> withdraw(@PathVariable String id) {
