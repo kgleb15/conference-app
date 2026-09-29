@@ -9,18 +9,18 @@ import java.util.UUID;
 @Entity
 public class Application {
     @Id
-    private String _id = UUID.randomUUID().toString();
+    private String id = UUID.randomUUID().toString();
 
-    private final Instant _createdAt = Instant.now();
-    private Instant _updatedAt = _createdAt;
-    private ApplicationStatus _status = ApplicationStatus.SUBMITTED;
+    private final Instant createdAt = Instant.now();
+    private Instant updatedAt = createdAt;
+    private ApplicationStatus status = ApplicationStatus.SUBMITTED;
 
-    private String _title;
-    private String _thesisText;
-    private String _authorFullName;
-    private String _authorGroup;
-    private String _authorEmail;
-    private String _authorPhone;
+    private String title;
+    private String thesisText;
+    private String authorFullName;
+    private String authorGroup;
+    private String authorEmail;
+    private String authorPhone;
 
     protected Application() {
     }
@@ -36,15 +36,15 @@ public class Application {
      */
     public void update(ApplicationRequest r) {
         apply(r);
-        _updatedAt = Instant.now(); // устанавливаем время обновления
+        updatedAt = Instant.now(); // устанавливаем время обновления
     }
 
     /**
      * Отзыв заявки
      */
     public void withdraw() {
-        _status = ApplicationStatus.WITHDRAWN;
-        _updatedAt = Instant.now();
+        status = ApplicationStatus.WITHDRAWN;
+        updatedAt = Instant.now();
     }
 
     /**
@@ -53,53 +53,53 @@ public class Application {
      * @param r - данные заявки
      */
     private void apply(ApplicationRequest r) {
-        _title = r.title();
-        _thesisText = r.thesisText();
-        _authorFullName = r.authorFullName();
-        _authorGroup = r.authorGroup();
-        _authorEmail = r.authorEmail();
-        _authorPhone = r.authorPhone();
+        title = r.title();
+        thesisText = r.thesisText();
+        authorFullName = r.authorFullName();
+        authorGroup = r.authorGroup();
+        authorEmail = r.authorEmail();
+        authorPhone = r.authorPhone();
     }
 
     // ------------- Геттеры ----------------
 
     public String getId() {
-        return _id;
+        return id;
     }
 
     public Instant getCreatedAt() {
-        return _createdAt;
+        return createdAt;
     }
 
     public Instant getUpdatedAt() {
-        return _updatedAt;
+        return updatedAt;
     }
 
     public ApplicationStatus getStatus() {
-        return _status;
+        return status;
     }
 
     public String getTitle() {
-        return _title;
+        return title;
     }
 
     public String getThesisText() {
-        return _thesisText;
+        return thesisText;
     }
 
     public String getAuthorFullName() {
-        return _authorFullName;
+        return authorFullName;
     }
 
     public String getAuthorGroup() {
-        return _authorGroup;
+        return authorGroup;
     }
 
     public String getAuthorEmail() {
-        return _authorEmail;
+        return authorEmail;
     }
 
     public String getAuthorPhone() {
-        return _authorPhone;
+        return authorPhone;
     }
 }
