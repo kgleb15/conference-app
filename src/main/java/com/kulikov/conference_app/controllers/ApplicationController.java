@@ -11,7 +11,7 @@ import com.kulikov.conference_app.config.ConferenceProperties;
 import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
-import com.kulikov.conference_app.repositories.ApplicationRepository;
+import com.kulikov.conference_app.repositories.ApplicationJpaRepository;
 
 import jakarta.validation.Valid;
 
@@ -19,10 +19,10 @@ import jakarta.validation.Valid;
 @RequestMapping("/applications")
 public class ApplicationController {
 
-    private final ApplicationRepository _applicationRepository;
+    private final ApplicationJpaRepository _applicationRepository;
     private final ConferenceProperties _conferenceProperties;
 
-    public ApplicationController(ApplicationRepository applicationRepository,
+    public ApplicationController(ApplicationJpaRepository applicationRepository,
             ConferenceProperties conferenceProperties) {
         this._applicationRepository = applicationRepository;
         this._conferenceProperties = conferenceProperties;
