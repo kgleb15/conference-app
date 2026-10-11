@@ -2,6 +2,8 @@ package com.kulikov.conference_app.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -13,6 +15,7 @@ public class Application {
 
     private final Instant createdAt = Instant.now();
     private Instant updatedAt = createdAt;
+    @Enumerated(EnumType.STRING)
     private ApplicationStatus status = ApplicationStatus.SUBMITTED;
 
     private String title;
