@@ -1,31 +1,27 @@
 package com.kulikov.conference_app.controllers;
 
-import java.time.Instant;
-import java.util.Optional;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.kulikov.conference_app.config.ConferenceProperties;
 import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
-import com.kulikov.conference_app.model.ApplicationStatus;
-import com.kulikov.conference_app.repositories.ApplicationJpaRepository;
+import com.kulikov.conference_app.services.ApplicationService;
+import com.kulikov.conference_app.services.ServiceResult;
 
 import jakarta.validation.Valid;
 
+/**
+ * HTTP слой для работы с заявками
+ */
 @RestController
 @RequestMapping("/applications")
 public class ApplicationController {
 
-    private final ApplicationJpaRepository _applicationRepository;
-    private final ConferenceProperties _conferenceProperties;
+    private final ApplicationService _applicationService;
 
-    public ApplicationController(ApplicationJpaRepository applicationRepository,
-            ConferenceProperties conferenceProperties) {
-        this._applicationRepository = applicationRepository;
-        this._conferenceProperties = conferenceProperties;
+    public ApplicationController(ApplicationService applicationService) {
+        this._applicationService = applicationService;
     }
 
     /**
@@ -33,18 +29,18 @@ public class ApplicationController {
      */
     @GetMapping
     Iterable<Application> getApplications() {
-        return _applicationRepository.findAll();
+        return _applicationService.findAll();
     }
 
     /**
      * Возвращает заявку по id
      * 
      * @param id - идентификатор заявки
-     * @return найденная заявка или empty, если не найдена
+     * @return 200 с заявкой или 404, если не найдена
      */
     @GetMapping("/{id}")
-    Optional<Application> getApplication(@PathVariable String id) {
-        return _applicationRepository.findById(id);
+    ResponseEntity<Application> getApplication(@PathVariable String id) {
+        return toResponse(_applicationService.get(id));
     }
 
     /**
@@ -55,12 +51,7 @@ public class ApplicationController {
      */
     @PostMapping
     ResponseEntity<Application> submit(@Valid @RequestBody ApplicationRequest request) {
-        if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        Application application = _applicationRepository.save(new Application(request));
-        return new ResponseEntity<>(application, HttpStatus.CREATED);
+        return toResponse(_applicationService.submit(request));
     }
 
     /**
@@ -72,25 +63,7 @@ public class ApplicationController {
      */
     @PutMapping("/{id}")
     ResponseEntity<Application> edit(@PathVariable String id, @Valid @RequestBody ApplicationRequest request) {
-        if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        Optional<Application> found = _applicationRepository.findById(id);
-
-        if (found.isEmpty()) {
-            return submit(request); // Создание новой заявки
-        }
-
-        Application application = found.get();
-
-        if (application.getStatus() == ApplicationStatus.WITHDRAWN) { // Если отозвана
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-
-        application.update(request);
-        _applicationRepository.save(application);
-        return new ResponseEntity<>(application, HttpStatus.OK);
+        return toResponse(_applicationService.edit(id, request));
     }
 
     /**
@@ -101,19 +74,25 @@ public class ApplicationController {
      */
     @PatchMapping("/{id}/withdraw")
     ResponseEntity<Application> withdraw(@PathVariable String id) {
-        if (Instant.now().isAfter(_conferenceProperties.getDeadlineT1())) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        return toResponse(_applicationService.withdraw(id));
+    }
+
+    /**
+     * Переводит ServiceStatus в HTTP ответ
+     *
+     * @param result - результат операции сервиса
+     * @return HTTP ответ
+     */
+    private ResponseEntity<Application> toResponse(ServiceResult result) {
+        HttpStatus httpStatus;
+        switch (result.status()) {
+            case OK: httpStatus = HttpStatus.OK; break;
+            case CREATED: httpStatus = HttpStatus.CREATED; break;
+            case NOT_FOUND: httpStatus = HttpStatus.NOT_FOUND; break;
+            case DEADLINE_PASSED: httpStatus = HttpStatus.FORBIDDEN; break;
+            case WITHDRAWN: httpStatus = HttpStatus.CONFLICT; break;
+            default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
-
-        Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        Application application = found.get();
-        application.withdraw(); // Отзываем заявку
-        _applicationRepository.save(application);
-
-        return new ResponseEntity<>(application, HttpStatus.OK);
+        return new ResponseEntity<>(result.application(), httpStatus);
     }
 }
