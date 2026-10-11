@@ -1,4 +1,4 @@
-package com.kulikov.conference_app;
+package com.kulikov.conference_app.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;

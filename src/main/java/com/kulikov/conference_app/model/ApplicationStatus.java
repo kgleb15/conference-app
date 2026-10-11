@@ -1,4 +1,4 @@
-package com.kulikov.conference_app;
+package com.kulikov.conference_app.model;
 
 public enum ApplicationStatus {
     SUBMITTED,

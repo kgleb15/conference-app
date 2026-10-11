@@ -8,6 +8,10 @@ import java.time.Instant;
 
 import org.junit.jupiter.api.Test;
 
+import com.kulikov.conference_app.model.Application;
+import com.kulikov.conference_app.model.ApplicationRequest;
+import com.kulikov.conference_app.model.ApplicationStatus;
+
 public class ApplicationTests {
     private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Текст тезиса", "Иванов Иван Иванович",

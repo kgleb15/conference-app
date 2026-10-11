@@ -1,4 +1,4 @@
-package com.kulikov.conference_app;
+package com.kulikov.conference_app.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Instant;

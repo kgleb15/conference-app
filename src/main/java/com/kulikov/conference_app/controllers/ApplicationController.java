@@ -1,4 +1,4 @@
-package com.kulikov.conference_app;
+package com.kulikov.conference_app.controllers;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -6,6 +6,12 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.kulikov.conference_app.config.ConferenceProperties;
+import com.kulikov.conference_app.model.Application;
+import com.kulikov.conference_app.model.ApplicationRequest;
+import com.kulikov.conference_app.model.ApplicationStatus;
+import com.kulikov.conference_app.repositories.ApplicationRepository;
 
 import jakarta.validation.Valid;
 
