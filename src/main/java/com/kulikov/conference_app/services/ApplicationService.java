@@ -2,6 +2,7 @@ package com.kulikov.conference_app.services;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ public class ApplicationService {
     private final ConferenceProperties _conferenceProperties;
     private final Clock _clock;
 
-    public ApplicationService(ApplicationRepository applicationRepository, 
+    public ApplicationService(ApplicationRepository applicationRepository,
             PersonRepository personRepository, CurrentUser currentUser,
             ConferenceProperties conferenceProperties, Clock clock) {
         this._applicationRepository = applicationRepository;
@@ -63,11 +64,16 @@ public class ApplicationService {
      * Возвращает заявку по id
      *
      * @param id - идентификатор заявки
-     * @return результат со статусом OK и найденной заявкой или NOT_FOUND с null
+     * @return OK и найденная заявка; NOT_FOUND с null если не найдена или чужая; UNAUTHORIZED если запрос не идентифицирован
      */
     public ServiceResult get(String id) {
+        Optional<Person> person = currentPerson();
+        if (person.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
+        }
+
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty()) {
+        if (found.isEmpty() || !isOwnedBy(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
         return new ServiceResult(found.get(), ServiceStatus.OK);
@@ -77,7 +83,8 @@ public class ApplicationService {
      * Создаёт новую заявку
      *
      * @param request - данные новой заявки
-     * @return CREATED и сохранённая заявка или DEADLINE_PASSED и null
+     * @return CREATED и сохранённая заявка; UNAUTHORIZED если запрос не идентифицирован;
+     *         DEADLINE_PASSED если дедлайн прошёл
      */
     public ServiceResult submit(ApplicationRequest request) {
         Optional<Person> person = currentPerson();
@@ -91,14 +98,14 @@ public class ApplicationService {
         return new ServiceResult(saved, ServiceStatus.CREATED);
     }
 
-    // TODO: убрать создание новой
     /**
-     * Обновляет заявку или создаёт новую, если заявки с таким id нет
+     * Обновляет заявку 
      *
-     * @param id - идентификатор заявки
+     * @param id      - идентификатор заявки
      * @param request - новые данные заявки
-     * @return CREATED при создании новой, OK при успешном обновлении, 
-     *         WITHDRAWN если отозвана, DEADLINE_PASSED если дедлайн прошел 
+     * @return OK если обновлена; NOT_FOUND если не найдена или чужая;
+     *         WITHDRAWN если отозвана; DEADLINE_PASSED если дедлайн прошёл;
+     *         UNAUTHORIZED если запрос не идентифицирован
      */
     public ServiceResult edit(String id, ApplicationRequest request) {
         Optional<Person> person = currentPerson();
@@ -110,9 +117,8 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty()) {
-            Application saved = _applicationRepository.save(new Application(person.get(), request));
-            return new ServiceResult(saved, ServiceStatus.CREATED);
+        if (found.isEmpty() || !isOwnedBy(found.get(), person.get())) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
 
         Application application = found.get();
@@ -128,10 +134,12 @@ public class ApplicationService {
      * Отзывает заявку по id.
      *
      * @param id - идентификатор заявки
-     * @return OK если отозвана, NOT_FOUND если заявки нет, DEADLINE_PASSED если дедлайн прошел 
+     * @return OK если отозвана; NOT_FOUND если не найдена или чужая;
+     *         DEADLINE_PASSED если дедлайн прошёл; UNAUTHORIZED если запрос не идентифицирован
      */
     public ServiceResult withdraw(String id) {
-        if (currentPerson().isEmpty()) {
+        Optional<Person> person = currentPerson();
+        if (person.isEmpty()) {
             return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
         }
         if (isDeadlinePassed()) {
@@ -139,7 +147,7 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty()) {
+        if (found.isEmpty() || !isOwnedBy(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
 
