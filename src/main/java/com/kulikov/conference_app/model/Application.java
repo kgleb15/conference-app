@@ -26,6 +26,11 @@ public class Application {
     private String title;
     private String thesisText;
 
+    private int editCount = 0;
+
+    private Instant lastEditedAt;
+    private Instant withdrawnAt;
+
     protected Application() {
     }
 
@@ -42,6 +47,8 @@ public class Application {
     public void update(ApplicationRequest r) {
         apply(r);
         updatedAt = Instant.now(); // устанавливаем время обновления
+        lastEditedAt = updatedAt;
+        editCount++;
     }
 
     /**
@@ -50,6 +57,7 @@ public class Application {
     public void withdraw() {
         status = ApplicationStatus.WITHDRAWN;
         updatedAt = Instant.now();
+        withdrawnAt = updatedAt;
     }
 
     /**
@@ -90,5 +98,17 @@ public class Application {
 
     public String getThesisText() {
         return thesisText;
+    }
+
+    public int getEditCount() {
+        return editCount;
+    }
+
+    public Instant getLastEditedAt() {
+        return lastEditedAt;
+    }
+
+    public Instant getWithdrawnAt() {
+        return withdrawnAt;
     }
 }
