@@ -14,6 +14,7 @@ import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.Person;
+import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.ApplicationRepository;
 import com.kulikov.conference_app.repositories.PersonRepository;
 
@@ -64,7 +65,8 @@ public class ApplicationService {
      * Возвращает заявку по id
      *
      * @param id - идентификатор заявки
-     * @return OK и найденная заявка; NOT_FOUND с null если не найдена или чужая; UNAUTHORIZED если запрос не идентифицирован
+     * @return OK и найденная заявка; NOT_FOUND с null если не найдена или чужая;
+     *         UNAUTHORIZED если запрос не идентифицирован
      */
     public ServiceResult get(String id) {
         Optional<Person> person = currentPerson();
@@ -83,7 +85,8 @@ public class ApplicationService {
      * Создаёт новую заявку
      *
      * @param request - данные новой заявки
-     * @return CREATED и сохранённая заявка; UNAUTHORIZED если запрос не идентифицирован;
+     * @return CREATED и сохранённая заявка; UNAUTHORIZED если запрос не
+     *         идентифицирован;
      *         DEADLINE_PASSED если дедлайн прошёл
      */
     public ServiceResult submit(ApplicationRequest request) {
@@ -99,7 +102,7 @@ public class ApplicationService {
     }
 
     /**
-     * Обновляет заявку 
+     * Обновляет заявку
      *
      * @param id      - идентификатор заявки
      * @param request - новые данные заявки
@@ -135,7 +138,8 @@ public class ApplicationService {
      *
      * @param id - идентификатор заявки
      * @return OK если отозвана; NOT_FOUND если не найдена или чужая;
-     *         DEADLINE_PASSED если дедлайн прошёл; UNAUTHORIZED если запрос не идентифицирован
+     *         DEADLINE_PASSED если дедлайн прошёл; UNAUTHORIZED если запрос не
+     *         идентифицирован
      */
     public ServiceResult withdraw(String id) {
         Optional<Person> person = currentPerson();
@@ -154,6 +158,32 @@ public class ApplicationService {
         Application application = found.get();
         application.withdraw();
         return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
+    }
+
+    /**
+     * Возвращает все заявки для организатора
+     *
+     * @param status - фильтр по статусу заявки или null, если без фильтра
+     * @return OK и список заявок; UNAUTHORIZED если запрос не идентифицирован;
+     *         FORBIDDEN если запрос делает не организатор
+     */
+    public ServiceListResult findAllForOrganizer(ApplicationStatus status) {
+        Optional<Person> person = currentPerson();
+        if (person.isEmpty()) {
+            return new ServiceListResult(null, ServiceStatus.UNAUTHORIZED);
+        }
+        if (person.get().getRole() != PersonRole.ORGANIZER) {
+            return new ServiceListResult(null, ServiceStatus.FORBIDDEN);
+        }
+
+        List<Application> filtered = new ArrayList<>();
+        for (Application application : _applicationRepository.findAll()) {
+            if (status == null || application.getStatus() == status) {
+                filtered.add(application);
+            }
+        }
+
+        return new ServiceListResult(filtered, ServiceStatus.OK);
     }
 
     /**

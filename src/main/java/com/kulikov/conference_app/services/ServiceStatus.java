@@ -9,5 +9,6 @@ public enum ServiceStatus {
     NOT_FOUND,
     DEADLINE_PASSED,
     WITHDRAWN,
-    UNAUTHORIZED
+    UNAUTHORIZED,
+    FORBIDDEN // недостаточно прав
 }
