@@ -3,6 +3,7 @@ package com.kulikov.conference_app.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
@@ -14,6 +15,7 @@ public class Application {
     @Id
     private String id = UUID.randomUUID().toString();
 
+    @ManyToOne(optional = false)
     private Person owner;
 
     @Column(updatable = false)
