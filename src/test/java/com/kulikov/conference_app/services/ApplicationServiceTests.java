@@ -46,6 +46,13 @@ public class ApplicationServiceTests {
         return _personRepo.save(new Person(req, PersonRole.PARTICIPANT));
     }
 
+    /** Регистрирует организатора */
+    private Person registerOrganizer(String fullName) {
+        PersonRequest req = new PersonRequest(fullName, "org",
+                "org@yandex.ru", "80000000000");
+        return _personRepo.save(new Person(req, PersonRole.ORGANIZER));
+    }
+
     /** Создаёт запрос заявки с заданным заголовком */
     private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Текст тезиса");
@@ -59,16 +66,16 @@ public class ApplicationServiceTests {
      * Считает количество заявок у текущего пользователя
      */
     private int count(ApplicationService service) {
-    ServiceListResult result = service.findAll();
-    if (result.applications() == null) {
-        return 0;
+        ServiceListResult result = service.findAll();
+        if (result.applications() == null) {
+            return 0;
+        }
+        int n = 0;
+        for (Application a : result.applications()) {
+            n++;
+        }
+        return n;
     }
-    int n = 0;
-    for (Application a : result.applications()) {
-        n++;
-    }
-    return n;
-}
 
     // ---------------- GET ----------------
 
@@ -187,7 +194,6 @@ public class ApplicationServiceTests {
         assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
         assertNull(result.application());
     }
-
 
     // ---------------- POST ----------------
 
@@ -443,5 +449,71 @@ public class ApplicationServiceTests {
         // Статус не изменился
         ServiceResult stored = ownerService.get(created.getId());
         assertEquals(ApplicationStatus.SUBMITTED, stored.application().getStatus());
+    }
+
+    @Test
+    void test_findAllForOrganizer_returnsAllApplications() {
+        Person first = registerPerson("Иванов Иван Иванович");
+        Person second = registerPerson("Петров Пётр Петрович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+
+        ApplicationService firstService = serviceAt(BEFORE, first.getId());
+        ApplicationService secondService = serviceAt(BEFORE, second.getId());
+        ApplicationService orgService = serviceAt(BEFORE, organizer.getId());
+
+        create(firstService, "Первая");
+        create(firstService, "Вторая");
+        create(secondService, "Третья");
+
+        ServiceListResult result = orgService.findAllForOrganizer(null);
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertNotNull(result.applications());
+        assertEquals(3, result.applications().size());
+    }
+
+    @Test
+    void test_findAllForOrganizer_participantForbidden() {
+        Person participant = registerPerson("Иванов Иван Иванович");
+        ApplicationService service = serviceAt(BEFORE, participant.getId());
+
+        ServiceListResult result = service.findAllForOrganizer(null);
+
+        assertEquals(ServiceStatus.FORBIDDEN, result.status());
+        assertNull(result.applications());
+    }
+
+    @Test
+    void test_findAllForOrganizer_noCurrentUser() {
+        ApplicationService service = serviceAt(BEFORE, null);
+
+        ServiceListResult result = service.findAllForOrganizer(null);
+
+        assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
+        assertNull(result.applications());
+    }
+
+    @Test
+    void test_findAllForOrganizer_filterByStatus() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        ApplicationService orgService = serviceAt(BEFORE, organizer.getId());
+
+        create(ownerService, "Первая");
+        Application second = create(ownerService, "Вторая");
+        ownerService.withdraw(second.getId());
+
+        ServiceListResult submitted = orgService.findAllForOrganizer(ApplicationStatus.SUBMITTED);
+
+        assertEquals(ServiceStatus.OK, submitted.status());
+        assertEquals(1, submitted.applications().size());
+        assertEquals("Первая", submitted.applications().get(0).getTitle());
+
+        ServiceListResult withdrawn = orgService.findAllForOrganizer(ApplicationStatus.WITHDRAWN);
+        assertEquals(ServiceStatus.OK, withdrawn.status());
+        assertEquals(1, withdrawn.applications().size());
+        assertEquals("Вторая", withdrawn.applications().get(0).getTitle());
     }
 }
