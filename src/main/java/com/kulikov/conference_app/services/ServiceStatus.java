@@ -8,5 +8,6 @@ public enum ServiceStatus {
     CREATED,
     NOT_FOUND,
     DEADLINE_PASSED,
-    WITHDRAWN
+    WITHDRAWN,
+    UNAUTHORIZED
 }

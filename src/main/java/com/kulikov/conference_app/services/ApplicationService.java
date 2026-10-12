@@ -7,11 +7,14 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.kulikov.conference_app.auth.CurrentUser;
 import com.kulikov.conference_app.config.ConferenceProperties;
 import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
+import com.kulikov.conference_app.model.Person;
 import com.kulikov.conference_app.repositories.ApplicationRepository;
+import com.kulikov.conference_app.repositories.PersonRepository;
 
 /**
  * Сервис бизнес-логики работы с заявками
@@ -20,18 +23,23 @@ import com.kulikov.conference_app.repositories.ApplicationRepository;
 public class ApplicationService {
 
     private final ApplicationRepository _applicationRepository;
+    private final PersonRepository _personRepository;
+    private final CurrentUser _currentUser;
     private final ConferenceProperties _conferenceProperties;
     private final Clock _clock;
 
-    public ApplicationService(ApplicationRepository applicationRepository,
+    public ApplicationService(ApplicationRepository applicationRepository, 
+            PersonRepository personRepository, CurrentUser currentUser,
             ConferenceProperties conferenceProperties, Clock clock) {
         this._applicationRepository = applicationRepository;
+        this._personRepository = personRepository;
+        this._currentUser = currentUser;
         this._conferenceProperties = conferenceProperties;
         this._clock = clock;
     }
 
     /**
-     * Возвращает список всех заявок.
+     * Возвращает список всех заявок
      * 
      * @return список заявок (пустой, если заявок нет)
      */
@@ -40,7 +48,7 @@ public class ApplicationService {
     }
 
     /**
-     * Возвращает заявку по id.
+     * Возвращает заявку по id
      *
      * @param id - идентификатор заявки
      * @return результат со статусом OK и найденной заявкой или NOT_FOUND с null
@@ -54,16 +62,20 @@ public class ApplicationService {
     }
 
     /**
-     * Создаёт новую заявку.
+     * Создаёт новую заявку
      *
      * @param request - данные новой заявки
      * @return CREATED и сохранённая заявка или DEADLINE_PASSED и null
      */
     public ServiceResult submit(ApplicationRequest request) {
+        Optional<Person> person = currentPerson();
+        if (person.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
+        }
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
         }
-        Application saved = _applicationRepository.save(new Application(request));
+        Application saved = _applicationRepository.save(new Application(person.get(), request));
         return new ServiceResult(saved, ServiceStatus.CREATED);
     }
 
@@ -77,13 +89,17 @@ public class ApplicationService {
      *         WITHDRAWN если отозвана, DEADLINE_PASSED если дедлайн прошел 
      */
     public ServiceResult edit(String id, ApplicationRequest request) {
+        Optional<Person> person = currentPerson();
+        if (person.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
+        }
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
         if (found.isEmpty()) {
-            Application saved = _applicationRepository.save(new Application(request));
+            Application saved = _applicationRepository.save(new Application(person.get(), request));
             return new ServiceResult(saved, ServiceStatus.CREATED);
         }
 
@@ -103,6 +119,9 @@ public class ApplicationService {
      * @return OK если отозвана, NOT_FOUND если заявки нет, DEADLINE_PASSED если дедлайн прошел 
      */
     public ServiceResult withdraw(String id) {
+        if (currentPerson().isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
+        }
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
         }
@@ -124,5 +143,18 @@ public class ApplicationService {
      */
     private boolean isDeadlinePassed() {
         return Instant.now(_clock).isAfter(_conferenceProperties.getDeadlineT1());
+    }
+
+    /**
+     * Находит участника, от имени которого пришёл запрос
+     *
+     * @return участник или empty, если id неизвестен
+     */
+    private Optional<Person> currentPerson() {
+        Optional<String> personId = _currentUser.personId();
+        if (personId.isEmpty()) {
+            return Optional.empty();
+        }
+        return _personRepository.findById(personId.get());
     }
 }
