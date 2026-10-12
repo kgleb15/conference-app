@@ -4,8 +4,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
+import com.kulikov.conference_app.model.ApplicationResponse;
 import com.kulikov.conference_app.services.ApplicationService;
 import com.kulikov.conference_app.services.ServiceResult;
 
@@ -28,8 +32,13 @@ public class ApplicationController {
      * Возвращает список всех заявок
      */
     @GetMapping
-    Iterable<Application> getApplications() {
-        return _applicationService.findAll();
+    List<ApplicationResponse> getApplications() {
+        List<Application> applications = _applicationService.findAll();
+        List<ApplicationResponse> result = new ArrayList<>();
+        for (Application app : applications) {
+            result.add(ApplicationResponse.from(app));
+        }
+        return result;
     }
 
     /**
@@ -39,7 +48,7 @@ public class ApplicationController {
      * @return 200 с заявкой или 404, если не найдена
      */
     @GetMapping("/{id}")
-    ResponseEntity<Application> getApplication(@PathVariable String id) {
+    ResponseEntity<ApplicationResponse> getApplication(@PathVariable String id) {
         return toResponse(_applicationService.get(id));
     }
 
@@ -47,10 +56,11 @@ public class ApplicationController {
      * Создает новую заявку
      * 
      * @param request - данные новой заявки
-     * @return 201 с созданной заявкой; 403 если дата некорректна; 400 если некорректны поля запроса
+     * @return 201 с созданной заявкой; 403 если дата некорректна; 
+     *         400 если некорректны поля запроса; 401 если участник не найцден
      */
     @PostMapping
-    ResponseEntity<Application> submit(@Valid @RequestBody ApplicationRequest request) {
+    ResponseEntity<ApplicationResponse> submit(@Valid @RequestBody ApplicationRequest request) {
         return toResponse(_applicationService.submit(request));
     }
 
@@ -59,10 +69,11 @@ public class ApplicationController {
      * 
      * @param id      - идентификатор заявки
      * @param request - новые данные заявки
-     * @return 201 если создана новая; 409 если отозвана; 200 если успешно обновлена; 403 если дата некорректна; 400 если некорректны поля запроса
+     * @return 201 если создана новая; 409 если отозвана; 200 если успешно обновлена;
+     *         403 если дата некорректна; 400 если некорректны поля запроса; 401 если участник не найден
      */
     @PutMapping("/{id}")
-    ResponseEntity<Application> edit(@PathVariable String id, @Valid @RequestBody ApplicationRequest request) {
+    ResponseEntity<ApplicationResponse> edit(@PathVariable String id, @Valid @RequestBody ApplicationRequest request) {
         return toResponse(_applicationService.edit(id, request));
     }
 
@@ -70,10 +81,11 @@ public class ApplicationController {
      * Отзывает заявку по id
      * 
      * @param id - идентификатор заявки
-     * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена;  403 если дата некорректна
+     * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена;
+     *         403 если дата некорректна; 401 если участник не найцден
      */
     @PatchMapping("/{id}/withdraw")
-    ResponseEntity<Application> withdraw(@PathVariable String id) {
+    ResponseEntity<ApplicationResponse> withdraw(@PathVariable String id) {
         return toResponse(_applicationService.withdraw(id));
     }
 
@@ -83,7 +95,7 @@ public class ApplicationController {
      * @param result - результат операции сервиса
      * @return HTTP ответ
      */
-    private ResponseEntity<Application> toResponse(ServiceResult result) {
+    private ResponseEntity<ApplicationResponse> toResponse(ServiceResult result) {
         HttpStatus httpStatus;
         switch (result.status()) {
             case OK: httpStatus = HttpStatus.OK; break;
@@ -91,8 +103,11 @@ public class ApplicationController {
             case NOT_FOUND: httpStatus = HttpStatus.NOT_FOUND; break;
             case DEADLINE_PASSED: httpStatus = HttpStatus.FORBIDDEN; break;
             case WITHDRAWN: httpStatus = HttpStatus.CONFLICT; break;
+            case UNAUTHORIZED: httpStatus = HttpStatus.UNAUTHORIZED; break;
             default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
-        return new ResponseEntity<>(result.application(), httpStatus);
+        ApplicationResponse body = result.application() == null
+                ? null : ApplicationResponse.from(result.application());
+        return new ResponseEntity<>(body, httpStatus);
     }
 }
