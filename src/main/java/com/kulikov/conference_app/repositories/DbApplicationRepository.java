@@ -3,7 +3,6 @@ package com.kulikov.conference_app.repositories;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import com.kulikov.conference_app.model.Application;
@@ -12,7 +11,6 @@ import com.kulikov.conference_app.model.Application;
  * Реализация ApplicationRepository через Spring Data JPA
  */
 @Repository
-@Primary
 public class DbApplicationRepository implements ApplicationRepository {
     private final ApplicationJpaRepository _jpa;
 
