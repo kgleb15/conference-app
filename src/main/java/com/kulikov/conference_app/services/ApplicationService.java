@@ -39,12 +39,24 @@ public class ApplicationService {
     }
 
     /**
-     * Возвращает список всех заявок
-     * 
-     * @return список заявок (пустой, если заявок нет)
+     * Возвращает список заявок текущего участника.
+     *
+     * @return OK и список своих заявок или UNAUTHORIZED и null
      */
-    public List<Application> findAll() {
-        return _applicationRepository.findAll();
+    public ServiceListResult findAll() {
+        Optional<Person> person = currentPerson();
+        if (person.isEmpty()) {
+            return new ServiceListResult(null, ServiceStatus.UNAUTHORIZED);
+        }
+
+        Person owner = person.get();
+        List<Application> ownedApplications = new ArrayList<>();
+        for (Application application : _applicationRepository.findAll()) {
+            if (isOwnedBy(application, owner)) {
+                ownedApplications.add(application);
+            }
+        }
+        return new ServiceListResult(ownedApplications, ServiceStatus.OK);
     }
 
     /**
@@ -156,5 +168,16 @@ public class ApplicationService {
             return Optional.empty();
         }
         return _personRepository.findById(personId.get());
+    }
+
+    /**
+     * Проверяет, принадлежит ли заявка указанному человеку
+     *
+     * @param a      - заявка
+     * @param person - предполагаемый владелец
+     * @return true, если owner совпадает по id; false если нет
+     */
+    private boolean isOwnedBy(Application a, Person person) {
+        return a.getOwner() != null && a.getOwner().getId().equals(person.getId());
     }
 }
