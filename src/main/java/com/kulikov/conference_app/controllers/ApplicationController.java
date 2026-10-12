@@ -11,6 +11,7 @@ import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationResponse;
 import com.kulikov.conference_app.services.ApplicationService;
+import com.kulikov.conference_app.services.ServiceListResult;
 import com.kulikov.conference_app.services.ServiceResult;
 
 import jakarta.validation.Valid;
@@ -29,23 +30,20 @@ public class ApplicationController {
     }
 
     /**
-     * Возвращает список всех заявок
+     * Возвращает список заявок текущего участника
+     *
+     * @return 200 со списком своих заявок; 401 если запрос не идентифицирован
      */
     @GetMapping
-    List<ApplicationResponse> getApplications() {
-        List<Application> applications = _applicationService.findAll();
-        List<ApplicationResponse> result = new ArrayList<>();
-        for (Application app : applications) {
-            result.add(ApplicationResponse.from(app));
-        }
-        return result;
+    ResponseEntity<List<ApplicationResponse>> getApplications() {
+        return toListResponse(_applicationService.findAll());
     }
 
     /**
      * Возвращает заявку по id
      * 
      * @param id - идентификатор заявки
-     * @return 200 с заявкой или 404, если не найдена
+     * @return 200 с заявкой или 404, если не найдена, 401 если запрос не идентифицирован
      */
     @GetMapping("/{id}")
     ResponseEntity<ApplicationResponse> getApplication(@PathVariable String id) {
@@ -57,7 +55,7 @@ public class ApplicationController {
      * 
      * @param request - данные новой заявки
      * @return 201 с созданной заявкой; 403 если дата некорректна; 
-     *         400 если некорректны поля запроса; 401 если участник не найцден
+     *         400 если некорректны поля запроса; 401 если запрос не идентифицирован
      */
     @PostMapping
     ResponseEntity<ApplicationResponse> submit(@Valid @RequestBody ApplicationRequest request) {
@@ -82,7 +80,7 @@ public class ApplicationController {
      * 
      * @param id - идентификатор заявки
      * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена;
-     *         403 если дата некорректна; 401 если участник не найцден
+     *         403 если дата некорректна; 401 если участник не найден
      */
     @PatchMapping("/{id}/withdraw")
     ResponseEntity<ApplicationResponse> withdraw(@PathVariable String id) {
@@ -90,7 +88,7 @@ public class ApplicationController {
     }
 
     /**
-     * Переводит ServiceStatus в HTTP ответ
+     * Переводит ServiceStatus в HTTP ответ (для одной заявки)
      *
      * @param result - результат операции сервиса
      * @return HTTP ответ
@@ -108,6 +106,27 @@ public class ApplicationController {
         }
         ApplicationResponse body = result.application() == null
                 ? null : ApplicationResponse.from(result.application());
+        return new ResponseEntity<>(body, httpStatus);
+    }
+
+    /**
+     * Переводит ServiceListResult в HTTP ответ для списка заявок
+     *
+     * @param result - результат операции сервиса
+     * @return HTTP ответ со списком или без тела
+     */
+    private ResponseEntity<List<ApplicationResponse>> toListResponse(ServiceListResult result) {
+        HttpStatus httpStatus;
+        switch (result.status()) {
+            case OK: httpStatus = HttpStatus.OK; break;
+            case UNAUTHORIZED: httpStatus = HttpStatus.UNAUTHORIZED; break;
+            default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        List<ApplicationResponse> body = new ArrayList<>();
+        for (Application app : result.applications()) {
+            body.add(ApplicationResponse.from(app));
+        }
         return new ResponseEntity<>(body, httpStatus);
     }
 }
