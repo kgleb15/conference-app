@@ -3,6 +3,7 @@ package com.kulikov.conference_app.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.Instant;
 
@@ -16,7 +17,7 @@ public class ApplicationTests {
         return new Person(req, PersonRole.PARTICIPANT);
     }
 
-     private ApplicationRequest request(String title) {
+    private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Текст тезиса");
     }
 
@@ -42,6 +43,10 @@ public class ApplicationTests {
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
         assertEquals(PersonRole.PARTICIPANT, a.getOwner().getRole());
+
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNull(a.getWithdrawnAt());
     }
 
     @Test
@@ -65,6 +70,10 @@ public class ApplicationTests {
         assertEquals(createdAt, a.getCreatedAt());
         assertFalse(a.getUpdatedAt().isBefore(createdAt));
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
+
+        assertEquals(1, a.getEditCount());
+        assertNotNull(a.getLastEditedAt());
+        assertNull(a.getWithdrawnAt());
     }
 
     @Test
@@ -87,6 +96,10 @@ public class ApplicationTests {
 
         assertEquals(createdAt, a.getCreatedAt());
         assertFalse(a.getUpdatedAt().isBefore(createdAt));
+
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNotNull(a.getWithdrawnAt());
     }
 
     @Test
@@ -114,6 +127,34 @@ public class ApplicationTests {
         assertEquals("ПрИн-467", a.getOwner().getGroupName());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
+
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNotNull(a.getWithdrawnAt());
+    }
+
+    @Test
+    void test_update_incrementsEditCount() {
+        Person owner = owner();
+        Application a = new Application(owner, request("Тема"));
+
+        a.update(new ApplicationRequest("Новая", "Новый текст"));
+        assertEquals(1, a.getEditCount());
+        assertNotNull(a.getLastEditedAt());
+
+        a.update(new ApplicationRequest("Ещё", "Ещё текст"));
+        assertEquals(2, a.getEditCount());
+
+        a.withdraw();
+        assertEquals(2, a.getEditCount());
+        assertNotNull(a.getWithdrawnAt());
+
+        assertEquals("Ещё", a.getTitle());
+        assertEquals("Ещё текст", a.getThesisText());
+        assertEquals(owner.getId(), a.getOwner().getId());
+        assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
+        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
+        assertEquals("88000000000", a.getOwner().getPhone());
     }
 }
-
