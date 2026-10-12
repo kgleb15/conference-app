@@ -55,13 +55,20 @@ public class ApplicationServiceTests {
         return service.submit(request(title)).application();
     }
 
+    /**
+     * Считает количество заявок у текущего пользователя
+     */
     private int count(ApplicationService service) {
-        int n = 0;
-        for (Application a : service.findAll()) {
-            n++;
-        }
-        return n;
+    ServiceListResult result = service.findAll();
+    if (result.applications() == null) {
+        return 0;
     }
+    int n = 0;
+    for (Application a : result.applications()) {
+        n++;
+    }
+    return n;
+}
 
     // ---------------- GET ----------------
 
@@ -98,6 +105,38 @@ public class ApplicationServiceTests {
     }
 
     @Test
+    void test_findAll_showsOnlyOwnApplications() {
+        Person first = registerPerson("Иванов Иван Иванович");
+        Person second = registerPerson("Петров Пётр Петрович");
+
+        ApplicationService firstService = serviceAt(BEFORE, first.getId());
+        ApplicationService secondService = serviceAt(BEFORE, second.getId());
+
+        create(firstService, "Первая");
+        create(firstService, "Вторая");
+        create(secondService, "Третья");
+
+        assertEquals(2, count(firstService));
+        assertEquals(1, count(secondService));
+
+        ServiceListResult firstList = firstService.findAll();
+        assertEquals(ServiceStatus.OK, firstList.status());
+        for (Application a : firstList.applications()) {
+            assertEquals(first.getId(), a.getOwner().getId());
+        }
+    }
+
+    @Test
+    void test_findAll_noCurrentUser() {
+        ApplicationService service = serviceAt(BEFORE, null);
+
+        ServiceListResult result = service.findAll();
+
+        assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
+        assertNull(result.applications());
+    }
+
+    @Test
     void test_getApplication() {
         Person owner = registerPerson("Иванов Иван Иванович");
         ApplicationService service = serviceAt(BEFORE, owner.getId());
@@ -123,6 +162,32 @@ public class ApplicationServiceTests {
         assertEquals(ServiceStatus.NOT_FOUND, missing.status());
         assertNull(missing.application());
     }
+
+    @Test
+    void test_get_otherPersonsApplication() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person other = registerPerson("Петров Пётр Петрович");
+
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application created = create(ownerService, "Тема");
+
+        ApplicationService otherService = serviceAt(BEFORE, other.getId());
+        ServiceResult result = otherService.get(created.getId());
+
+        assertEquals(ServiceStatus.NOT_FOUND, result.status());
+        assertNull(result.application());
+    }
+
+    @Test
+    void test_get_noCurrentUser() {
+        ApplicationService service = serviceAt(BEFORE, null);
+
+        ServiceResult result = service.get("1234567890");
+
+        assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
+        assertNull(result.application());
+    }
+
 
     // ---------------- POST ----------------
 
@@ -209,28 +274,6 @@ public class ApplicationServiceTests {
     }
 
     @Test
-    void test_edit_createsWhenNotFound() {
-        Person owner = registerPerson("Иванов Иван Иванович");
-        ApplicationService service = serviceAt(BEFORE, owner.getId());
-
-        ServiceResult result = service.edit("0987654321", request("Новая"));
-
-        assertEquals(ServiceStatus.CREATED, result.status());
-        assertNotNull(result.application());
-        assertEquals("Новая", result.application().getTitle());
-        assertEquals("Текст тезиса", result.application().getThesisText());
-        assertEquals(owner.getId(), result.application().getOwner().getId());
-        assertEquals(1, count(service));
-
-        ServiceResult result2 = service.edit("1234567890", request("Еще одна"));
-
-        assertEquals(ServiceStatus.CREATED, result2.status());
-        assertNotNull(result2.application());
-        assertEquals("Еще одна", result2.application().getTitle());
-        assertEquals(2, count(service));
-    }
-
-    @Test
     void test_edit_withdrawn() {
         Person owner = registerPerson("Иванов Иван Иванович");
         ApplicationService service = serviceAt(BEFORE, owner.getId());
@@ -276,6 +319,25 @@ public class ApplicationServiceTests {
         assertEquals("Текст тезиса", stored.application().getThesisText());
         assertEquals(owner.getId(), stored.application().getOwner().getId());
         assertEquals(1, count(after));
+    }
+
+    @Test
+    void test_edit_otherPersonsApplication() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person other = registerPerson("Петров Пётр Петрович");
+
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application created = create(ownerService, "Тема");
+
+        ApplicationService otherService = serviceAt(BEFORE, other.getId());
+        ServiceResult result = otherService.edit(created.getId(), request("Взлом"));
+
+        assertEquals(ServiceStatus.NOT_FOUND, result.status());
+        assertNull(result.application());
+
+        // Заявка не изменилась
+        ServiceResult stored = ownerService.get(created.getId());
+        assertEquals("Тема", stored.application().getTitle());
     }
 
     // ---------------- PATCH ----------------
@@ -362,5 +424,24 @@ public class ApplicationServiceTests {
 
         assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
         assertNull(result.application());
+    }
+
+    @Test
+    void test_withdraw_otherPersonsApplication_returnsNotFound() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person other = registerPerson("Петров Пётр Петрович");
+
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application created = create(ownerService, "Тема");
+
+        ApplicationService otherService = serviceAt(BEFORE, other.getId());
+        ServiceResult result = otherService.withdraw(created.getId());
+
+        assertEquals(ServiceStatus.NOT_FOUND, result.status());
+        assertNull(result.application());
+
+        // Статус не изменился
+        ServiceResult stored = ownerService.get(created.getId());
+        assertEquals(ApplicationStatus.SUBMITTED, stored.application().getStatus());
     }
 }
