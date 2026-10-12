@@ -1,5 +1,6 @@
 package com.kulikov.conference_app.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Enumerated;
@@ -13,22 +14,23 @@ public class Application {
     @Id
     private String id = UUID.randomUUID().toString();
 
+    private Person owner;
+
+    @Column(updatable = false)
     private final Instant createdAt = Instant.now();
     private Instant updatedAt = createdAt;
+
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status = ApplicationStatus.SUBMITTED;
 
     private String title;
     private String thesisText;
-    private String authorFullName;
-    private String authorGroup;
-    private String authorEmail;
-    private String authorPhone;
 
     protected Application() {
     }
 
-    public Application(ApplicationRequest r) {
+    public Application(Person owner, ApplicationRequest r) {
+        this.owner = owner;
         apply(r);
     }
 
@@ -58,16 +60,16 @@ public class Application {
     private void apply(ApplicationRequest r) {
         title = r.title();
         thesisText = r.thesisText();
-        authorFullName = r.authorFullName();
-        authorGroup = r.authorGroup();
-        authorEmail = r.authorEmail();
-        authorPhone = r.authorPhone();
     }
 
     // ------------- Геттеры ----------------
 
     public String getId() {
         return id;
+    }
+
+    public Person getOwner() {
+        return owner;
     }
 
     public Instant getCreatedAt() {
@@ -88,21 +90,5 @@ public class Application {
 
     public String getThesisText() {
         return thesisText;
-    }
-
-    public String getAuthorFullName() {
-        return authorFullName;
-    }
-
-    public String getAuthorGroup() {
-        return authorGroup;
-    }
-
-    public String getAuthorEmail() {
-        return authorEmail;
-    }
-
-    public String getAuthorPhone() {
-        return authorPhone;
     }
 }
