@@ -35,7 +35,15 @@ public class ApplicationServiceTests {
         ConferenceProperties props = new ConferenceProperties();
         props.setDeadlineT1(DEADLINE);
         Clock clock = Clock.fixed(Instant.parse(now), ZoneOffset.UTC);
-        CurrentUser currentUser = () -> Optional.ofNullable(personId);
+        CurrentUser currentUser = new CurrentUser() {
+            @Override
+            public Optional<String> personId() {
+                if (personId == null || personId.isBlank()) {
+                    return Optional.empty();
+                }
+                return Optional.of(personId);
+            }
+        };
         return new ApplicationService(_appRepo, _personRepo, currentUser, props, clock);
     }
 
