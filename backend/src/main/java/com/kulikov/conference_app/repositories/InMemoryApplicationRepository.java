@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import com.kulikov.conference_app.model.Application;
@@ -16,8 +15,7 @@ import com.kulikov.conference_app.model.Application;
  * Реализация ApplicationRepository через хранение в оперативной памяти
  */
 @Repository
-@Primary
-@Qualifier("IN_MEMORY")
+@Profile("!db")
 public class InMemoryApplicationRepository implements ApplicationRepository {
 
     private final Map<String, Application> _storage = new LinkedHashMap<>();
