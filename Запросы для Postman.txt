@@ -1,0 +1,161 @@
+1) Регистрация участника
+
+POST http://localhost:8080/persons
+
+{
+  "fullName": "Иванов Иван Иванович",
+  "groupName": "ПрИн-467",
+  "email": "ivanov@yandex.ru",
+  "phone": "88000000000"
+}
+
+-- сохраняем id
+
+
+2) Второй участник
+
+POST http://localhost:8080/persons
+
+{
+  "fullName": "Петров Пётр Петрович",
+  "groupName": "ПрИн-466",
+  "email": "petrov@yandex.ru",
+  "phone": "88010000000"
+}
+
+-- тоже сохраяем id
+
+3) Участник с пустым ФИО
+
+POST http://localhost:8080/persons
+
+{
+  "fullName": "",
+  "groupName": "ПрИн-468",
+  "email": "x@y.ru",
+  "phone": "8800"
+}
+
+- - 400
+
+4) Регистрация с некорректным email
+
+POST http://localhost:8080/persons
+
+{
+  "fullName": "Тестов Тест",
+  "groupName": "ПрИн-467",
+  "email": "not-an-email",
+  "phone": "8800"
+}
+
+- - 400
+
+5) Создание заявки
+
+POST http://localhost:8080/applications
+
+Person-Id: <id первого участника> - в заголовки
+
+{
+  "title": "Первая заявка",
+  "thesisText": "Текст тезиса"
+}
+
+- - 201 (сохраняем id)
+
+
+6) Создание заявки без заголовка
+
+POST http://localhost:8080/applications
+
+{
+  "title": "Аноним",
+  "thesisText": "Текст"
+}
+
+- - 401
+
+7) Еще одна заявка того же участника
+
+8) Получение своей заявки по id
+
+GET http://localhost:8080/applications/<id заявки>
+
+Person-Id: <id первого участника>
+
+- - 200
+
+9) Получение чужой заявки по id
+
+GET http://localhost:8080/applications/<id заявки первого>
+
+Person-Id: <id второго участника>
+
+- - 404
+
+10) Список своих заявок
+
+GET http://localhost:8080/applications
+
+Person-Id: <id первого участника>
+
+- - 200 и список заявок
+
+11) -----
+
+12) Редактирование своей заявки
+
+PUT http://localhost:8080/applications/<id заявки>
+
+Person-Id: <id первого участника>
+
+{
+  "title": "Отредактированная",
+  "thesisText": "Новый текст"
+}
+
+- - 200 (editCount = 1)
+
+13) Редактирование чужой заявки - - 404
+
+14) Отзыв своей заявки
+
+PATCH http://localhost:8080/applications/<id заявки> /withdraw
+
+Person-Id: <id первого участника>
+
+- - 200
+
+15) Редактирование отозванной заявки
+
+PUT http://localhost:8080/applications/<id отозванной заявки>
+
+Person-Id: <id первого участника>
+
+{
+  "title": "Нельзя",
+  "thesisText": "Текст"
+}
+
+- - 409
+
+16) Список для организатора
+
+GET http://localhost:8080/organizer/applications
+
+17) Сипсок для организатора с фильтром
+
+GET http://localhost:8080/organizer/applications?status=WITHDRAWN
+
+- - 200 и только отозванные заявки
+
+GET http://localhost:8080/organizer/applications?edited=true
+
+- - 200 и только измененные
+
+Ну и можно еще комбинацию фильтров
+
+
+
+
