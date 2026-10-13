@@ -2,11 +2,11 @@
 
 Система подачи заявок на конференцию
 
-Запуск (бэк): `./gradlew bootRun`;
+Запуск (бэк. В папке backend): `./gradlew bootRun`;
 
 сервер на `http://localhost:8080`;
 
-Запуск (фронт): `npm run dev`;
+Запуск (фронт. В папке frontend): `npm run dev`;
 
 сервер на `http://localhost:5173`;
 
@@ -18,11 +18,18 @@
 - Ошибки валидации - `400`.
 - У ответов `401`, `403`, `404`, `409` тела нет
 
+## !!! Переключение хранилища: память - PostgreSQL
+
+1) По умолчанию данные хранятся в памяти, база данных не нужна (профиль `default`, настройки в `application-default.properties`).
+
+2) Чтобы работать через PostgreSQL, запустите бэкенд с профилем db: `./gradlew bootRun --args="--spring.profiles.active=db"`. Перед этим поднимите PostgreSQL на `localhost:5432` и создайте базу `conference_app`
+   Логин и пароль (`postgres` / `12345`) заданы в файле `application-db.properties`, при необходимости поменяйте.
+
 ## Запросы
 
 ### Участник
 
-**POST /persons** — регистрация участника
+**POST /persons** - регистрация участника
 
 Тело: { "fullName": "...", "groupName": "...", "email": "...", "phone": "..." }
 Ответ `201`: данные человека (среди них id для последующей отправки в `Person-Id`).
@@ -48,7 +55,7 @@
 
 ### Организатор
 
-**GET /organizer/applications** — заявки всех участников (с данными автора)
+**GET /organizer/applications** - заявки всех участников (с данными автора)
 Необязательные фильтры:
 
 - `status=SUBMITTED` или `status=WITHDRAWN`
@@ -92,5 +99,5 @@
 - `config/ConferenceProperties.java` - чтение дедлайна T1 из настроек.
 - `repositories/ApplicationRepository.java` - интерфейс хранилища заявок.
 - `repositories/PersonRepository.java` - интерфейс хранилища людей.
-- `repositories/InMemoryApplicationRepository.java` — хранение заявок в памяти.
-- `repositories/InMemoryPersonRepository.java` — хранение людей в памяти
+- `repositories/InMemoryApplicationRepository.java` - хранение заявок в памяти.
+- `repositories/InMemoryPersonRepository.java` - хранение людей в памяти
