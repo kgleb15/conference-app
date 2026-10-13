@@ -33,21 +33,27 @@ public class OrganizerController {
      * Возвращает все заявки (с фильтром по статусу)
      *
      * @param status - фильтр по статусу (SUBMITTED, WITHDRAWN) или null
-     * @return 200 со списком заявок; 401 если запрос не идентифицирован;
-     *         403 если текущий человек — не организатор
+     * @return 200 со списком заявок
      */
     @GetMapping
     ResponseEntity<List<ApplicationResponse>> getApplications(@RequestParam(required = false) ApplicationStatus status,
-        @RequestParam(required = false) Boolean edited)  {
+            @RequestParam(required = false) Boolean edited) {
 
         ServiceListResult result = _applicationService.findAllForOrganizer(status, edited);
 
         HttpStatus httpStatus;
         switch (result.status()) {
-            case OK: httpStatus = HttpStatus.OK; break;
-            case UNAUTHORIZED: httpStatus = HttpStatus.UNAUTHORIZED; break;
-            case FORBIDDEN: httpStatus = HttpStatus.FORBIDDEN; break;
-            default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            case OK:
+                httpStatus = HttpStatus.OK;
+                break;
+            case UNAUTHORIZED:
+                httpStatus = HttpStatus.UNAUTHORIZED;
+                break;
+            case FORBIDDEN:
+                httpStatus = HttpStatus.FORBIDDEN;
+                break;
+            default:
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
         List<ApplicationResponse> body = null;

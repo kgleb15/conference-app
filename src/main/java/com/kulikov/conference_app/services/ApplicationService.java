@@ -165,18 +165,11 @@ public class ApplicationService {
      *
      * @param status - фильтр по статусу заявки или null, если без фильтра
      * @param edited - true - только изменённые; false - только неизменённые; null - без фильтра
-     * @return OK и список заявок; UNAUTHORIZED если запрос не идентифицирован;
-     *         FORBIDDEN если запрос делает не организатор
+     * @return OK и список заявок
      */
     public ServiceListResult findAllForOrganizer(ApplicationStatus status, Boolean edited) {
-        Optional<Person> person = currentPerson();
-        if (person.isEmpty()) {
-            return new ServiceListResult(null, ServiceStatus.UNAUTHORIZED);
-        }
-        if (person.get().getRole() != PersonRole.ORGANIZER) {
-            return new ServiceListResult(null, ServiceStatus.FORBIDDEN);
-        }
-
+        // TODO: временно id и роль организатора НЕ проверяются
+        
         List<Application> filtered = new ArrayList<>();
         for (Application application : _applicationRepository.findAll()) {
             boolean statusMatches = status == null || application.getStatus() == status;

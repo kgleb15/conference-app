@@ -481,24 +481,14 @@ public class ApplicationServiceTests {
     }
 
     @Test
-    void test_findAllForOrganizer_participantForbidden() {
-        Person participant = registerPerson("Иванов Иван Иванович");
-        ApplicationService service = serviceAt(BEFORE, participant.getId());
+    void test_findAllForOrganizer_worksWithoutCurrentUser() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        create(serviceAt(BEFORE, owner.getId()), "Первая");
 
-        ServiceListResult result = service.findAllForOrganizer(null,null);
+        ServiceListResult result = serviceAt(BEFORE, null).findAllForOrganizer(null, null);
 
-        assertEquals(ServiceStatus.FORBIDDEN, result.status());
-        assertNull(result.applications());
-    }
-
-    @Test
-    void test_findAllForOrganizer_noCurrentUser() {
-        ApplicationService service = serviceAt(BEFORE, null);
-
-        ServiceListResult result = service.findAllForOrganizer(null,null);
-
-        assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
-        assertNull(result.applications());
+        assertEquals(ServiceStatus.OK, result.status());
+        assertEquals(1, result.applications().size());
     }
 
     @Test
