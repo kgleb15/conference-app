@@ -28,7 +28,7 @@ export default function App() {
           <InputLabel id="status-label">Статус</InputLabel>
           <Select labelId="status-label" label="Статус" value={status}
             onChange={(e) => setStatus(e.target.value as StatusFilter)}>
-            <MenuItem value="ALL">Все</MenuItem>
+            <MenuItem value="ALL">Все заявки</MenuItem>
             <MenuItem value="SUBMITTED">Поданные</MenuItem>
             <MenuItem value="WITHDRAWN">Отозванные</MenuItem>
           </Select>
@@ -38,7 +38,7 @@ export default function App() {
           <InputLabel id="edited-label">Изменения</InputLabel>
           <Select labelId="edited-label" label="Изменения" value={edited}
             onChange={(e) => setEdited(e.target.value as EditedFilter)}>
-            <MenuItem value="ALL">Все</MenuItem>
+            <MenuItem value="ALL">Все заявки</MenuItem>
             <MenuItem value="true">Только изменённые</MenuItem>
             <MenuItem value="false">Не менялись</MenuItem>
           </Select>
