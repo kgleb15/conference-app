@@ -164,10 +164,11 @@ public class ApplicationService {
      * Возвращает все заявки для организатора
      *
      * @param status - фильтр по статусу заявки или null, если без фильтра
+     * @param edited - true - только изменённые; false - только неизменённые; null - без фильтра
      * @return OK и список заявок; UNAUTHORIZED если запрос не идентифицирован;
      *         FORBIDDEN если запрос делает не организатор
      */
-    public ServiceListResult findAllForOrganizer(ApplicationStatus status) {
+    public ServiceListResult findAllForOrganizer(ApplicationStatus status, Boolean edited) {
         Optional<Person> person = currentPerson();
         if (person.isEmpty()) {
             return new ServiceListResult(null, ServiceStatus.UNAUTHORIZED);
@@ -178,7 +179,9 @@ public class ApplicationService {
 
         List<Application> filtered = new ArrayList<>();
         for (Application application : _applicationRepository.findAll()) {
-            if (status == null || application.getStatus() == status) {
+            boolean statusMatches = status == null || application.getStatus() == status;
+            boolean editedMatches = edited == null || (application.getEditCount() > 0) == edited;
+            if (statusMatches && editedMatches) {
                 filtered.add(application);
             }
         }

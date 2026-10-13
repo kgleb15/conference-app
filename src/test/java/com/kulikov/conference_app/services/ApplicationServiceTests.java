@@ -465,7 +465,7 @@ public class ApplicationServiceTests {
         create(firstService, "Вторая");
         create(secondService, "Третья");
 
-        ServiceListResult result = orgService.findAllForOrganizer(null);
+        ServiceListResult result = orgService.findAllForOrganizer(null, null);
 
         assertEquals(ServiceStatus.OK, result.status());
         assertNotNull(result.applications());
@@ -477,7 +477,7 @@ public class ApplicationServiceTests {
         Person participant = registerPerson("Иванов Иван Иванович");
         ApplicationService service = serviceAt(BEFORE, participant.getId());
 
-        ServiceListResult result = service.findAllForOrganizer(null);
+        ServiceListResult result = service.findAllForOrganizer(null,null);
 
         assertEquals(ServiceStatus.FORBIDDEN, result.status());
         assertNull(result.applications());
@@ -487,7 +487,7 @@ public class ApplicationServiceTests {
     void test_findAllForOrganizer_noCurrentUser() {
         ApplicationService service = serviceAt(BEFORE, null);
 
-        ServiceListResult result = service.findAllForOrganizer(null);
+        ServiceListResult result = service.findAllForOrganizer(null,null);
 
         assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
         assertNull(result.applications());
@@ -505,15 +505,38 @@ public class ApplicationServiceTests {
         Application second = create(ownerService, "Вторая");
         ownerService.withdraw(second.getId());
 
-        ServiceListResult submitted = orgService.findAllForOrganizer(ApplicationStatus.SUBMITTED);
+        ServiceListResult submitted = orgService.findAllForOrganizer(ApplicationStatus.SUBMITTED,null);
 
         assertEquals(ServiceStatus.OK, submitted.status());
         assertEquals(1, submitted.applications().size());
         assertEquals("Первая", submitted.applications().get(0).getTitle());
 
-        ServiceListResult withdrawn = orgService.findAllForOrganizer(ApplicationStatus.WITHDRAWN);
+        ServiceListResult withdrawn = orgService.findAllForOrganizer(ApplicationStatus.WITHDRAWN,null);
         assertEquals(ServiceStatus.OK, withdrawn.status());
         assertEquals(1, withdrawn.applications().size());
         assertEquals("Вторая", withdrawn.applications().get(0).getTitle());
+    }
+
+    @Test
+    void test_findAllForOrganizer_filterByEdited() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        ApplicationService orgService = serviceAt(BEFORE, organizer.getId());
+
+        create(ownerService, "Не изменённая");
+        Application edited = create(ownerService, "Изменённая");
+        ownerService.edit(edited.getId(), request("После правки"));
+
+        ServiceListResult onlyEdited = orgService.findAllForOrganizer(null, true);
+        assertEquals(ServiceStatus.OK, onlyEdited.status());
+        assertEquals(1, onlyEdited.applications().size());
+        assertEquals("После правки", onlyEdited.applications().get(0).getTitle());
+
+        ServiceListResult onlyNotEdited = orgService.findAllForOrganizer(null, false);
+        assertEquals(ServiceStatus.OK, onlyNotEdited.status());
+        assertEquals(1, onlyNotEdited.applications().size());
+        assertEquals("Не изменённая", onlyNotEdited.applications().get(0).getTitle());
     }
 }

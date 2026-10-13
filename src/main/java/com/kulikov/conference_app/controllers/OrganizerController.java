@@ -37,9 +37,10 @@ public class OrganizerController {
      *         403 если текущий человек — не организатор
      */
     @GetMapping
-    ResponseEntity<List<ApplicationResponse>> getApplications(@RequestParam(required = false) ApplicationStatus status) {
+    ResponseEntity<List<ApplicationResponse>> getApplications(@RequestParam(required = false) ApplicationStatus status,
+        @RequestParam(required = false) Boolean edited)  {
 
-        ServiceListResult result = _applicationService.findAllForOrganizer(status);
+        ServiceListResult result = _applicationService.findAllForOrganizer(status, edited);
 
         HttpStatus httpStatus;
         switch (result.status()) {
