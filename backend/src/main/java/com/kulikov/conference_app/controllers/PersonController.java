@@ -33,4 +33,16 @@ public class PersonController {
     ResponseEntity<PersonResponse> register(@Valid @RequestBody PersonRequest request) {
         return new ResponseEntity<>(PersonResponse.from(_personService.register(request)), HttpStatus.CREATED);
     }
+
+    /**
+     * Регистрирует организатора
+     * TODO: временно без проверки доступа
+     *
+     * @param request - данные организатора
+     * @return 201 с созданным организатором; 400 если поля некорректны
+     */
+    @PostMapping("/organizer")
+    ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody PersonRequest request) {
+        return new ResponseEntity<>(PersonResponse.from(_personService.registerOrganizer(request)), HttpStatus.CREATED);
+    }
 }

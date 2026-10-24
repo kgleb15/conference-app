@@ -28,4 +28,15 @@ public class PersonService {
     public Person register(PersonRequest request) {
         return _personRepository.save(new Person(request, PersonRole.PARTICIPANT));
     }
+
+    /**
+     * Регистрирует нового организатора конференции
+     * TODO: временно регистрация открыта для всех
+     *
+     * @param request - данные организатора
+     * @return сохранённый организатор
+     */
+    public Person registerOrganizer(PersonRequest request) {
+        return _personRepository.save(new Person(request, PersonRole.ORGANIZER));
+    }
 }
