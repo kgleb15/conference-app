@@ -86,13 +86,14 @@ public class ApplicationService {
      *
      * @param request - данные новой заявки
      * @return CREATED и сохранённая заявка; UNAUTHORIZED если запрос не
-     *         идентифицирован;
-     *         DEADLINE_PASSED если дедлайн прошёл
+     *         идентифицирован; DEADLINE_PASSED если дедлайн прошёл; FORBIDDEN если
+     *         пользователь не участник
      */
     public ServiceResult submit(ApplicationRequest request) {
         Optional<Person> person = currentPerson();
-        if (person.isEmpty()) {
-            return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
+        ServiceStatus access = checkRole(person, PersonRole.PARTICIPANT);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
         }
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
@@ -108,12 +109,14 @@ public class ApplicationService {
      * @param request - новые данные заявки
      * @return OK если обновлена; NOT_FOUND если не найдена или чужая;
      *         WITHDRAWN если отозвана; DEADLINE_PASSED если дедлайн прошёл;
-     *         UNAUTHORIZED если запрос не идентифицирован
+     *         UNAUTHORIZED если запрос не идентифицирован; FORBIDDEN если
+     *         пользователь не участник
      */
     public ServiceResult edit(String id, ApplicationRequest request) {
         Optional<Person> person = currentPerson();
-        if (person.isEmpty()) {
-            return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
+        ServiceStatus access = checkRole(person, PersonRole.PARTICIPANT);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
         }
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
@@ -139,12 +142,13 @@ public class ApplicationService {
      * @param id - идентификатор заявки
      * @return OK если отозвана; NOT_FOUND если не найдена или чужая;
      *         DEADLINE_PASSED если дедлайн прошёл; UNAUTHORIZED если запрос не
-     *         идентифицирован
+     *         идентифицирован; FORBIDDEN если пользователь не участник
      */
     public ServiceResult withdraw(String id) {
         Optional<Person> person = currentPerson();
-        if (person.isEmpty()) {
-            return new ServiceResult(null, ServiceStatus.UNAUTHORIZED);
+        ServiceStatus access = checkRole(person, PersonRole.PARTICIPANT);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
         }
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
@@ -167,7 +171,7 @@ public class ApplicationService {
      * @param edited - true - только изменённые; false - только неизменённые; null -
      *               без фильтра
      * @return OK и список заявок или UNAUTHORIZED если пользователя нет; FORBIDDEN
-     *         если роль не подходит
+     *         если пользователь не организатор
      */
     public ServiceListResult findAllForOrganizer(ApplicationStatus status, Boolean edited) {
         ServiceStatus access = checkRole(currentPerson(), PersonRole.ORGANIZER);
