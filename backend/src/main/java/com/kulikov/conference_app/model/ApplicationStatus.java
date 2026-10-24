@@ -2,5 +2,8 @@ package com.kulikov.conference_app.model;
 
 public enum ApplicationStatus {
     SUBMITTED,
-    WITHDRAWN
+    WITHDRAWN,
+    APPROVED,
+    REJECTED,
+    REVISION_REQUESTED
 }
