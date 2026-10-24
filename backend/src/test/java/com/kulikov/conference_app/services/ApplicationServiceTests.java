@@ -481,14 +481,23 @@ public class ApplicationServiceTests {
     }
 
     @Test
-    void test_findAllForOrganizer_worksWithoutCurrentUser() {
-        Person owner = registerPerson("Иванов Иван Иванович");
-        create(serviceAt(BEFORE, owner.getId()), "Первая");
-
+    void test_findAllForOrganizer_noCurrentUser() {
         ServiceListResult result = serviceAt(BEFORE, null).findAllForOrganizer(null, null);
 
-        assertEquals(ServiceStatus.OK, result.status());
-        assertEquals(1, result.applications().size());
+        assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
+        assertNull(result.applications());
+    }
+
+    @Test
+    void test_findAllForOrganizer_participantForbidden() {
+        Person participant = registerPerson("Иванов Иван Иванович");
+        create(serviceAt(BEFORE, participant.getId()), "Первая");
+
+        ServiceListResult result = serviceAt(BEFORE, participant.getId()).findAllForOrganizer(null, null);
+
+        assertEquals(ServiceStatus.FORBIDDEN, result.status());
+        assertNull(result.applications());
+        assertNotNull(participant);
     }
 
     @Test
@@ -503,13 +512,13 @@ public class ApplicationServiceTests {
         Application second = create(ownerService, "Вторая");
         ownerService.withdraw(second.getId());
 
-        ServiceListResult submitted = orgService.findAllForOrganizer(ApplicationStatus.SUBMITTED,null);
+        ServiceListResult submitted = orgService.findAllForOrganizer(ApplicationStatus.SUBMITTED, null);
 
         assertEquals(ServiceStatus.OK, submitted.status());
         assertEquals(1, submitted.applications().size());
         assertEquals("Первая", submitted.applications().get(0).getTitle());
 
-        ServiceListResult withdrawn = orgService.findAllForOrganizer(ApplicationStatus.WITHDRAWN,null);
+        ServiceListResult withdrawn = orgService.findAllForOrganizer(ApplicationStatus.WITHDRAWN, null);
         assertEquals(ServiceStatus.OK, withdrawn.status());
         assertEquals(1, withdrawn.applications().size());
         assertEquals("Вторая", withdrawn.applications().get(0).getTitle());
