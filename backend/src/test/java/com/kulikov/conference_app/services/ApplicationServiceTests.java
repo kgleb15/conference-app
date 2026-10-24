@@ -460,6 +460,62 @@ public class ApplicationServiceTests {
     }
 
     @Test
+    void test_submit_organizerForbidden() {
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService service = serviceAt(BEFORE, organizer.getId());
+
+        ServiceResult result = service.submit(request("Тема"));
+
+        assertEquals(ServiceStatus.FORBIDDEN, result.status());
+        assertNull(result.application());
+        assertEquals(0, count(service));
+    }
+
+    @Test
+    void test_edit_organizerForbidden() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application created = create(ownerService, "Тема");
+
+        ServiceResult result = serviceAt(BEFORE, organizer.getId()).edit(created.getId(), request("12345"));
+
+        assertEquals(ServiceStatus.FORBIDDEN, result.status());
+        assertNull(result.application());
+
+        Application stored = ownerService.get(created.getId()).application();
+        assertEquals("Тема", stored.getTitle());
+        assertEquals("Текст тезиса", stored.getThesisText());
+        assertEquals(ApplicationStatus.SUBMITTED, stored.getStatus());
+        assertEquals(0, stored.getEditCount());
+        assertNull(stored.getLastEditedAt());
+        assertNull(stored.getWithdrawnAt());
+        assertEquals(owner.getId(), stored.getOwner().getId());
+        assertEquals(1, count(ownerService));
+    }
+
+    @Test
+    void test_withdraw_organizerForbidden() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application created = create(ownerService, "Тема");
+
+        ServiceResult result = serviceAt(BEFORE, organizer.getId()).withdraw(created.getId());
+
+        assertEquals(ServiceStatus.FORBIDDEN, result.status());
+        assertNull(result.application());
+
+        Application stored = ownerService.get(created.getId()).application();
+        assertEquals(ApplicationStatus.SUBMITTED, stored.getStatus());
+        assertEquals("Тема", stored.getTitle());
+        assertEquals(0, stored.getEditCount());
+        assertNull(stored.getWithdrawnAt());
+        assertEquals(owner.getId(), stored.getOwner().getId());
+        assertEquals(1, count(ownerService));
+    }
+
+    @Test
     void test_findAllForOrganizer_returnsAllApplications() {
         Person first = registerPerson("Иванов Иван Иванович");
         Person second = registerPerson("Петров Пётр Петрович");
