@@ -164,12 +164,17 @@ public class ApplicationService {
      * Возвращает все заявки для организатора
      *
      * @param status - фильтр по статусу заявки или null, если без фильтра
-     * @param edited - true - только изменённые; false - только неизменённые; null - без фильтра
-     * @return OK и список заявок
+     * @param edited - true - только изменённые; false - только неизменённые; null -
+     *               без фильтра
+     * @return OK и список заявок или UNAUTHORIZED если пользователя нет; FORBIDDEN
+     *         если роль не подходит
      */
     public ServiceListResult findAllForOrganizer(ApplicationStatus status, Boolean edited) {
-        // TODO: временно id и роль организатора НЕ проверяются
-        
+        ServiceStatus access = checkRole(currentPerson(), PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceListResult(null, access);
+        }
+
         List<Application> filtered = new ArrayList<>();
         for (Application application : _applicationRepository.findAll()) {
             boolean statusMatches = status == null || application.getStatus() == status;
@@ -202,6 +207,24 @@ public class ApplicationService {
             return Optional.empty();
         }
         return _personRepository.findById(personId.get());
+    }
+
+    /**
+     * Проверяет, что пользователь имеет нужную роль
+     *
+     * @param person - текущий пользователь
+     * @param role   - требуемая роль
+     * @return OK если всё в порядке; UNAUTHORIZED если пользователя нет; FORBIDDEN
+     *         если роль не подходит
+     */
+    private ServiceStatus checkRole(Optional<Person> person, PersonRole role) {
+        if (person.isEmpty()) {
+            return ServiceStatus.UNAUTHORIZED;
+        }
+        if (person.get().getRole() != role) {
+            return ServiceStatus.FORBIDDEN;
+        }
+        return ServiceStatus.OK;
     }
 
     /**
