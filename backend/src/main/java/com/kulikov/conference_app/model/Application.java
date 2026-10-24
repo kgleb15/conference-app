@@ -33,6 +33,14 @@ public class Application {
     private Instant lastEditedAt;
     private Instant withdrawnAt;
 
+    @ManyToOne
+    private Person decidedBy; // организатор, принявший решение
+
+    @Column(columnDefinition = "text")
+    private String moderationComment;
+
+    private Instant decidedAt;
+
     protected Application() {
     }
 
@@ -47,8 +55,14 @@ public class Application {
      * @param r - данные заявки
      */
     public void update(ApplicationRequest r) {
+        if (!canBeEdited()) {
+            throw new IllegalStateException("Заявку в статусе " + status + " нельзя редактировать");
+        }
         apply(r);
-        updatedAt = Instant.now(); // устанавливаем время обновления
+        if (status == ApplicationStatus.REVISION_REQUESTED) {
+            status = ApplicationStatus.SUBMITTED; // доработана, снова ждёт организатора
+        }
+        updatedAt = Instant.now();
         lastEditedAt = updatedAt;
         editCount++;
     }
@@ -74,6 +88,64 @@ public class Application {
     private void apply(ApplicationRequest r) {
         title = r.title();
         thesisText = r.thesisText();
+    }
+
+    /**
+     * Можно ли редактировать заявку
+     */
+    public boolean canBeEdited() {
+        return status == ApplicationStatus.SUBMITTED || status == ApplicationStatus.REVISION_REQUESTED;
+    }
+
+    /**
+     * Можно ли принять решение по заявке
+     */
+    public boolean canBeModerated() {
+        return status == ApplicationStatus.SUBMITTED;
+    }
+
+    /**
+     * Утверждает заявку
+     *
+     * @param organizer - организатор, принявший решение
+     * @param comment   - комментарий
+     * @param now       - время решения
+     */
+    public void approve(Person organizer, String comment, Instant now) {
+        decide(ApplicationStatus.APPROVED, organizer, comment, now);
+    }
+
+    /**
+     * Отклоняет заявку
+     * 
+     * @param organizer - организатор, принявший решение
+     * @param comment   - комментарий
+     * @param now       - время решения
+     */
+    public void reject(Person organizer, String comment, Instant now) {
+        decide(ApplicationStatus.REJECTED, organizer, comment, now);
+    }
+
+    /**
+     * Отправляет заявку на доработку
+     * 
+     * @param organizer - организатор, принявший решение
+     * @param comment   - комментарий
+     * @param now       - время решения
+     */
+    public void requestRevision(Person organizer, String comment, Instant now) {
+        decide(ApplicationStatus.REVISION_REQUESTED, organizer, comment, now);
+    }
+
+    private void decide(ApplicationStatus newStatus, Person organizer, String comment, Instant now) {
+        if (!canBeModerated()) {
+            throw new IllegalStateException("Заявку в статусе " + status + " нельзя модерировать");
+        }
+        status = newStatus;
+        decidedBy = organizer;
+        moderationComment = comment;
+        decidedAt = now;
+        updatedAt = now;
     }
 
     // ------------- Геттеры ----------------
@@ -116,5 +188,17 @@ public class Application {
 
     public Instant getWithdrawnAt() {
         return withdrawnAt;
+    }
+
+    public Person getDecidedBy() {
+        return decidedBy;
+    }
+
+    public String getModerationComment() {
+        return moderationComment;
+    }
+
+    public Instant getDecidedAt() {
+        return decidedAt;
     }
 }
