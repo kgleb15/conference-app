@@ -57,6 +57,10 @@ public class Application {
      * Отзыв заявки
      */
     public void withdraw() {
+        if (status == ApplicationStatus.WITHDRAWN) {
+            return; // не перезаписываем время отзыва
+        }
+
         status = ApplicationStatus.WITHDRAWN;
         updatedAt = Instant.now();
         withdrawnAt = updatedAt;

@@ -110,12 +110,16 @@ public class ApplicationTests {
 
         a.withdraw();
 
+        Instant firstWithdrawnAt = a.getWithdrawnAt();
+        Instant firstUpdatedAt = a.getUpdatedAt();
         assertEquals(ApplicationStatus.WITHDRAWN, a.getStatus());
         assertEquals(createdAt, a.getCreatedAt());
         assertFalse(a.getUpdatedAt().isBefore(createdAt));
 
         a.withdraw();
 
+        assertEquals(firstWithdrawnAt, a.getWithdrawnAt());
+        assertEquals(firstUpdatedAt, a.getUpdatedAt());
         assertEquals(ApplicationStatus.WITHDRAWN, a.getStatus());
         assertEquals(createdAt, a.getCreatedAt());
         assertFalse(a.getUpdatedAt().isBefore(createdAt));
