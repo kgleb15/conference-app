@@ -104,9 +104,8 @@ public class ApplicationServiceTests {
 
         Application first = create(service, "Первая");
         create(service, "Вторая");
-        create(service, "Третья");
 
-        assertEquals(3, count(service));
+        assertEquals(2, count(service));
 
         ServiceResult result = service.get(first.getId());
         assertEquals(ServiceStatus.OK, result.status());
@@ -824,4 +823,64 @@ public class ApplicationServiceTests {
         assertNull(created.getDecidedAt());
         assertNull(created.getModerationComment());
     }
+
+    @Test
+    void test_submit_limitExceeded() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person other = registerPerson("Петров Пётр Петрович");
+        ApplicationService service = serviceAt(BEFORE, owner.getId());
+
+        assertEquals(ServiceStatus.CREATED, service.submit(request("Первая")).status());
+        assertEquals(ServiceStatus.CREATED, service.submit(request("Вторая")).status());
+
+        ServiceResult third = service.submit(request("Третья"));
+
+        assertEquals(ServiceStatus.LIMIT_EXCEEDED, third.status());
+        assertNull(third.application());
+        assertEquals(2, count(service));
+        assertEquals(2, _appRepo.findAll().size());
+
+        ServiceResult otherResult = serviceAt(BEFORE, other.getId()).submit(request("Чужая"));
+        assertEquals(ServiceStatus.CREATED, otherResult.status());
+        assertEquals(3, _appRepo.findAll().size());
+    }
+
+    @Test
+    void test_submit_withdrawnApplicationFreesSlot() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        ApplicationService service = serviceAt(BEFORE, owner.getId());
+        Application first = create(service, "Первая");
+        create(service, "Вторая");
+        assertEquals(ServiceStatus.LIMIT_EXCEEDED, service.submit(request("Третья")).status());
+
+        service.withdraw(first.getId());
+        ServiceResult third = service.submit(request("Третья"));
+
+        assertEquals(ServiceStatus.CREATED, third.status());
+        assertEquals("Третья", third.application().getTitle());
+        assertEquals(3, count(service));
+        assertEquals(ServiceStatus.LIMIT_EXCEEDED, service.submit(request("Четвёртая")).status());
+        assertEquals(3, _appRepo.findAll().size());
+    }
+
+    @Test
+    void test_submit_approvedAndRejected() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService service = serviceAt(BEFORE, owner.getId());
+        Application first = create(service, "Первая");
+        Application second = create(service, "Вторая");
+
+        first.approve(organizer, null, Instant.parse(BEFORE));
+        assertEquals(ServiceStatus.LIMIT_EXCEEDED, service.submit(request("Третья")).status());
+
+        second.reject(organizer, "Нет", Instant.parse(BEFORE));
+        ServiceResult third = service.submit(request("Третья"));
+
+        assertEquals(ServiceStatus.CREATED, third.status());
+        assertEquals(ApplicationStatus.SUBMITTED, third.application().getStatus());
+        assertEquals(owner.getId(), third.application().getOwner().getId());
+        assertEquals(3, count(service));
+    }
+
 }
