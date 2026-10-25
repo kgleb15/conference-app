@@ -11,5 +11,6 @@ public enum ServiceStatus {
     WITHDRAWN,
     UNAUTHORIZED,
     FORBIDDEN, // недостаточно прав
-    INVALID_STATE // действие недопустимо в текущем статусе
+    INVALID_STATE, // действие недопустимо в текущем статусе
+    LIMIT_EXCEEDED
 }

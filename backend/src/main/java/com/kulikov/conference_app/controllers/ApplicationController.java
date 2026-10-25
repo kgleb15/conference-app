@@ -55,7 +55,8 @@ public class ApplicationController {
      * 
      * @param request - данные новой заявки
      * @return 201 с созданной заявкой; 403 если дата некорректна или пользователь не участник; 
-     *         400 если некорректны поля запроса; 401 если запрос не идентифицирован
+     *         400 если некорректны поля запроса; 401 если запрос не идентифицирован;
+     *         409 если превышен лимит заявок
      */
     @PostMapping
     ResponseEntity<ApplicationResponse> submit(@Valid @RequestBody ApplicationRequest request) {
@@ -106,6 +107,7 @@ public class ApplicationController {
             case UNAUTHORIZED: httpStatus = HttpStatus.UNAUTHORIZED; break;
             case FORBIDDEN: httpStatus = HttpStatus.FORBIDDEN; break;
             case INVALID_STATE: httpStatus = HttpStatus.CONFLICT; break;
+            case LIMIT_EXCEEDED: httpStatus = HttpStatus.CONFLICT; break;
             default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         ApplicationResponse body = result.application() == null

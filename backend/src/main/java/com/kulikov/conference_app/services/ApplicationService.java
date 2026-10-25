@@ -24,6 +24,8 @@ import com.kulikov.conference_app.repositories.PersonRepository;
 @Service
 public class ApplicationService {
 
+    private static final int MAX_APPLICATIONS_PER_PERSON = 2;
+
     private final ApplicationRepository _applicationRepository;
     private final PersonRepository _personRepository;
     private final CurrentUser _currentUser;
@@ -87,7 +89,8 @@ public class ApplicationService {
      * @param request - данные новой заявки
      * @return CREATED и сохранённая заявка; UNAUTHORIZED если запрос не
      *         идентифицирован; DEADLINE_PASSED если дедлайн прошёл; FORBIDDEN если
-     *         пользователь не участник
+     *         пользователь не участник; LIMIT_EXCEEDED если у участника уже 2
+     *         действующие заявки
      */
     public ServiceResult submit(ApplicationRequest request) {
         Optional<Person> person = currentPerson();
@@ -97,6 +100,9 @@ public class ApplicationService {
         }
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
+        }
+        if (countActiveApplications(person.get()) >= MAX_APPLICATIONS_PER_PERSON) {
+            return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
         }
         Application saved = _applicationRepository.save(new Application(person.get(), request));
         return new ServiceResult(saved, ServiceStatus.CREATED);
@@ -371,5 +377,23 @@ public class ApplicationService {
      */
     private boolean isOwnedBy(Application a, Person person) {
         return a.getOwner() != null && a.getOwner().getId().equals(person.getId());
+    }
+
+    /**
+     * Считает действующие заявки участника (без отозванных и отклоненных)
+     *
+     * @param owner - участник
+     * @return количество действующих заявок
+     */
+    private int countActiveApplications(Person owner) {
+        int count = 0;
+        for (Application application : _applicationRepository.findAll()) {
+            boolean active = application.getStatus() != ApplicationStatus.WITHDRAWN
+                    && application.getStatus() != ApplicationStatus.REJECTED;
+            if (active && isOwnedBy(application, owner)) {
+                count++;
+            }
+        }
+        return count;
     }
 }
