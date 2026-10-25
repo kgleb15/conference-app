@@ -28,12 +28,16 @@ public class ApplicationServiceTests {
     private static final String BEFORE = "2026-03-10T12:00:00Z";
     private static final String AFTER = "2026-03-16T00:00:00Z";
 
+    private static final Instant DEADLINE_T2 = Instant.parse("2026-03-20T23:59:59Z");
+    private static final String AFTER_T2 = "2026-03-21T00:00:00Z";
+
     private final InMemoryApplicationRepository _appRepo = new InMemoryApplicationRepository();
     private final InMemoryPersonRepository _personRepo = new InMemoryPersonRepository();
 
     private ApplicationService serviceAt(String now, String personId) {
         ConferenceProperties props = new ConferenceProperties();
         props.setDeadlineT1(DEADLINE);
+        props.setDeadlineT2(DEADLINE_T2);
         Clock clock = Clock.fixed(Instant.parse(now), ZoneOffset.UTC);
         CurrentUser currentUser = new CurrentUser() {
             @Override
@@ -83,6 +87,11 @@ public class ApplicationServiceTests {
             n++;
         }
         return n;
+    }
+
+    /** Переводит заявку в REVISION_REQUESTED, как это сделает организатор */
+    private void requestRevision(Application a, Person organizer) {
+        a.requestRevision(organizer, "Допишите введение", Instant.parse(BEFORE));
     }
 
     // ---------------- GET ----------------
@@ -601,5 +610,129 @@ public class ApplicationServiceTests {
         assertEquals(ServiceStatus.OK, onlyNotEdited.status());
         assertEquals(1, onlyNotEdited.applications().size());
         assertEquals("Не изменённая", onlyNotEdited.applications().get(0).getTitle());
+    }
+
+    @Test
+    void test_edit_revisionRequestedAfterT1BeforeT2() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        requestRevision(created, organizer);
+
+        ServiceResult result = serviceAt(AFTER, owner.getId()).edit(created.getId(), request("Доработанная"));
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertNotNull(result.application());
+        assertEquals(created.getId(), result.application().getId());
+        assertEquals("Доработанная", result.application().getTitle());
+        assertEquals("Текст тезиса", result.application().getThesisText());
+        assertEquals(ApplicationStatus.SUBMITTED, result.application().getStatus());
+        assertEquals(1, result.application().getEditCount());
+        assertNotNull(result.application().getLastEditedAt());
+        assertNull(result.application().getWithdrawnAt());
+        assertEquals(owner.getId(), result.application().getOwner().getId());
+        assertEquals(organizer.getId(), result.application().getDecidedBy().getId());
+        assertEquals("Допишите введение", result.application().getModerationComment());
+        assertEquals(1, count(serviceAt(AFTER, owner.getId())));
+    }
+
+    @Test
+    void test_edit_revisionRequestedAfterT2() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        requestRevision(created, organizer);
+
+        ApplicationService late = serviceAt(AFTER_T2, owner.getId());
+        ServiceResult result = late.edit(created.getId(), request("Слишком поздно"));
+
+        assertEquals(ServiceStatus.DEADLINE_PASSED, result.status());
+        assertNull(result.application());
+        Application stored = late.get(created.getId()).application();
+        assertEquals("Тема", stored.getTitle());
+        assertEquals(ApplicationStatus.REVISION_REQUESTED, stored.getStatus());
+        assertEquals(0, stored.getEditCount());
+        assertNull(stored.getLastEditedAt());
+    }
+
+    @Test
+    void test_edit_approvedAndRejectedInvalidState() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService service = serviceAt(BEFORE, owner.getId());
+        Application approved = create(service, "Утверждённая");
+        Application rejected = create(service, "Отклонённая");
+        approved.approve(organizer, null, Instant.parse(BEFORE));
+        rejected.reject(organizer, "Нет", Instant.parse(BEFORE));
+
+        ServiceResult first = service.edit(approved.getId(), request("Новая"));
+        ServiceResult second = service.edit(rejected.getId(), request("Новая"));
+
+        assertEquals(ServiceStatus.INVALID_STATE, first.status());
+        assertNull(first.application());
+        assertEquals(ServiceStatus.INVALID_STATE, second.status());
+        assertNull(second.application());
+
+        assertEquals("Утверждённая", service.get(approved.getId()).application().getTitle());
+        assertEquals(ApplicationStatus.APPROVED, service.get(approved.getId()).application().getStatus());
+        assertEquals("Отклонённая", service.get(rejected.getId()).application().getTitle());
+        assertEquals(ApplicationStatus.REJECTED, service.get(rejected.getId()).application().getStatus());
+        assertEquals(0, service.get(approved.getId()).application().getEditCount());
+        assertEquals(0, service.get(rejected.getId()).application().getEditCount());
+    }
+
+    @Test
+    void test_withdraw_revisionRequestedAfterT1() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        requestRevision(created, organizer);
+
+        assertEquals(ApplicationStatus.REVISION_REQUESTED, created.getStatus());
+        ServiceResult result = serviceAt(AFTER, owner.getId()).withdraw(created.getId());
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertNotNull(result.application());
+        assertEquals(ApplicationStatus.WITHDRAWN, result.application().getStatus());
+        assertNotNull(result.application().getWithdrawnAt());
+        assertEquals("Тема", result.application().getTitle());
+        assertEquals(owner.getId(), result.application().getOwner().getId());
+        assertEquals("Допишите введение", result.application().getModerationComment());
+    }
+
+    @Test
+    void test_withdraw_revisionRequestedAfterT2() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        requestRevision(created, organizer);
+
+        ApplicationService late = serviceAt(AFTER_T2, owner.getId());
+        ServiceResult result = late.withdraw(created.getId());
+
+        assertEquals(ServiceStatus.DEADLINE_PASSED, result.status());
+        assertNull(result.application());
+        assertEquals(ApplicationStatus.REVISION_REQUESTED, late.get(created.getId()).application().getStatus());
+        assertNull(late.get(created.getId()).application().getWithdrawnAt());
+    }
+
+    @Test
+    void test_withdraw_alreadyApproved() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService service = serviceAt(BEFORE, owner.getId());
+        Application created = create(service, "Тема");
+        created.approve(organizer, "Принята", Instant.parse(BEFORE));
+
+        ServiceResult result = service.withdraw(created.getId());
+
+        assertEquals(ServiceStatus.INVALID_STATE, result.status());
+        assertNull(result.application());
+
+        Application stored = service.get(created.getId()).application();
+        assertEquals(ApplicationStatus.APPROVED, stored.getStatus());
+        assertNull(stored.getWithdrawnAt());
+        assertEquals("Принята", stored.getModerationComment());
+        assertEquals(1, count(service));
     }
 }
