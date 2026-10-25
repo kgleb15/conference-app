@@ -67,9 +67,9 @@ public class ApplicationController {
      * 
      * @param id      - идентификатор заявки
      * @param request - новые данные заявки
-     * @return 404 если такой заявки нет; 409 если отозвана; 200 если успешно обновлена;
-     *         403 если дата некорректна или пользователь не участник; 400 если некорректны поля запроса; 
-     *         401 если пользователь не найден
+     * @return 404 если такой заявки нет; 409 если отозвана или по ней принято решение; 
+     *         200 если успешно обновлена; 403 если дата некорректна или пользователь не участник;
+     *         400 если некорректны поля запроса; 401 если пользователь не найден
      */
     @PutMapping("/{id}")
     ResponseEntity<ApplicationResponse> edit(@PathVariable String id, @Valid @RequestBody ApplicationRequest request) {
@@ -81,7 +81,8 @@ public class ApplicationController {
      * 
      * @param id - идентификатор заявки
      * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена;
-     *         403 если дата некорректна или пользователь не участник; 401 если пользователь не найден
+     *         409 если по ней принято решение; 403 если дата некорректна или пользователь не участник;
+     *         401 если пользователь не найден
      */
     @PatchMapping("/{id}/withdraw")
     ResponseEntity<ApplicationResponse> withdraw(@PathVariable String id) {
@@ -104,6 +105,7 @@ public class ApplicationController {
             case WITHDRAWN: httpStatus = HttpStatus.CONFLICT; break;
             case UNAUTHORIZED: httpStatus = HttpStatus.UNAUTHORIZED; break;
             case FORBIDDEN: httpStatus = HttpStatus.FORBIDDEN; break;
+            case INVALID_STATE: httpStatus = HttpStatus.CONFLICT; break;
             default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         ApplicationResponse body = result.application() == null

@@ -10,5 +10,6 @@ public enum ServiceStatus {
     DEADLINE_PASSED,
     WITHDRAWN,
     UNAUTHORIZED,
-    FORBIDDEN // недостаточно прав
+    FORBIDDEN, // недостаточно прав
+    INVALID_STATE // действие недопустимо в текущем статусе
 }
