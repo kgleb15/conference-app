@@ -110,7 +110,8 @@ public class ApplicationService {
      * @return OK если обновлена; NOT_FOUND если не найдена или чужая;
      *         WITHDRAWN если отозвана; DEADLINE_PASSED если дедлайн прошёл;
      *         UNAUTHORIZED если запрос не идентифицирован; FORBIDDEN если
-     *         пользователь не участник; INVALID_STATE если решение по заявке уже принято
+     *         пользователь не участник; INVALID_STATE если решение по заявке уже
+     *         принято
      */
     public ServiceResult edit(String id, ApplicationRequest request) {
         Optional<Person> person = currentPerson();
@@ -193,6 +194,99 @@ public class ApplicationService {
         }
 
         return new ServiceListResult(filtered, ServiceStatus.OK);
+    }
+
+    /**
+     * Утверждает заявку
+     *
+     * @param id      - идентификатор заявки
+     * @param comment - комментарий организатора
+     * @return OK и утверждённая заявка; NOT_FOUND если такой заявки нет;
+     *         INVALID_STATE если по заявке уже нельзя принять решение;
+     *         UNAUTHORIZED если запрос не идентифицирован;
+     *         FORBIDDEN если пользователь не организатор
+     */
+    public ServiceResult approve(String id, String comment) {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        if (!application.canBeModerated()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_STATE);
+        }
+
+        application.approve(person.get(), comment, Instant.now(_clock));
+        return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
+    }
+
+    /**
+     * Отклоняет заявку
+     *
+     * @param id      - идентификатор заявки
+     * @param comment - комментарий организатора
+     * @return OK и утверждённая заявка; NOT_FOUND если такой заявки нет;
+     *         INVALID_STATE если по заявке уже нельзя принять решение;
+     *         UNAUTHORIZED если запрос не идентифицирован;
+     *         FORBIDDEN если пользователь не организатор
+     */
+    public ServiceResult reject(String id, String comment) {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        if (!application.canBeModerated()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_STATE);
+        }
+
+        application.reject(person.get(), comment, Instant.now(_clock));
+        return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
+    }
+
+    /**
+     * Отправляет заявку на доработку (участник может править её до T2)
+     *
+     * @param id      - идентификатор заявки
+     * @param comment - комментарий организатора
+     * @return OK и утверждённая заявка; NOT_FOUND если такой заявки нет;
+     *         INVALID_STATE если по заявке уже нельзя принять решение;
+     *         UNAUTHORIZED если запрос не идентифицирован;
+     *         FORBIDDEN если пользователь не организатор
+     */
+    public ServiceResult requestRevision(String id, String comment) {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        if (!application.canBeModerated()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_STATE);
+        }
+
+        application.requestRevision(person.get(), comment, Instant.now(_clock));
+        return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
     }
 
     /**
