@@ -110,16 +110,13 @@ public class ApplicationService {
      * @return OK если обновлена; NOT_FOUND если не найдена или чужая;
      *         WITHDRAWN если отозвана; DEADLINE_PASSED если дедлайн прошёл;
      *         UNAUTHORIZED если запрос не идентифицирован; FORBIDDEN если
-     *         пользователь не участник
+     *         пользователь не участник; INVALID_STATE если решение по заявке уже принято
      */
     public ServiceResult edit(String id, ApplicationRequest request) {
         Optional<Person> person = currentPerson();
         ServiceStatus access = checkRole(person, PersonRole.PARTICIPANT);
         if (access != ServiceStatus.OK) {
             return new ServiceResult(null, access);
-        }
-        if (isDeadlinePassed()) {
-            return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
@@ -128,8 +125,9 @@ public class ApplicationService {
         }
 
         Application application = found.get();
-        if (application.getStatus() == ApplicationStatus.WITHDRAWN) {
-            return new ServiceResult(null, ServiceStatus.WITHDRAWN);
+        ServiceStatus modifiable = checkModifiable(application);
+        if (modifiable != ServiceStatus.OK) {
+            return new ServiceResult(null, modifiable);
         }
 
         application.update(request);
@@ -142,16 +140,14 @@ public class ApplicationService {
      * @param id - идентификатор заявки
      * @return OK если отозвана; NOT_FOUND если не найдена или чужая;
      *         DEADLINE_PASSED если дедлайн прошёл; UNAUTHORIZED если запрос не
-     *         идентифицирован; FORBIDDEN если пользователь не участник
+     *         идентифицирован; FORBIDDEN если пользователь не участник;
+     *         INVALID_STATE если решение по заявке уже принято
      */
     public ServiceResult withdraw(String id) {
         Optional<Person> person = currentPerson();
         ServiceStatus access = checkRole(person, PersonRole.PARTICIPANT);
         if (access != ServiceStatus.OK) {
             return new ServiceResult(null, access);
-        }
-        if (isDeadlinePassed()) {
-            return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
@@ -160,6 +156,14 @@ public class ApplicationService {
         }
 
         Application application = found.get();
+        if (application.getStatus() == ApplicationStatus.WITHDRAWN) {
+            return new ServiceResult(application, ServiceStatus.OK); // уже отозвана
+        }
+        ServiceStatus modifiable = checkModifiable(application);
+        if (modifiable != ServiceStatus.OK) {
+            return new ServiceResult(null, modifiable);
+        }
+
         application.withdraw();
         return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
     }
@@ -198,6 +202,39 @@ public class ApplicationService {
      */
     private boolean isDeadlinePassed() {
         return Instant.now(_clock).isAfter(_conferenceProperties.getDeadlineT1());
+    }
+
+    /**
+     * Проверяет, прошёл ли дедлайн, действующий для заявки в её текущем статусе
+     *
+     * @param a - заявка
+     * @return true, если срок уже прошёл; false - если нет
+     */
+    private boolean isDeadlinePassedFor(Application a) {
+        Instant deadline = a.getStatus() == ApplicationStatus.REVISION_REQUESTED
+                ? _conferenceProperties.getDeadlineT2()
+                : _conferenceProperties.getDeadlineT1();
+        return Instant.now(_clock).isAfter(deadline);
+    }
+
+    /**
+     * Проверяет, может ли участник сейчас изменить заявку
+     *
+     * @param a - заявка
+     * @return OK; WITHDRAWN если отозвана; INVALID_STATE если по ней уже принято
+     *         решение; DEADLINE_PASSED если срок вышел
+     */
+    private ServiceStatus checkModifiable(Application a) {
+        if (a.getStatus() == ApplicationStatus.WITHDRAWN) {
+            return ServiceStatus.WITHDRAWN;
+        }
+        if (a.getStatus() == ApplicationStatus.APPROVED || a.getStatus() == ApplicationStatus.REJECTED) {
+            return ServiceStatus.INVALID_STATE;
+        }
+        if (isDeadlinePassedFor(a)) {
+            return ServiceStatus.DEADLINE_PASSED;
+        }
+        return ServiceStatus.OK;
     }
 
     /**
