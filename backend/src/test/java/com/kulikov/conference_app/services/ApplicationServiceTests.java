@@ -735,4 +735,93 @@ public class ApplicationServiceTests {
         assertEquals("Принята", stored.getModerationComment());
         assertEquals(1, count(service));
     }
+
+    @Test
+    void test_approve_byOrganizer() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application created = create(ownerService, "Тема");
+
+        ServiceResult result = serviceAt(BEFORE, organizer.getId()).approve(created.getId(), "Принята");
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertNotNull(result.application());
+        Application a = result.application();
+        assertEquals(created.getId(), a.getId());
+        assertEquals(ApplicationStatus.APPROVED, a.getStatus());
+        assertEquals("Принята", a.getModerationComment());
+        assertEquals(Instant.parse(BEFORE), a.getDecidedAt());
+        assertEquals(Instant.parse(BEFORE), a.getUpdatedAt());
+        assertNotNull(a.getDecidedBy());
+        assertEquals(organizer.getId(), a.getDecidedBy().getId());
+        assertEquals(PersonRole.ORGANIZER, a.getDecidedBy().getRole());
+        assertEquals("Тема", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals(owner.getId(), a.getOwner().getId());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getWithdrawnAt());
+    }
+
+    @Test
+    void test_reject_byOrganizer() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+
+        ServiceResult result = serviceAt(AFTER_T2, organizer.getId()).reject(created.getId(), "Не по теме");
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertEquals(ApplicationStatus.REJECTED, result.application().getStatus());
+        assertEquals("Не по теме", result.application().getModerationComment());
+        assertEquals(Instant.parse(AFTER_T2), result.application().getDecidedAt());
+        assertEquals(organizer.getId(), result.application().getDecidedBy().getId());
+        assertEquals(owner.getId(), result.application().getOwner().getId());
+        assertEquals(0, result.application().getEditCount());
+    }
+
+    @Test
+    void test_requestRevision_byOrganizer() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application created = create(ownerService, "Тема");
+
+        ServiceResult result = serviceAt(BEFORE, organizer.getId()).requestRevision(created.getId(), "Допишите");
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertEquals(ApplicationStatus.REVISION_REQUESTED, result.application().getStatus());
+        assertEquals("Допишите", result.application().getModerationComment());
+        assertEquals(Instant.parse(BEFORE), result.application().getDecidedAt());
+        assertEquals(organizer.getId(), result.application().getDecidedBy().getId());
+
+        // участник после T1, но до T2 дорабатывает заявку
+        ServiceResult edited = serviceAt(AFTER, owner.getId()).edit(created.getId(), request("Доработанная"));
+        assertEquals(ServiceStatus.OK, edited.status());
+        assertEquals(ApplicationStatus.SUBMITTED, edited.application().getStatus());
+        assertEquals(1, edited.application().getEditCount());
+    }
+
+    @Test
+    void test_moderation_noCurrentUserOrParticipant() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+
+        ApplicationService anonymous = serviceAt(BEFORE, null);
+        assertEquals(ServiceStatus.UNAUTHORIZED, anonymous.approve(created.getId(), "ok").status());
+        assertEquals(ServiceStatus.UNAUTHORIZED, anonymous.reject(created.getId(), "no").status());
+        assertEquals(ServiceStatus.UNAUTHORIZED, anonymous.requestRevision(created.getId(), "fix").status());
+
+        ApplicationService participant = serviceAt(BEFORE, owner.getId());
+        ServiceResult forbidden = participant.approve(created.getId(), "ok");
+        assertEquals(ServiceStatus.FORBIDDEN, forbidden.status());
+        assertNull(forbidden.application());
+        assertEquals(ServiceStatus.FORBIDDEN, participant.reject(created.getId(), "no").status());
+        assertEquals(ServiceStatus.FORBIDDEN, participant.requestRevision(created.getId(), "fix").status());
+
+        assertEquals(ApplicationStatus.SUBMITTED, created.getStatus());
+        assertNull(created.getDecidedBy());
+        assertNull(created.getDecidedAt());
+        assertNull(created.getModerationComment());
+    }
 }
