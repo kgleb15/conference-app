@@ -74,6 +74,9 @@ public class Application {
         if (status == ApplicationStatus.WITHDRAWN) {
             return; // не перезаписываем время отзыва
         }
+        if (status == ApplicationStatus.APPROVED || status == ApplicationStatus.REJECTED) {
+            throw new IllegalStateException("Заявку в статусе " + status + " нельзя отозвать");
+        }
 
         status = ApplicationStatus.WITHDRAWN;
         updatedAt = Instant.now();
