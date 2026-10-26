@@ -40,3 +40,17 @@ td {
   color: #757575;
   font-weight: 600;
 }
+
+.person {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.person-input {
+  min-width: 380px;
+}
+
+.error {
+  color: #c62828;
+}
