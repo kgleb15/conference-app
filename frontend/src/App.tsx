@@ -3,7 +3,8 @@ import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@m
 import { ApiError, fetchOrganizerApplications } from './api'
 import { getPersonId, setPersonId } from './auth'
 import type { EditedFilter, StatusFilter } from './api'
-import type { Application } from './types'
+import type { Application, ApplicationStatus } from './types'
+import { STATUS_LABELS } from './statuses'
 import './App.css'
 
 function formatDate(iso: string | null): string {
@@ -61,8 +62,9 @@ export default function App() {
           <Select labelId="status-label" label="Статус" value={status}
             onChange={(e) => setStatus(e.target.value as StatusFilter)}>
             <MenuItem value="ALL">Все заявки</MenuItem>
-            <MenuItem value="SUBMITTED">Поданные</MenuItem>
-            <MenuItem value="WITHDRAWN">Отозванные</MenuItem>
+            {(Object.keys(STATUS_LABELS) as ApplicationStatus[]).map((s) => (
+              <MenuItem key={s} value={s}>{STATUS_LABELS[s]}</MenuItem>
+            ))}
           </Select>
         </FormControl>
 
@@ -93,9 +95,7 @@ export default function App() {
                 <td>{a.title}</td>
                 <td> {a.owner.fullName}<br />{a.owner.groupName}</td>
                 <td>{a.owner.email}<br />{a.owner.phone}</td>
-                <td className={a.status === 'SUBMITTED' ? 'green' : 'gray'}>
-                  {a.status === 'SUBMITTED' ? 'Подана' : 'Отозвана'}
-                </td>
+                <td className={`status status-${a.status}`}>{STATUS_LABELS[a.status]}</td>
                 <td>{formatDate(a.createdAt)}</td>
                 <td>{a.editCount}</td>
                 <td>{formatDate(a.lastEditedAt)}</td>

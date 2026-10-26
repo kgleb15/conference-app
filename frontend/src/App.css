@@ -32,13 +32,28 @@ td {
   border-bottom: 1px solid #ddd;
 }
 
-.green {
-  color: #2e7d32;
+.status {
   font-weight: 600;
 }
-.gray {
+
+.status-SUBMITTED {
+  color: #1565c0;
+}
+
+.status-WITHDRAWN {
   color: #757575;
-  font-weight: 600;
+}
+
+.status-APPROVED {
+  color: #2e7d32;
+}
+
+.status-REJECTED {
+  color: #c62828;
+}
+
+.status-REVISION_REQUESTED {
+  color: #ef6c00;
 }
 
 .person {
