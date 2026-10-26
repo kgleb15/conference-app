@@ -1,24 +1,24 @@
-import type { Application } from './types'
+import type { Application, ApplicationStatus } from './types'
 import { getPersonId } from './auth'
 
-export type StatusFilter = 'ALL' | 'SUBMITTED' | 'WITHDRAWN'
+export type StatusFilter = 'ALL' | ApplicationStatus
 export type EditedFilter = 'ALL' | 'true' | 'false'
 
 /* Ошибка HTTP: хранит код ответа сервера */
 export class ApiError extends Error {
-  status: number
+    status: number
 
-  constructor(status: number) {
-    super(`HTTP ${status}`)
-    this.status = status
-  }
+    constructor(status: number) {
+        super(`HTTP ${status}`)
+        this.status = status
+    }
 }
 
 export async function fetchOrganizerApplications(status: StatusFilter, edited: EditedFilter,): Promise<Application[]> {
-  
+
     // Строим строку с параметрами
     const params = new URLSearchParams()
-    if (status !== 'ALL') { 
+    if (status !== 'ALL') {
         params.set('status', status);
     }
     if (edited !== 'ALL') {
