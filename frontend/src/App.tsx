@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { fetchOrganizerApplications } from './api'
 import type { EditedFilter, StatusFilter } from './api'
+import type { Application } from './types'
 import './App.css'
 
 function formatDate(iso: string | null): string {
@@ -12,12 +12,14 @@ function formatDate(iso: string | null): string {
 export default function App() {
   const [status, setStatus] = useState<StatusFilter>('ALL')
   const [edited, setEdited] = useState<EditedFilter>('ALL')
+  const [data, setData] = useState<Application[] | null>(null)
 
   // При смене status или edited запрос выполняется заново
-  const { data, isLoading } = useQuery({
-    queryKey: ['organizerApplications', status, edited],
-    queryFn: () => fetchOrganizerApplications(status, edited),
-  })
+  useEffect(() => {
+    fetchOrganizerApplications(status, edited).then((apps) => {
+      setData(apps)
+    })
+  }, [status, edited])
 
   return (
     <div className="page">
@@ -45,7 +47,7 @@ export default function App() {
         </FormControl>
       </div>
 
-      {isLoading && <p>Загрузка...</p>}
+      {data === null && <p>Загрузка...</p>}
       {data && data.length === 0 && <p>Заявок нет</p>}
 
       {data && data.length > 0 && (
