@@ -86,7 +86,7 @@ export default function App() {
         <table>
           <thead>
             <tr> <th>Заявка</th> <th>Автор</th> <th>Контакты</th> <th>Статус</th> <th>Подана</th>
-              <th>Правок</th> <th>Последняя правка</th> <th>Отозвана</th>
+              <th>Правок</th> <th>Последняя правка</th> <th>Отозвана</th> <th>Последнее решение</th>
             </tr>
           </thead>
           <tbody>
@@ -100,6 +100,9 @@ export default function App() {
                 <td>{a.editCount}</td>
                 <td>{formatDate(a.lastEditedAt)}</td>
                 <td>{formatDate(a.withdrawnAt)}</td>
+                <td>
+                  {a.decidedByName ? (<>{a.decidedByName}<br />{formatDate(a.decidedAt)}</>) : '--'}
+                </td>
               </tr>
             ))}
           </tbody>
