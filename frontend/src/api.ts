@@ -1,7 +1,18 @@
 import type { Application } from './types'
+import { getPersonId } from './auth'
 
 export type StatusFilter = 'ALL' | 'SUBMITTED' | 'WITHDRAWN'
 export type EditedFilter = 'ALL' | 'true' | 'false'
+
+/* Ошибка HTTP: хранит код ответа сервера */
+export class ApiError extends Error {
+  status: number
+
+  constructor(status: number) {
+    super(`HTTP ${status}`)
+    this.status = status
+  }
+}
 
 export async function fetchOrganizerApplications(status: StatusFilter, edited: EditedFilter,): Promise<Application[]> {
   
@@ -14,6 +25,11 @@ export async function fetchOrganizerApplications(status: StatusFilter, edited: E
         params.set('edited', edited);
     }
 
-    const res = await fetch(`/organizer/applications?${params}`) // http запрос
+    const res = await fetch(`/organizer/applications?${params}`, {
+        headers: { 'Person-Id': getPersonId() },
+    }) // http запрос
+    if (!res.ok) {
+        throw new ApiError(res.status)
+    }
     return res.json() // Читаем тело ответа и парсим json
 }
