@@ -30,6 +30,7 @@ export default function App() {
   const [draftId, setDraftId] = useState(getPersonId()) // то, что набрано в поле
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Application | null>(null) // открытая заявка
+  const [reload, setReload] = useState(0) // увеличиваем, чтобы заново загрузить список
 
   // При смене фильтров или id запрос выполняется заново
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function App() {
         setData(null)
         setError(errorText(e))
       })
-  }, [status, edited, personId])
+  }, [status, edited, personId, reload])
 
   return (
     <div className="page">
@@ -111,7 +112,11 @@ export default function App() {
         </table>
       )}
 
-      <ApplicationDialog application={selected} onClose={() => setSelected(null)} />
+      <ApplicationDialog application={selected} onClose={() => {
+        setSelected(null)
+        setReload((r) => r + 1)
+      }}
+      />
     </div>
   )
 }
