@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/organizer': 'http://localhost:8080',
+      '/applications': 'http://localhost:8080',
     },
   },
 })
