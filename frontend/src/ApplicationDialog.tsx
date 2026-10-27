@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { STATUS_LABELS } from './statuses'
 import type { Application } from './types'
 
@@ -22,7 +22,9 @@ export default function ApplicationDialog(props: Props) {
                     )}
                     <p><b>Текст тезисов:</b></p> <div>{application.thesisText}</div>
                 </DialogContent>
-                <Button onClick={onClose}>Закрыть</Button>
+                <DialogActions>
+                    <Button onClick={onClose}>Закрыть</Button>
+                </DialogActions>
             </>)}
         </Dialog>
     )
