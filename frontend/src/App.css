@@ -91,3 +91,7 @@ td {
 .success {
   color: #2e7d32;
 }
+
+body {
+  font-family: Roboto, Helvetica, Arial, sans-serif;
+}
