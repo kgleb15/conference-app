@@ -4,6 +4,7 @@ import { ApiError, fetchOrganizerApplications } from './api'
 import { getPersonId, setPersonId } from './auth'
 import type { EditedFilter, StatusFilter } from './api'
 import type { Application, ApplicationStatus } from './types'
+import ApplicationDialog from './ApplicationDialog'
 import { STATUS_LABELS } from './statuses'
 import './App.css'
 
@@ -28,6 +29,7 @@ export default function App() {
   const [personId, setPersonIdState] = useState(getPersonId()) // применённый id
   const [draftId, setDraftId] = useState(getPersonId()) // то, что набрано в поле
   const [error, setError] = useState<string | null>(null)
+  const [selected, setSelected] = useState<Application | null>(null) // открытая заявка
 
   // При смене фильтров или id запрос выполняется заново
   useEffect(() => {
@@ -91,7 +93,7 @@ export default function App() {
           </thead>
           <tbody>
             {data.map((a) => (
-              <tr key={a.id}>
+              <tr key={a.id} className="row" onClick={() => setSelected(a)}>
                 <td>{a.title}</td>
                 <td> {a.owner.fullName}<br />{a.owner.groupName}</td>
                 <td>{a.owner.email}<br />{a.owner.phone}</td>
@@ -108,6 +110,8 @@ export default function App() {
           </tbody>
         </table>
       )}
+
+      <ApplicationDialog application={selected} onClose={() => setSelected(null)} />
     </div>
   )
 }

@@ -69,3 +69,11 @@ td {
 .error {
   color: #c62828;
 }
+
+.row {
+  cursor: pointer;
+}
+
+.row:hover {
+  background: #f5f5f5;
+}
