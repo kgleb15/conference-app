@@ -11,10 +11,10 @@ function errorText(e: unknown): string {
         return 'Участник с таким id не найден'
     }
     if (e instanceof ApiError && e.status === 403) {
-        return 'Ошибка...'
+        return 'Дата некорректна или пользователь не участник'
     }
     if (e instanceof ApiError && e.status === 409) {
-        return 'Ошибка...'
+        return 'Превышен лимит заявок'
     }
     return 'Не удалось отправить заявку'
 }
