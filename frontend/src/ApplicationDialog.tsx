@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
 import { ApiError, moderateApplication } from './api'
 import type { DecisionAction } from './api'
 import { STATUS_LABELS } from './statuses'
@@ -26,9 +26,11 @@ export default function ApplicationDialog(props: Props) {
 
     const [error, setError] = useState<string | null>(null)
     const [sending, setSending] = useState(false)
+    const [comment, setComment] = useState('')
 
     function close() {
         setError(null)
+        setComment('')
         onClose()
     }
 
@@ -37,7 +39,7 @@ export default function ApplicationDialog(props: Props) {
         setSending(true)
         setError(null)
         try {
-            await moderateApplication(application.id, action, '')
+            await moderateApplication(application.id, action, comment.trim())
             onChanged()
             close()
         } catch (e) {
@@ -58,13 +60,25 @@ export default function ApplicationDialog(props: Props) {
                         <p><b>Комментарий организатора:</b> {application.moderationComment}</p>
                     )}
                     <p><b>Текст тезисов:</b></p> <div>{application.thesisText}</div>
+                    {application.status === 'SUBMITTED' && (
+                        <TextField label="Комментарий" fullWidth margin="normal" value={comment} onChange={(e) => setComment(e.target.value)} />
+                    )}
                     {error && <p className="error">{error}</p>}
                 </DialogContent>
                 <DialogActions>
-                    {application.status === 'SUBMITTED' && (
+                    {application.status === 'SUBMITTED' && (<>
                         <Button color="success" disabled={sending} onClick={() => decide('approve')}>
                             Утвердить
                         </Button>
+                        <Button color="warning" disabled={sending || comment.trim() === ''}
+                            onClick={() => decide('request-revision')}>
+                            На доработку
+                        </Button>
+                        <Button color="error" disabled={sending || comment.trim() === ''}
+                            onClick={() => decide('reject')}>
+                            Отклонить
+                        </Button>
+                    </>
                     )}
                     <Button onClick={onClose}>Закрыть</Button>
                 </DialogActions>
