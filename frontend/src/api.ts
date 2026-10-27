@@ -45,3 +45,14 @@ export async function moderateApplication(id: string, action: DecisionAction, co
         throw new ApiError(res.status)
     }
 }
+
+export async function submitApplication(personId: string, title: string, thesisText: string): Promise<void> {
+    const res = await fetch('/applications', {
+        method: 'POST', // тип метода
+        headers: { 'Person-Id': personId.trim(), 'Content-Type': 'application/json' }, // заголовки
+        body: JSON.stringify({ title, thesisText }),  // назание и тезисы в тело запроса
+    })
+    if (!res.ok) {
+        throw new ApiError(res.status)
+    }
+}
