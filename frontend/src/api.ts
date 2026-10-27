@@ -3,6 +3,7 @@ import { getPersonId } from './auth'
 
 export type StatusFilter = 'ALL' | ApplicationStatus
 export type EditedFilter = 'ALL' | 'true' | 'false'
+export type DecisionAction = 'approve' | 'reject' | 'request-revision'
 
 /* Ошибка HTTP: хранит код ответа сервера */
 export class ApiError extends Error {
@@ -32,4 +33,15 @@ export async function fetchOrganizerApplications(status: StatusFilter, edited: E
         throw new ApiError(res.status)
     }
     return res.json() // Читаем тело ответа и парсим json
+}
+
+export async function moderateApplication(id: string, action: DecisionAction, comment: string): Promise<void> {
+    const res = await fetch(`/organizer/applications/${id}/${action}`, {
+        method: 'PATCH', // тип метода
+        headers: { 'Person-Id': getPersonId(), 'Content-Type': 'application/json' }, // заголовки
+        body: JSON.stringify({ comment }),  // комментарий в тело запроса
+    })
+    if (!res.ok) {
+        throw new ApiError(res.status)
+    }
 }
