@@ -8,6 +8,7 @@ import type { Application } from './types'
 type Props = {
     application: Application | null
     onClose: () => void
+    onChanged: () => void // вызывается, когда нужно перезагрузить список
 }
 
 function errorText(e: unknown): string {
@@ -21,7 +22,7 @@ function errorText(e: unknown): string {
 }
 
 export default function ApplicationDialog(props: Props) {
-    const { application, onClose } = props
+    const { application, onClose, onChanged } = props
 
     const [error, setError] = useState<string | null>(null)
     const [sending, setSending] = useState(false)
@@ -37,9 +38,11 @@ export default function ApplicationDialog(props: Props) {
         setError(null)
         try {
             await moderateApplication(application.id, action, '')
+            onChanged()
             close()
         } catch (e) {
             setError(errorText(e))
+            onChanged()
         }
         setSending(false)
     }

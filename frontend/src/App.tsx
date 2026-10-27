@@ -112,10 +112,8 @@ export default function App() {
         </table>
       )}
 
-      <ApplicationDialog application={selected} onClose={() => {
-        setSelected(null)
-        setReload((r) => r + 1)
-      }}
+      <ApplicationDialog application={selected} onClose={() => { setSelected(null) }}
+        onChanged={() => setReload((r) => r + 1)}
       />
     </div>
   )
