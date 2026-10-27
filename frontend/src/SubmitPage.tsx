@@ -43,7 +43,7 @@ export default function SubmitPage() {
             <h1>Подача заявки</h1>
 
             <div className="form">
-                <TextField label="Id участника" size="small" value={personId}
+                <TextField label="id участника" size="small" value={personId}
                     onChange={(e) => setPersonId(e.target.value)} />
                 <TextField label="Название" value={title}
                     onChange={(e) => setTitle(e.target.value)} />

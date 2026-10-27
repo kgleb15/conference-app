@@ -14,7 +14,7 @@ function formatDate(iso: string | null): string {
 
 function errorText(e: unknown): string {
   if (e instanceof ApiError && e.status === 401) {
-    return 'Id не указан (неизвестен)'
+    return 'id не указан (неизвестен)'
   }
   if (e instanceof ApiError && e.status === 403) {
     return 'У этого пользователя нет прав организатора'
