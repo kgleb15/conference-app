@@ -17,19 +17,20 @@ public class ApplicationTests {
     private static final Instant NOW = Instant.parse("2026-11-01T10:00:00Z");
 
     private Person owner() {
-        PersonRequest req = new PersonRequest("Иванов Иван Иванович", "ПрИн-467",
+        PersonRequest req = new PersonRequest("Иванов Иван Иванович",
                 "abc123@yandex.ru", "88000000000");
         return new Person(req, PersonRole.PARTICIPANT);
     }
 
     private Person organizer() {
-        PersonRequest req = new PersonRequest("Сидоров Сидор Сидорович", "org",
+        PersonRequest req = new PersonRequest("Сидоров Сидор Сидорович",
                 "org@yandex.ru", "80000000000");
         return new Person(req, PersonRole.ORGANIZER);
     }
 
     private ApplicationRequest request(String title) {
-        return new ApplicationRequest(title, "Текст тезиса");
+        return new ApplicationRequest(title, "Текст тезиса", "ПрИн-467",
+                ApplicantCategory.STUDENT, FundingType.BUDGET);
     }
 
     @Test
@@ -50,7 +51,9 @@ public class ApplicationTests {
         assertNotNull(a.getOwner());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
         assertEquals(PersonRole.PARTICIPANT, a.getOwner().getRole());
@@ -72,15 +75,18 @@ public class ApplicationTests {
         Application a = new Application(owner, request("Старая"));
         Instant createdAt = a.getCreatedAt();
 
-        a.update(new ApplicationRequest("Новая", "Новый текст"));
+        a.update(new ApplicationRequest("Новая", "Новый текст", "ПрИн-468",
+                ApplicantCategory.COLLEGE_STUDENT, FundingType.CONTRACT));
 
         assertEquals("Новая", a.getTitle());
         assertEquals("Новый текст", a.getThesisText());
+        assertEquals("ПрИн-468", a.getGroupName());
+        assertEquals(ApplicantCategory.COLLEGE_STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.CONTRACT, a.getFundingType());
 
         assertNotNull(a.getOwner());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
 
@@ -107,7 +113,9 @@ public class ApplicationTests {
         assertEquals("Текст тезиса", a.getThesisText());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
 
@@ -145,7 +153,9 @@ public class ApplicationTests {
         assertEquals("Текст тезиса", a.getThesisText());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
 
@@ -159,11 +169,13 @@ public class ApplicationTests {
         Person owner = owner();
         Application a = new Application(owner, request("Тема"));
 
-        a.update(new ApplicationRequest("Новая", "Новый текст"));
+        a.update(new ApplicationRequest("Новая", "Новый текст", "ПрИн-467",
+                ApplicantCategory.STUDENT, FundingType.BUDGET));
         assertEquals(1, a.getEditCount());
         assertNotNull(a.getLastEditedAt());
 
-        a.update(new ApplicationRequest("Ещё", "Ещё текст"));
+        a.update(new ApplicationRequest("Ещё", "Ещё текст", "ПрИн-467",
+                ApplicantCategory.STUDENT, FundingType.BUDGET));
         assertEquals(2, a.getEditCount());
 
         a.withdraw();
@@ -174,7 +186,9 @@ public class ApplicationTests {
         assertEquals("Ещё текст", a.getThesisText());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
     }
@@ -277,7 +291,8 @@ public class ApplicationTests {
         Application a = new Application(owner(), request("Тема"));
         a.requestRevision(org, "Допишите", NOW);
 
-        a.update(new ApplicationRequest("Доработанная", "Новый текст"));
+        a.update(new ApplicationRequest("Доработанная", "Новый текст", "ПрИн-467",
+                ApplicantCategory.STUDENT, FundingType.BUDGET));
 
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
         assertEquals("Доработанная", a.getTitle());

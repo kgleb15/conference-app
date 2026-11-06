@@ -15,7 +15,7 @@ public class PersonServiceTests {
     private final PersonService _service = new PersonService(_repo);
 
     private PersonRequest request(String fullName) {
-        return new PersonRequest(fullName, "ПрИн-467", "abc123@yandex.ru", "88000000000");
+        return new PersonRequest(fullName, "abc123@yandex.ru", "88000000000");
     }
 
     @Test
@@ -26,7 +26,6 @@ public class PersonServiceTests {
         assertNotNull(p.getId());
         assertFalse(p.getId().isBlank());
         assertEquals("Иванов Иван Иванович", p.getFullName());
-        assertEquals("ПрИн-467", p.getGroupName());
         assertEquals("abc123@yandex.ru", p.getEmail());
         assertEquals("88000000000", p.getPhone());
         assertEquals(PersonRole.PARTICIPANT, p.getRole());
@@ -43,7 +42,6 @@ public class PersonServiceTests {
         assertNotNull(p.getId());
         assertFalse(p.getId().isBlank());
         assertEquals("Сидоров Сидор Сидорович", p.getFullName());
-        assertEquals("ПрИн-467", p.getGroupName());
         assertEquals("abc123@yandex.ru", p.getEmail());
         assertEquals("88000000000", p.getPhone());
         assertEquals(PersonRole.ORGANIZER, p.getRole());
@@ -57,10 +55,8 @@ public class PersonServiceTests {
         Person p = _service.registerExpert(request("Петров Пётр Петрович"));
 
         assertNotNull(p.getId());
-        assertNotNull(p.getId());
         assertFalse(p.getId().isBlank());
         assertEquals("Петров Пётр Петрович", p.getFullName());
-        assertEquals("ПрИн-467", p.getGroupName());
         assertEquals("abc123@yandex.ru", p.getEmail());
         assertEquals("88000000000", p.getPhone());
         assertEquals(PersonRole.EXPERT, p.getRole());

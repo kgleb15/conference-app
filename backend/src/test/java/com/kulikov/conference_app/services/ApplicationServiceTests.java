@@ -13,9 +13,11 @@ import org.junit.jupiter.api.Test;
 
 import com.kulikov.conference_app.auth.CurrentUser;
 import com.kulikov.conference_app.config.ConferenceProperties;
+import com.kulikov.conference_app.model.ApplicantCategory;
 import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
+import com.kulikov.conference_app.model.FundingType;
 import com.kulikov.conference_app.model.Person;
 import com.kulikov.conference_app.model.PersonRequest;
 import com.kulikov.conference_app.model.PersonRole;
@@ -53,28 +55,29 @@ public class ApplicationServiceTests {
 
     /** Регистрирует участника и возвращает его сущность */
     private Person registerPerson(String fullName) {
-        PersonRequest req = new PersonRequest(fullName, "ПрИн-467",
+        PersonRequest req = new PersonRequest(fullName,
                 "abc123@yandex.ru", "88000000000");
         return _personRepo.save(new Person(req, PersonRole.PARTICIPANT));
     }
 
     /** Регистрирует организатора */
     private Person registerOrganizer(String fullName) {
-        PersonRequest req = new PersonRequest(fullName, "org",
+        PersonRequest req = new PersonRequest(fullName,
                 "org@yandex.ru", "80000000000");
         return _personRepo.save(new Person(req, PersonRole.ORGANIZER));
     }
 
     /** Регистрирует члена экспертной комиссии */
     private Person registerExpert(String fullName) {
-        PersonRequest req = new PersonRequest(fullName, "exp",
+        PersonRequest req = new PersonRequest(fullName,
                 "exp@yandex.ru", "81111111111");
         return _personRepo.save(new Person(req, PersonRole.EXPERT));
     }
 
     /** Создаёт запрос заявки с заданным заголовком */
     private ApplicationRequest request(String title) {
-        return new ApplicationRequest(title, "Текст тезиса");
+        return new ApplicationRequest(title, "Текст тезиса", "ПрИн-467",
+                ApplicantCategory.STUDENT, FundingType.BUDGET);
     }
 
     private Application create(ApplicationService service, String title) {
@@ -128,7 +131,9 @@ public class ApplicationServiceTests {
         assertNotNull(a.getOwner());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
         assertEquals(PersonRole.PARTICIPANT, a.getOwner().getRole());
@@ -184,7 +189,9 @@ public class ApplicationServiceTests {
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
 
@@ -235,7 +242,9 @@ public class ApplicationServiceTests {
 
         assertEquals(owner.getId(), result.application().getOwner().getId());
         assertEquals("Иванов Иван Иванович", result.application().getOwner().getFullName());
-        assertEquals("ПрИн-467", result.application().getOwner().getGroupName());
+        assertEquals("ПрИн-467", result.application().getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, result.application().getApplicantCategory());
+        assertEquals(FundingType.BUDGET, result.application().getFundingType());
         assertEquals("abc123@yandex.ru", result.application().getOwner().getEmail());
         assertEquals("88000000000", result.application().getOwner().getPhone());
 
@@ -295,7 +304,9 @@ public class ApplicationServiceTests {
 
         assertEquals(owner.getId(), result.application().getOwner().getId());
         assertEquals("Иванов Иван Иванович", result.application().getOwner().getFullName());
-        assertEquals("ПрИн-467", result.application().getOwner().getGroupName());
+        assertEquals("ПрИн-467", result.application().getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, result.application().getApplicantCategory());
+        assertEquals(FundingType.BUDGET, result.application().getFundingType());
         assertEquals("abc123@yandex.ru", result.application().getOwner().getEmail());
         assertEquals("88000000000", result.application().getOwner().getPhone());
 
@@ -318,7 +329,9 @@ public class ApplicationServiceTests {
         assertEquals("Текст тезиса", a.getThesisText());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
-        assertEquals("ПрИн-467", a.getOwner().getGroupName());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
         assertEquals("abc123@yandex.ru", a.getOwner().getEmail());
         assertEquals("88000000000", a.getOwner().getPhone());
         assertEquals(ApplicationStatus.WITHDRAWN, a.getStatus());

@@ -9,9 +9,10 @@ public class ExpertApplicationResponseTests {
 
     @Test
     void test_from_doesNotContainPersonalData() {
-        Person owner = new Person(new PersonRequest("Иванов Иван Иванович", "ПрИн-467",
+        Person owner = new Person(new PersonRequest("Иванов Иван Иванович",
                 "secret@yandex.ru", "89990001122"), PersonRole.PARTICIPANT);
-        Application app = new Application(owner, new ApplicationRequest("Название", "Текст"));
+        Application app = new Application(owner, new ApplicationRequest("Название", "Текст", "ПрИн-467",
+                ApplicantCategory.STUDENT, FundingType.CONTRACT));
 
         ExpertApplicationResponse response = ExpertApplicationResponse.from(app);
 
