@@ -296,6 +296,48 @@ public class ApplicationService {
     }
 
     /**
+     * Возвращает утверждённые заявки для члена экспертной комиссии
+     *
+     * @return OK и список утверждённых заявок; UNAUTHORIZED если запрос не
+     *         идентифицирован; FORBIDDEN если пользователь не эксперт
+     */
+    public ServiceListResult findAllForExpert() {
+        ServiceStatus access = checkRole(currentPerson(), PersonRole.EXPERT);
+        if (access != ServiceStatus.OK) {
+            return new ServiceListResult(null, access);
+        }
+
+        List<Application> approved = new ArrayList<>();
+        for (Application application : _applicationRepository.findAll()) {
+            if (application.getStatus() == ApplicationStatus.APPROVED) {
+                approved.add(application);
+            }
+        }
+        return new ServiceListResult(approved, ServiceStatus.OK);
+    }
+
+    /**
+     * Возвращает утверждённую заявку для члена экспертной комиссии
+     *
+     * @param id - идентификатор заявки
+     * @return OK и заявка; NOT_FOUND если заявки нет или она не утверждена;
+     *         UNAUTHORIZED если запрос не идентифицирован; FORBIDDEN если
+     *         пользователь не эксперт
+     */
+    public ServiceResult getForExpert(String id) {
+        ServiceStatus access = checkRole(currentPerson(), PersonRole.EXPERT);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty() || found.get().getStatus() != ApplicationStatus.APPROVED) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+        return new ServiceResult(found.get(), ServiceStatus.OK);
+    }
+
+    /**
      * Проверяет, что текущее время не позже дедлайна T1.
      *
      * @return true, если дедлайн уже прошёл; false - если нет.
