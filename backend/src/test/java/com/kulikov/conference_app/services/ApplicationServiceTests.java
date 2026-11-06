@@ -56,22 +56,22 @@ public class ApplicationServiceTests {
     /** Регистрирует участника и возвращает его сущность */
     private Person registerPerson(String fullName) {
         PersonRequest req = new PersonRequest(fullName,
-                "abc123@yandex.ru", "88000000000");
-        return _personRepo.save(new Person(req, PersonRole.PARTICIPANT));
+                "abc123@yandex.ru", "88000000000", "password123");
+        return _personRepo.save(new Person(req, "hash", PersonRole.PARTICIPANT));
     }
 
     /** Регистрирует организатора */
     private Person registerOrganizer(String fullName) {
         PersonRequest req = new PersonRequest(fullName,
-                "org@yandex.ru", "80000000000");
-        return _personRepo.save(new Person(req, PersonRole.ORGANIZER));
+                "org@yandex.ru", "80000000000", "password123");
+        return _personRepo.save(new Person(req, "hash", PersonRole.ORGANIZER));
     }
 
     /** Регистрирует члена экспертной комиссии */
     private Person registerExpert(String fullName) {
         PersonRequest req = new PersonRequest(fullName,
-                "exp@yandex.ru", "81111111111");
-        return _personRepo.save(new Person(req, PersonRole.EXPERT));
+                "exp@yandex.ru", "81111111111", "password123");
+        return _personRepo.save(new Person(req, "hash", PersonRole.EXPERT));
     }
 
     /** Создаёт запрос заявки с заданным заголовком */

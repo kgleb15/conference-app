@@ -18,14 +18,14 @@ public class ApplicationTests {
 
     private Person owner() {
         PersonRequest req = new PersonRequest("Иванов Иван Иванович",
-                "abc123@yandex.ru", "88000000000");
-        return new Person(req, PersonRole.PARTICIPANT);
+                "abc123@yandex.ru", "88000000000", "password123");
+        return new Person(req, "hash", PersonRole.PARTICIPANT);
     }
 
     private Person organizer() {
         PersonRequest req = new PersonRequest("Сидоров Сидор Сидорович",
-                "org@yandex.ru", "80000000000");
-        return new Person(req, PersonRole.ORGANIZER);
+                "org@yandex.ru", "80000000000", "password123");
+        return new Person(req, "hash", PersonRole.ORGANIZER);
     }
 
     private ApplicationRequest request(String title) {
