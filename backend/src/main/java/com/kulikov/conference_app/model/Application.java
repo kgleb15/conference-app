@@ -31,6 +31,13 @@ public class Application {
     private String thesisText;
 
     private String groupName;
+
+    @Enumerated(EnumType.STRING)
+    private ApplicantCategory applicantCategory;
+
+    @Enumerated(EnumType.STRING)
+    private FundingType fundingType;
+
     private int editCount = 0;
 
     private Instant lastEditedAt;
@@ -95,6 +102,8 @@ public class Application {
         title = r.title();
         thesisText = r.thesisText();
         groupName = r.groupName();
+        applicantCategory = r.applicantCategory();
+        fundingType = r.fundingType();
     }
 
     /**
@@ -188,6 +197,15 @@ public class Application {
     public String getGroupName() {
         return groupName;
     }
+
+    public ApplicantCategory getApplicantCategory() {
+        return applicantCategory;
+    }
+
+    public FundingType getFundingType() {
+        return fundingType;
+    }
+
     public int getEditCount() {
         return editCount;
     }
