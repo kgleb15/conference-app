@@ -39,4 +39,14 @@ public class PersonService {
     public Person registerOrganizer(PersonRequest request) {
         return _personRepository.save(new Person(request, PersonRole.ORGANIZER));
     }
+
+    /**
+     * Регистрирует нового члена экспертной комиссии
+     *
+     * @param request - данные эксперта
+     * @return сохранённый эксперт
+     */
+    public Person registerExpert(PersonRequest request) {
+        return _personRepository.save(new Person(request, PersonRole.EXPERT));
+    }
 }

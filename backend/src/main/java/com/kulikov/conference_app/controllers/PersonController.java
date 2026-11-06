@@ -45,4 +45,15 @@ public class PersonController {
     ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody PersonRequest request) {
         return new ResponseEntity<>(PersonResponse.from(_personService.registerOrganizer(request)), HttpStatus.CREATED);
     }
+
+    /**
+     * Регистрирует члена экспертной комиссии
+     *
+     * @param request - данные эксперта
+     * @return 201 с созданным экспертом; 400 если поля некорректны
+     */
+    @PostMapping("/expert")
+    ResponseEntity<PersonResponse> registerExpert(@Valid @RequestBody PersonRequest request) {
+        return new ResponseEntity<>(PersonResponse.from(_personService.registerExpert(request)), HttpStatus.CREATED);
+    }
 }

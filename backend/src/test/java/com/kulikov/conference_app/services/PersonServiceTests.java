@@ -51,4 +51,21 @@ public class PersonServiceTests {
         assertTrue(_repo.findById(p.getId()).isPresent());
         assertEquals(PersonRole.ORGANIZER, _repo.findById(p.getId()).get().getRole());
     }
+
+    @Test
+    void test_registerExpert_createsExpert() {
+        Person p = _service.registerExpert(request("Петров Пётр Петрович"));
+
+        assertNotNull(p.getId());
+        assertNotNull(p.getId());
+        assertFalse(p.getId().isBlank());
+        assertEquals("Петров Пётр Петрович", p.getFullName());
+        assertEquals("ПрИн-467", p.getGroupName());
+        assertEquals("abc123@yandex.ru", p.getEmail());
+        assertEquals("88000000000", p.getPhone());
+        assertEquals(PersonRole.EXPERT, p.getRole());
+
+        assertTrue(_repo.findById(p.getId()).isPresent());
+        assertEquals(PersonRole.EXPERT, _repo.findById(p.getId()).get().getRole());
+    }
 }
