@@ -1,0 +1,1 @@
+ALTER TABLE application ALTER COLUMN thesis_text TYPE text;

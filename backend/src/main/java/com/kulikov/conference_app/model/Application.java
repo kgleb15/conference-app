@@ -26,6 +26,8 @@ public class Application {
     private ApplicationStatus status = ApplicationStatus.SUBMITTED;
 
     private String title;
+
+    @Column(columnDefinition = "text")
     private String thesisText;
 
     private int editCount = 0;
