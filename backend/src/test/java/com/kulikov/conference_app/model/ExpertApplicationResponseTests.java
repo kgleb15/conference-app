@@ -24,6 +24,8 @@ public class ExpertApplicationResponseTests {
         assertFalse(text.contains("ПрИн-467"));
         assertFalse(text.contains("secret@yandex.ru"));
         assertFalse(text.contains("89990001122"));
+        assertEquals(ApplicantCategory.STUDENT, response.applicantCategory());
+        assertFalse(text.contains("CONTRACT"));
         assertFalse(text.contains(owner.getId()));
     }
 }
