@@ -65,6 +65,13 @@ public class ApplicationServiceTests {
         return _personRepo.save(new Person(req, PersonRole.ORGANIZER));
     }
 
+    /** Регистрирует члена экспертной комиссии */
+    private Person registerExpert(String fullName) {
+        PersonRequest req = new PersonRequest(fullName, "exp",
+                "exp@yandex.ru", "81111111111");
+        return _personRepo.save(new Person(req, PersonRole.EXPERT));
+    }
+
     /** Создаёт запрос заявки с заданным заголовком */
     private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Текст тезиса");
@@ -881,6 +888,122 @@ public class ApplicationServiceTests {
         assertEquals(ApplicationStatus.SUBMITTED, third.application().getStatus());
         assertEquals(owner.getId(), third.application().getOwner().getId());
         assertEquals(3, count(service));
+    }
+
+    @Test
+    void test_findAllForExpert_onlyApproved() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Person expert = registerExpert("Кузнецов Кузьма Кузьмич");
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application approved = create(ownerService, "Утверждённая");
+        Application submitted = create(ownerService, "Поданная");
+        approved.approve(organizer, "Принята", Instant.parse(BEFORE));
+
+        ServiceListResult result = serviceAt(BEFORE, expert.getId()).findAllForExpert();
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertNotNull(result.applications());
+        assertEquals(1, result.applications().size());
+
+        Application a = result.applications().get(0);
+        assertEquals(approved.getId(), a.getId());
+        assertEquals(ApplicationStatus.APPROVED, a.getStatus());
+        assertEquals("Утверждённая", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Принята", a.getModerationComment());
+        assertEquals(Instant.parse(BEFORE), a.getDecidedAt());
+        assertEquals(organizer.getId(), a.getDecidedBy().getId());
+
+        assertEquals(ApplicationStatus.SUBMITTED, submitted.getStatus());
+        assertEquals(2, _appRepo.findAll().size());
+    }
+
+    @Test
+    void test_findAllForExpert_noCurrentUser() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        created.approve(organizer, "Принята", Instant.parse(BEFORE));
+
+        ServiceListResult result = serviceAt(BEFORE, null).findAllForExpert();
+
+        assertEquals(ServiceStatus.UNAUTHORIZED, result.status());
+        assertNull(result.applications());
+        assertEquals(ApplicationStatus.APPROVED, created.getStatus());
+        assertEquals(1, _appRepo.findAll().size());
+    }
+
+    @Test
+    void test_findAllForExpert_participantForbidden() {
+        Person participant = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, participant.getId()), "Тема");
+        created.approve(organizer, "Принята", Instant.parse(BEFORE));
+
+        ServiceListResult result = serviceAt(BEFORE, participant.getId()).findAllForExpert();
+
+        assertEquals(ServiceStatus.FORBIDDEN, result.status());
+        assertNull(result.applications());
+        assertEquals(PersonRole.PARTICIPANT, participant.getRole());
+        assertEquals(ApplicationStatus.APPROVED, created.getStatus());
+    }
+
+    @Test
+    void test_findAllForExpert_organizerForbidden() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        created.approve(organizer, "Принята", Instant.parse(BEFORE));
+
+        ServiceListResult result = serviceAt(BEFORE, organizer.getId()).findAllForExpert();
+
+        assertEquals(ServiceStatus.FORBIDDEN, result.status());
+        assertNull(result.applications());
+        assertEquals(PersonRole.ORGANIZER, organizer.getRole());
+        assertEquals(ApplicationStatus.APPROVED, created.getStatus());
+    }
+
+    @Test
+    void test_getForExpert_approved() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer = registerOrganizer("Сидоров Сидор");
+        Person expert = registerExpert("Кузнецов Кузьма Кузьмич");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        created.approve(organizer, "Принята", Instant.parse(BEFORE));
+
+        ServiceResult result = serviceAt(BEFORE, expert.getId()).getForExpert(created.getId());
+
+        assertEquals(ServiceStatus.OK, result.status());
+        assertNotNull(result.application());
+        Application a = result.application();
+        assertEquals(created.getId(), a.getId());
+        assertEquals(ApplicationStatus.APPROVED, a.getStatus());
+        assertEquals("Тема", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Принята", a.getModerationComment());
+        assertEquals(Instant.parse(BEFORE), a.getDecidedAt());
+        assertEquals(organizer.getId(), a.getDecidedBy().getId());
+        assertEquals(owner.getId(), a.getOwner().getId());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getWithdrawnAt());
+    }
+
+    @Test
+    void test_getForExpert_notApproved() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person expert = registerExpert("Кузнецов Кузьма Кузьмич");
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Поданная");
+
+        ServiceResult result = serviceAt(BEFORE, expert.getId()).getForExpert(created.getId());
+
+        assertEquals(ServiceStatus.NOT_FOUND, result.status());
+        assertNull(result.application());
+        assertEquals(ApplicationStatus.SUBMITTED, created.getStatus());
+
+        ServiceResult unknown = serviceAt(BEFORE, expert.getId()).getForExpert("нет-такой-заявки");
+        assertEquals(ServiceStatus.NOT_FOUND, unknown.status());
+        assertNull(unknown.application());
     }
 
 }
