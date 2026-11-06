@@ -30,6 +30,7 @@ public class Application {
     @Column(columnDefinition = "text")
     private String thesisText;
 
+    private String groupName;
     private int editCount = 0;
 
     private Instant lastEditedAt;
@@ -93,6 +94,7 @@ public class Application {
     private void apply(ApplicationRequest r) {
         title = r.title();
         thesisText = r.thesisText();
+        groupName = r.groupName();
     }
 
     /**
@@ -183,6 +185,9 @@ public class Application {
         return thesisText;
     }
 
+    public String getGroupName() {
+        return groupName;
+    }
     public int getEditCount() {
         return editCount;
     }

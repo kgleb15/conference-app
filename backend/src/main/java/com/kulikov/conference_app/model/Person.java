@@ -17,18 +17,17 @@ public class Person {
     private String id = UUID.randomUUID().toString();
 
     private String fullName;
-    private String groupName;
     private String email;
     private String phone;
 
     @Enumerated(EnumType.STRING)
     private PersonRole role;
 
-    protected Person() { }
+    protected Person() {
+    }
 
     public Person(PersonRequest r, PersonRole role) {
         this.fullName = r.fullName();
-        this.groupName = r.groupName();
         this.email = r.email();
         this.phone = r.phone();
         this.role = role;
@@ -42,10 +41,6 @@ public class Person {
 
     public String getFullName() {
         return fullName;
-    }
-
-    public String getGroupName() {
-        return groupName;
     }
 
     public String getEmail() {
