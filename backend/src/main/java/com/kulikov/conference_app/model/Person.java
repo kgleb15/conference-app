@@ -19,6 +19,7 @@ public class Person {
     private String fullName;
     private String email;
     private String phone;
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     private PersonRole role;
@@ -26,10 +27,11 @@ public class Person {
     protected Person() {
     }
 
-    public Person(PersonRequest r, PersonRole role) {
+    public Person(PersonRequest r, String passwordHash, PersonRole role) {
         this.fullName = r.fullName();
         this.email = r.email();
         this.phone = r.phone();
+        this.passwordHash = passwordHash;
         this.role = role;
     }
 
@@ -49,6 +51,10 @@ public class Person {
 
     public String getPhone() {
         return phone;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public PersonRole getRole() {

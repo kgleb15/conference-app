@@ -1,5 +1,6 @@
 package com.kulikov.conference_app.services;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.kulikov.conference_app.model.Person;
@@ -14,9 +15,11 @@ import com.kulikov.conference_app.repositories.PersonRepository;
 public class PersonService {
 
     private final PersonRepository _personRepository;
+    private final PasswordEncoder _passwordEncoder;
 
-    public PersonService(PersonRepository personRepository) {
+    public PersonService(PersonRepository personRepository, PasswordEncoder passwordEncoder) {
         this._personRepository = personRepository;
+        this._passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -26,7 +29,7 @@ public class PersonService {
      * @return сохранённый участник
      */
     public Person register(PersonRequest request) {
-        return _personRepository.save(new Person(request, PersonRole.PARTICIPANT));
+        return create(request, PersonRole.PARTICIPANT);
     }
 
     /**
@@ -37,7 +40,7 @@ public class PersonService {
      * @return сохранённый организатор
      */
     public Person registerOrganizer(PersonRequest request) {
-        return _personRepository.save(new Person(request, PersonRole.ORGANIZER));
+        return create(request, PersonRole.ORGANIZER);
     }
 
     /**
@@ -47,6 +50,14 @@ public class PersonService {
      * @return сохранённый эксперт
      */
     public Person registerExpert(PersonRequest request) {
-        return _personRepository.save(new Person(request, PersonRole.EXPERT));
+        return create(request, PersonRole.EXPERT);
+    }
+
+    /**
+     * Создаёт человека с заданной ролью
+     */
+    private Person create(PersonRequest request, PersonRole role) {
+        String hash = _passwordEncoder.encode(request.password());
+        return _personRepository.save(new Person(request, hash, role));
     }
 }
