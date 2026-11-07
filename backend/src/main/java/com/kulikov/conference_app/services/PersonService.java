@@ -28,7 +28,7 @@ public class PersonService {
      * @param request - данные участника
      * @return сохранённый участник
      */
-    public Person register(PersonRequest request) {
+    public PersonResult register(PersonRequest request) {
         return create(request, PersonRole.PARTICIPANT);
     }
 
@@ -39,7 +39,7 @@ public class PersonService {
      * @param request - данные организатора
      * @return сохранённый организатор
      */
-    public Person registerOrganizer(PersonRequest request) {
+    public PersonResult registerOrganizer(PersonRequest request) {
         return create(request, PersonRole.ORGANIZER);
     }
 
@@ -49,15 +49,19 @@ public class PersonService {
      * @param request - данные эксперта
      * @return сохранённый эксперт
      */
-    public Person registerExpert(PersonRequest request) {
+    public PersonResult registerExpert(PersonRequest request) {
         return create(request, PersonRole.EXPERT);
     }
 
     /**
      * Создаёт человека с заданной ролью
      */
-    private Person create(PersonRequest request, PersonRole role) {
+    private PersonResult create(PersonRequest request, PersonRole role) {
+        if (_personRepository.findByEmail(request.email()).isPresent()) {
+            return new PersonResult(null, ServiceStatus.CONFLICT);
+        }
         String hash = _passwordEncoder.encode(request.password());
-        return _personRepository.save(new Person(request, hash, role));
+        Person saved = _personRepository.save(new Person(request, hash, role));
+        return new PersonResult(saved, ServiceStatus.CREATED);
     }
 }

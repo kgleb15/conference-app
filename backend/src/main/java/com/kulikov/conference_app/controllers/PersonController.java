@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kulikov.conference_app.model.PersonRequest;
 import com.kulikov.conference_app.model.PersonResponse;
 import com.kulikov.conference_app.services.PersonService;
+import com.kulikov.conference_app.services.PersonResult;
 
 import jakarta.validation.Valid;
 
@@ -31,7 +32,7 @@ public class PersonController {
      */
     @PostMapping
     ResponseEntity<PersonResponse> register(@Valid @RequestBody PersonRequest request) {
-        return new ResponseEntity<>(PersonResponse.from(_personService.register(request)), HttpStatus.CREATED);
+        return toResponse(_personService.register(request));
     }
 
     /**
@@ -43,7 +44,7 @@ public class PersonController {
      */
     @PostMapping("/organizer")
     ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody PersonRequest request) {
-        return new ResponseEntity<>(PersonResponse.from(_personService.registerOrganizer(request)), HttpStatus.CREATED);
+        return toResponse(_personService.registerOrganizer(request));
     }
 
     /**
@@ -54,6 +55,17 @@ public class PersonController {
      */
     @PostMapping("/expert")
     ResponseEntity<PersonResponse> registerExpert(@Valid @RequestBody PersonRequest request) {
-        return new ResponseEntity<>(PersonResponse.from(_personService.registerExpert(request)), HttpStatus.CREATED);
+        return toResponse(_personService.registerExpert(request));
+    }
+
+    private ResponseEntity<PersonResponse> toResponse(PersonResult result) {
+        switch (result.status()) {
+            case CREATED:
+                return new ResponseEntity<>(PersonResponse.from(result.person()), HttpStatus.CREATED);
+            case CONFLICT:
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            default:
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
