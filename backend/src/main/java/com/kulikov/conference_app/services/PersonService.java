@@ -34,7 +34,6 @@ public class PersonService {
 
     /**
      * Регистрирует нового организатора конференции
-     * TODO: временно регистрация открыта для всех
      *
      * @param request - данные организатора
      * @return CREATED и организатор; CONFLICT если email уже занят
