@@ -28,7 +28,8 @@ public class PersonController {
      * Регистрирует участника
      *
      * @param request - данные участника
-     * @return 201 с созданным участником; 400 если поля некорректны
+     * @return 201 с созданным участником; 400 если поля некорректны; 409 если email
+     *         уже занят
      */
     @PostMapping
     ResponseEntity<PersonResponse> register(@Valid @RequestBody PersonRequest request) {
@@ -40,7 +41,8 @@ public class PersonController {
      * TODO: временно без проверки доступа
      *
      * @param request - данные организатора
-     * @return 201 с созданным организатором; 400 если поля некорректны
+     * @return 201 с созданным организатором; 400 если поля некорректны; 409 если
+     *         email уже занят
      */
     @PostMapping("/organizer")
     ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody PersonRequest request) {
@@ -51,7 +53,8 @@ public class PersonController {
      * Регистрирует члена экспертной комиссии
      *
      * @param request - данные эксперта
-     * @return 201 с созданным экспертом; 400 если поля некорректны
+     * @return 201 с созданным экспертом; 400 если поля некорректны; 409 если email
+     *         уже занят
      */
     @PostMapping("/expert")
     ResponseEntity<PersonResponse> registerExpert(@Valid @RequestBody PersonRequest request) {

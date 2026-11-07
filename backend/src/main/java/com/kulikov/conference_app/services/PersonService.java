@@ -26,7 +26,7 @@ public class PersonService {
      * Регистрирует нового участника конференции
      *
      * @param request - данные участника
-     * @return сохранённый участник
+     * @return CREATED и участник; CONFLICT если email уже занят
      */
     public PersonResult register(PersonRequest request) {
         return create(request, PersonRole.PARTICIPANT);
@@ -37,7 +37,7 @@ public class PersonService {
      * TODO: временно регистрация открыта для всех
      *
      * @param request - данные организатора
-     * @return сохранённый организатор
+     * @return CREATED и организатор; CONFLICT если email уже занят
      */
     public PersonResult registerOrganizer(PersonRequest request) {
         return create(request, PersonRole.ORGANIZER);
@@ -47,7 +47,7 @@ public class PersonService {
      * Регистрирует нового члена экспертной комиссии
      *
      * @param request - данные эксперта
-     * @return сохранённый эксперт
+     * @return CREATED и эксперт; CONFLICT если email уже занят
      */
     public PersonResult registerExpert(PersonRequest request) {
         return create(request, PersonRole.EXPERT);
