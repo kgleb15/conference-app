@@ -22,8 +22,10 @@ public class PersonServiceTests {
 
     @Test
     void test_register_createsParticipant() {
-        Person p = _service.register(request("Иванов Иван Иванович"));
+        PersonResult result = _service.register(request("Иванов Иван Иванович"));
 
+        assertEquals(ServiceStatus.CREATED, result.status());
+        Person p = result.person();
         assertNotNull(p);
         assertNotNull(p.getId());
         assertFalse(p.getId().isBlank());
@@ -44,8 +46,10 @@ public class PersonServiceTests {
 
     @Test
     void test_registerOrganizer_createsOrganizer() {
-        Person p = _service.registerOrganizer(request("Сидоров Сидор Сидорович"));
+        PersonResult result = _service.registerOrganizer(request("Сидоров Сидор Сидорович"));
 
+        assertEquals(ServiceStatus.CREATED, result.status());
+        Person p = result.person();
         assertNotNull(p);
         assertNotNull(p.getId());
         assertFalse(p.getId().isBlank());
@@ -61,8 +65,10 @@ public class PersonServiceTests {
 
     @Test
     void test_registerExpert_createsExpert() {
-        Person p = _service.registerExpert(request("Петров Пётр Петрович"));
+        PersonResult result = _service.registerExpert(request("Петров Пётр Петрович"));
 
+        assertEquals(ServiceStatus.CREATED, result.status());
+        Person p = result.person();
         assertNotNull(p.getId());
         assertFalse(p.getId().isBlank());
         assertEquals("Петров Пётр Петрович", p.getFullName());
@@ -73,5 +79,28 @@ public class PersonServiceTests {
         assertTrue(_repo.findById(p.getId()).isPresent());
         assertTrue(_encoder.matches("password123", p.getPasswordHash()));
         assertEquals(PersonRole.EXPERT, _repo.findById(p.getId()).get().getRole());
+    }
+
+    @Test
+    void test_register_duplicateEmail() {
+        Person first = _service.register(request("Иванов Иван Иванович")).person();
+
+        PersonRequest duplicate = new PersonRequest("Петров Пётр Петрович",
+                "ABC123@Yandex.ru", "89990000000", "password456");
+        PersonResult asParticipant = _service.register(duplicate);
+        PersonResult asOrganizer = _service.registerOrganizer(duplicate);
+        PersonResult asExpert = _service.registerExpert(duplicate);
+
+        assertEquals(ServiceStatus.CONFLICT, asParticipant.status());
+        assertNull(asParticipant.person());
+        assertEquals(ServiceStatus.CONFLICT, asOrganizer.status());
+        assertNull(asOrganizer.person());
+        assertEquals(ServiceStatus.CONFLICT, asExpert.status());
+        assertNull(asExpert.person());
+
+        Person stored = _repo.findByEmail("abc123@yandex.ru").get();
+        assertEquals(first.getId(), stored.getId());
+        assertEquals("Иванов Иван Иванович", stored.getFullName());
+        assertTrue(_encoder.matches("password123", stored.getPasswordHash()));
     }
 }
