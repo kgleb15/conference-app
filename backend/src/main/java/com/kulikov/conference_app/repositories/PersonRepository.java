@@ -21,4 +21,12 @@ public interface PersonRepository {
      * @return сохранённый человек
      */
     Person save(Person person);
+
+    /**
+     * Возвращает человека по email
+     *
+     * @param email - адрес электронной почты
+     * @return найденный человек или empty, если не найден
+     */
+    Optional<Person> findByEmail(String email);
 }

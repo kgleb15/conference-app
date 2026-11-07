@@ -26,6 +26,11 @@ public class DbPersonRepository implements PersonRepository {
     }
 
     @Override
+    public Optional<Person> findByEmail(String email) {
+        return _jpa.findByEmailIgnoreCase(email);
+    }
+
+    @Override
     public Person save(Person person) {
         return _jpa.save(person);
     }

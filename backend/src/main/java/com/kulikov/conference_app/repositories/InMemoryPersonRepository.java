@@ -24,6 +24,16 @@ public class InMemoryPersonRepository implements PersonRepository {
     }
 
     @Override
+    public Optional<Person> findByEmail(String email) {
+        for (Person person : _storage.values()) {
+            if (person.getEmail().equalsIgnoreCase(email)) {
+                return Optional.of(person);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public Person save(Person person) {
         _storage.put(person.getId(), person);
         return person;
