@@ -2,6 +2,7 @@ package com.kulikov.conference_app.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,7 +23,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/persons/**").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/persons").permitAll() // регистрация участника
+                        .requestMatchers("/persons/organizer", "/persons/expert").hasRole("ORGANIZER")
                         .anyRequest().authenticated());
         return http.build();
     }
