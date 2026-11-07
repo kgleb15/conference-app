@@ -26,6 +26,9 @@ public class InitialOrganizerRunner implements ApplicationRunner {
         this._password = password;
     }
 
+    /**
+     * метод вызывается один раз после запуска приложения
+     */
     @Override
     public void run(ApplicationArguments args) {
         if (_email.isBlank() || _password.isBlank()) {
