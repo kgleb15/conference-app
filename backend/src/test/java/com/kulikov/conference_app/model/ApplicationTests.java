@@ -29,7 +29,7 @@ public class ApplicationTests {
     }
 
     private ApplicationRequest request(String title) {
-        return new ApplicationRequest(title, "Текст тезиса", "ПрИн-467",
+        return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
                 ApplicantCategory.STUDENT, FundingType.BUDGET);
     }
 
@@ -47,6 +47,7 @@ public class ApplicationTests {
 
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
 
         assertNotNull(a.getOwner());
         assertEquals(owner.getId(), a.getOwner().getId());
@@ -75,11 +76,12 @@ public class ApplicationTests {
         Application a = new Application(owner, request("Старая"));
         Instant createdAt = a.getCreatedAt();
 
-        a.update(new ApplicationRequest("Новая", "Новый текст", "ПрИн-468",
+        a.update(new ApplicationRequest("Новая", "Новая аннотация", "Новый текст", "ПрИн-468",
                 ApplicantCategory.COLLEGE_STUDENT, FundingType.CONTRACT));
 
         assertEquals("Новая", a.getTitle());
         assertEquals("Новый текст", a.getThesisText());
+        assertEquals("Новая аннотация", a.getAnnotation());
         assertEquals("ПрИн-468", a.getGroupName());
         assertEquals(ApplicantCategory.COLLEGE_STUDENT, a.getApplicantCategory());
         assertEquals(FundingType.CONTRACT, a.getFundingType());
@@ -111,6 +113,7 @@ public class ApplicationTests {
 
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
         assertEquals("ПрИн-467", a.getGroupName());
@@ -151,6 +154,7 @@ public class ApplicationTests {
 
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
         assertEquals("ПрИн-467", a.getGroupName());
@@ -169,12 +173,12 @@ public class ApplicationTests {
         Person owner = owner();
         Application a = new Application(owner, request("Тема"));
 
-        a.update(new ApplicationRequest("Новая", "Новый текст", "ПрИн-467",
+        a.update(new ApplicationRequest("Новая", "Новая аннотация", "Новый текст", "ПрИн-467",
                 ApplicantCategory.STUDENT, FundingType.BUDGET));
         assertEquals(1, a.getEditCount());
         assertNotNull(a.getLastEditedAt());
 
-        a.update(new ApplicationRequest("Ещё", "Ещё текст", "ПрИн-467",
+        a.update(new ApplicationRequest("Ещё", "Новая аннотация", "Ещё текст", "ПрИн-467",
                 ApplicantCategory.STUDENT, FundingType.BUDGET));
         assertEquals(2, a.getEditCount());
 
@@ -184,6 +188,7 @@ public class ApplicationTests {
 
         assertEquals("Ещё", a.getTitle());
         assertEquals("Ещё текст", a.getThesisText());
+        assertEquals("Новая аннотация", a.getAnnotation());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
         assertEquals("ПрИн-467", a.getGroupName());
@@ -212,6 +217,7 @@ public class ApplicationTests {
 
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals(createdAt, a.getCreatedAt());
         assertEquals(0, a.getEditCount());
@@ -238,6 +244,7 @@ public class ApplicationTests {
 
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(0, a.getEditCount());
         assertNull(a.getLastEditedAt());
         assertNull(a.getWithdrawnAt());
@@ -262,6 +269,7 @@ public class ApplicationTests {
         assertNull(a.getWithdrawnAt());
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
 
         assertTrue(a.canBeEdited());
         assertFalse(a.canBeModerated());
@@ -280,6 +288,7 @@ public class ApplicationTests {
 
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(0, a.getEditCount());
         assertNull(a.getLastEditedAt());
         assertNull(a.getWithdrawnAt());
@@ -291,12 +300,13 @@ public class ApplicationTests {
         Application a = new Application(owner(), request("Тема"));
         a.requestRevision(org, "Допишите", NOW);
 
-        a.update(new ApplicationRequest("Доработанная", "Новый текст", "ПрИн-467",
+        a.update(new ApplicationRequest("Доработанная", "Новая аннотация", "Новый текст", "ПрИн-467",
                 ApplicantCategory.STUDENT, FundingType.BUDGET));
 
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
         assertEquals("Доработанная", a.getTitle());
         assertEquals("Новый текст", a.getThesisText());
+        assertEquals("Новая аннотация", a.getAnnotation());
         assertEquals(1, a.getEditCount());
         assertNotNull(a.getLastEditedAt());
         assertNull(a.getWithdrawnAt());

@@ -76,7 +76,7 @@ public class ApplicationServiceTests {
 
     /** Создаёт запрос заявки с заданным заголовком */
     private ApplicationRequest request(String title) {
-        return new ApplicationRequest(title, "Текст тезиса", "ПрИн-467",
+        return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
                 ApplicantCategory.STUDENT, FundingType.BUDGET);
     }
 
@@ -127,6 +127,7 @@ public class ApplicationServiceTests {
         assertEquals(first.getUpdatedAt(), a.getUpdatedAt());
         assertEquals("Первая", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
 
         assertNotNull(a.getOwner());
         assertEquals(owner.getId(), a.getOwner().getId());
@@ -186,6 +187,7 @@ public class ApplicationServiceTests {
         assertEquals(created.getId(), a.getId());
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
@@ -238,6 +240,7 @@ public class ApplicationServiceTests {
         assertNotNull(result.application());
         assertEquals("Тема", result.application().getTitle());
         assertEquals("Текст тезиса", result.application().getThesisText());
+        assertEquals("Аннотация", result.application().getAnnotation());
         assertEquals(ApplicationStatus.SUBMITTED, result.application().getStatus());
 
         assertEquals(owner.getId(), result.application().getOwner().getId());
@@ -300,6 +303,7 @@ public class ApplicationServiceTests {
         assertEquals(created.getId(), result.application().getId());
         assertEquals("Новая", result.application().getTitle());
         assertEquals("Текст тезиса", result.application().getThesisText());
+        assertEquals("Аннотация", result.application().getAnnotation());
         assertEquals(ApplicationStatus.SUBMITTED, result.application().getStatus());
 
         assertEquals(owner.getId(), result.application().getOwner().getId());
@@ -327,6 +331,7 @@ public class ApplicationServiceTests {
         assertEquals(created.getId(), a.getId());
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals("Иванов Иван Иванович", a.getOwner().getFullName());
         assertEquals("ПрИн-467", a.getGroupName());
@@ -359,6 +364,7 @@ public class ApplicationServiceTests {
         ServiceResult stored = after.get(created.getId());
         assertEquals("Тема", stored.application().getTitle());
         assertEquals("Текст тезиса", stored.application().getThesisText());
+        assertEquals("Аннотация", stored.application().getAnnotation());
         assertEquals(owner.getId(), stored.application().getOwner().getId());
         assertEquals(1, count(after));
     }
@@ -396,6 +402,7 @@ public class ApplicationServiceTests {
         assertNotNull(result.application());
         assertEquals(ApplicationStatus.WITHDRAWN, result.application().getStatus());
         assertEquals("Текст тезиса", result.application().getThesisText());
+        assertEquals("Аннотация", result.application().getAnnotation());
         assertEquals(owner.getId(), result.application().getOwner().getId());
         assertEquals(1, count(service));
     }
@@ -431,6 +438,7 @@ public class ApplicationServiceTests {
         assertEquals(ApplicationStatus.WITHDRAWN, result2.application().getStatus());
 
         assertEquals("Текст тезиса", result2.application().getThesisText());
+        assertEquals("Аннотация", result2.application().getAnnotation());
         assertEquals(owner.getId(), result2.application().getOwner().getId());
         assertEquals(1, count(service));
     }
@@ -451,6 +459,7 @@ public class ApplicationServiceTests {
         ServiceResult stored = after.get(created.getId());
         assertEquals(ApplicationStatus.SUBMITTED, stored.application().getStatus());
         assertEquals("Текст тезиса", stored.application().getThesisText());
+        assertEquals("Аннотация", stored.application().getAnnotation());
         assertEquals(owner.getId(), stored.application().getOwner().getId());
         assertEquals(1, count(after));
     }
@@ -514,6 +523,7 @@ public class ApplicationServiceTests {
         Application stored = ownerService.get(created.getId()).application();
         assertEquals("Тема", stored.getTitle());
         assertEquals("Текст тезиса", stored.getThesisText());
+        assertEquals("Аннотация", stored.getAnnotation());
         assertEquals(ApplicationStatus.SUBMITTED, stored.getStatus());
         assertEquals(0, stored.getEditCount());
         assertNull(stored.getLastEditedAt());
@@ -645,6 +655,7 @@ public class ApplicationServiceTests {
         assertEquals(created.getId(), result.application().getId());
         assertEquals("Доработанная", result.application().getTitle());
         assertEquals("Текст тезиса", result.application().getThesisText());
+        assertEquals("Аннотация", result.application().getAnnotation());
         assertEquals(ApplicationStatus.SUBMITTED, result.application().getStatus());
         assertEquals(1, result.application().getEditCount());
         assertNotNull(result.application().getLastEditedAt());
@@ -777,6 +788,7 @@ public class ApplicationServiceTests {
         assertEquals(PersonRole.ORGANIZER, a.getDecidedBy().getRole());
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals(owner.getId(), a.getOwner().getId());
         assertEquals(0, a.getEditCount());
         assertNull(a.getWithdrawnAt());
@@ -924,6 +936,7 @@ public class ApplicationServiceTests {
         assertEquals(ApplicationStatus.APPROVED, a.getStatus());
         assertEquals("Утверждённая", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals("Принята", a.getModerationComment());
         assertEquals(Instant.parse(BEFORE), a.getDecidedAt());
         assertEquals(organizer.getId(), a.getDecidedBy().getId());
@@ -994,6 +1007,7 @@ public class ApplicationServiceTests {
         assertEquals(ApplicationStatus.APPROVED, a.getStatus());
         assertEquals("Тема", a.getTitle());
         assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
         assertEquals("Принята", a.getModerationComment());
         assertEquals(Instant.parse(BEFORE), a.getDecidedAt());
         assertEquals(organizer.getId(), a.getDecidedBy().getId());
