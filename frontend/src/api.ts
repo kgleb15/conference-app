@@ -1,5 +1,5 @@
-import type { Application, ApplicationStatus } from './types'
-import { getAuthHeader, logout, setCredentials } from './auth'
+import type { Application, ApplicationStatus, Person } from './types'
+import { getAuthHeader, logout, savePerson, setCredentials } from './auth'
 
 export type StatusFilter = 'ALL' | ApplicationStatus
 export type EditedFilter = 'ALL' | 'true' | 'false'
@@ -17,9 +17,14 @@ export class ApiError extends Error {
 
 /* Общий запрос: добавляет данные входа и проверяет код ответа */
 async function request(path: string, method = 'GET', body?: unknown) {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    const auth = getAuthHeader()
+    if (auth !== '') {
+        headers['Authorization'] = auth
+    }
     const res = await fetch(path, {
         method,
-        headers: { 'Authorization': getAuthHeader(), 'Content-Type': 'application/json' },
+        headers,
         body: body === undefined ? undefined : JSON.stringify(body),
     })
     if (!res.ok) {
@@ -28,11 +33,13 @@ async function request(path: string, method = 'GET', body?: unknown) {
     return res.json()
 }
 
-/* Вход: запоминаем данные и проверяем их запросом, доступным любой роли */
-export async function login(email: string, password: string): Promise<void> {
+/* Вход */
+export async function login(email: string, password: string): Promise<Person> {
     try {
         setCredentials(email, password)
-        await request('/applications')
+        const person: Person = await request('/persons/me')
+        savePerson(person)
+        return person
     } catch (e) {
         logout()
         throw e
