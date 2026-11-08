@@ -64,3 +64,7 @@ export async function moderateApplication(id: string, action: DecisionAction, co
 export async function submitApplication(data: Partial<Application>): Promise<void> {
     await request('/applications', 'POST', data)
 }
+
+export async function register(data: { fullName: string, email: string, phone: string, password: string }): Promise<void> {
+    await request('/persons', 'POST', data)
+}

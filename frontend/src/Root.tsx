@@ -1,41 +1,45 @@
-import { Button } from '@mui/material'
+import type { ReactElement } from 'react'
 import App from './App'
+import Header from './Header'
+import HomePage from './HomePage'
 import LoginPage from './LoginPage'
+import RegisterPage from './RegisterPage'
 import SubmitPage from './SubmitPage'
-import { getPerson, homePath, logout } from './auth'
+import { getPerson, homePath } from './auth'
+
+function redirect(path: string) {
+    window.location.replace(path)
+    return null
+}
 
 export default function Root() {
     const path = window.location.pathname
     const person = getPerson()
+    let page: ReactElement | null = null
 
-    if (path === '/login') {
-        return <LoginPage />
-    }
-    if (person === null) {
-        window.location.replace('/login')
-        return null
-    }
-
-    // Каждая страница доступна только своей роли
-    let page = null
-    if (path === '/submit' && person.role === 'PARTICIPANT') {
+    if (path === '/' || path === '/login' || path === '/register') {
+        // страницы для тех, кто ещё не вошёл
+        if (person) {
+            return redirect(homePath(person.role))
+        }
+        if (path === '/') page = <HomePage />
+        else if (path === '/login') page = <LoginPage />
+        else page = <RegisterPage />
+    } else if (person === null) {
+        return redirect('/login')
+    } else if (path === '/submit' && person.role === 'PARTICIPANT') {
         page = <SubmitPage />
     } else if (path === '/moderation' && person.role === 'ORGANIZER') {
         page = <App />
     } else if (path === '/review' && person.role === 'EXPERT') {
         page = <h1 className="page">Раздел эксперта в разработке</h1>
-    }
-    if (page === null) {
-        window.location.replace(homePath(person.role))
-        return null
+    } else {
+        // Чужая или несуществующая страница
+        return redirect(homePath(person.role))
     }
 
     return (<>
-        <div className="person">
-            <Button variant="outlined" onClick={() => { logout(); window.location.href = '/login' }}>
-                Выйти
-            </Button>
-        </div>
+        <Header />
         {page}
     </>)
 }
