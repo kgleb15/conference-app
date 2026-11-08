@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material'
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { ApiError, fetchOrganizerApplications } from './api'
-import { getPersonId, setPersonId } from './auth'
 import type { EditedFilter, StatusFilter } from './api'
 import type { Application, ApplicationStatus } from './types'
 import ApplicationDialog from './ApplicationDialog'
@@ -14,7 +13,7 @@ function formatDate(iso: string | null): string {
 
 function errorText(e: unknown): string {
   if (e instanceof ApiError && e.status === 401) {
-    return 'id не указан (неизвестен)'
+    return 'Нужно войти заново'
   }
   if (e instanceof ApiError && e.status === 403) {
     return 'У этого пользователя нет прав организатора'
@@ -26,8 +25,6 @@ export default function App() {
   const [status, setStatus] = useState<StatusFilter>('ALL')
   const [edited, setEdited] = useState<EditedFilter>('ALL')
   const [data, setData] = useState<Application[] | null>(null)
-  const [personId, setPersonIdState] = useState(getPersonId()) // применённый id
-  const [draftId, setDraftId] = useState(getPersonId()) // то, что набрано в поле
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Application | null>(null) // открытая заявка
   const [reload, setReload] = useState(0) // увеличиваем, чтобы заново загрузить список
@@ -42,20 +39,11 @@ export default function App() {
         setData(null)
         setError(errorText(e))
       })
-  }, [status, edited, personId, reload])
+  }, [status, edited, reload])
 
   return (
     <div className="page">
       <h1>Заявки на конференцию</h1>
-
-      <div className="person">
-        <TextField size="small" label="Id организатора" className="person-input"
-          value={draftId} onChange={(e) => setDraftId(e.target.value)} />
-        <Button variant="contained" onClick={() => {
-          setPersonId(draftId)
-          setPersonIdState(draftId.trim())
-        }}>Применить</Button>
-      </div>
 
       {error && <p className="error">{error}</p>}
 

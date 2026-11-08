@@ -1,5 +1,5 @@
 import type { Application, ApplicationStatus } from './types'
-import { getPersonId } from './auth'
+import { getAuthHeader, logout, setCredentials } from './auth'
 
 export type StatusFilter = 'ALL' | ApplicationStatus
 export type EditedFilter = 'ALL' | 'true' | 'false'
@@ -15,9 +15,31 @@ export class ApiError extends Error {
     }
 }
 
-export async function fetchOrganizerApplications(status: StatusFilter, edited: EditedFilter,): Promise<Application[]> {
+/* Общий запрос: добавляет данные входа и проверяет код ответа */
+async function request(path: string, method = 'GET', body?: unknown) {
+    const res = await fetch(path, {
+        method,
+        headers: { 'Authorization': getAuthHeader(), 'Content-Type': 'application/json' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+    })
+    if (!res.ok) {
+        throw new ApiError(res.status)
+    }
+    return res.json()
+}
 
-    // Строим строку с параметрами
+/* Вход: запоминаем данные и проверяем их запросом, доступным любой роли */
+export async function login(email: string, password: string): Promise<void> {
+    try {
+        setCredentials(email, password)
+        await request('/applications')
+    } catch (e) {
+        logout()
+        throw e
+    }
+}
+
+export function fetchOrganizerApplications(status: StatusFilter, edited: EditedFilter): Promise<Application[]> {
     const params = new URLSearchParams()
     if (status !== 'ALL') {
         params.set('status', status);
@@ -25,34 +47,13 @@ export async function fetchOrganizerApplications(status: StatusFilter, edited: E
     if (edited !== 'ALL') {
         params.set('edited', edited);
     }
-
-    const res = await fetch(`/organizer/applications?${params}`, {
-        headers: { 'Person-Id': getPersonId() },
-    }) // http запрос
-    if (!res.ok) {
-        throw new ApiError(res.status)
-    }
-    return res.json() // Читаем тело ответа и парсим json
+    return request(`/organizer/applications?${params}`)
 }
 
 export async function moderateApplication(id: string, action: DecisionAction, comment: string): Promise<void> {
-    const res = await fetch(`/organizer/applications/${id}/${action}`, {
-        method: 'PATCH', // тип метода
-        headers: { 'Person-Id': getPersonId(), 'Content-Type': 'application/json' }, // заголовки
-        body: JSON.stringify({ comment }),  // комментарий в тело запроса
-    })
-    if (!res.ok) {
-        throw new ApiError(res.status)
-    }
+    await request(`/organizer/applications/${id}/${action}`, 'PATCH', { comment })
 }
 
-export async function submitApplication(personId: string, title: string, thesisText: string): Promise<void> {
-    const res = await fetch('/applications', {
-        method: 'POST', // тип метода
-        headers: { 'Person-Id': personId.trim(), 'Content-Type': 'application/json' }, // заголовки
-        body: JSON.stringify({ title, thesisText }),  // назание и тезисы в тело запроса
-    })
-    if (!res.ok) {
-        throw new ApiError(res.status)
-    }
+export async function submitApplication(data: Partial<Application>): Promise<void> {
+    await request('/applications', 'POST', data)
 }

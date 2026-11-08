@@ -1,11 +1,15 @@
-const KEY = 'personId'
+const KEY = 'authHeader'
 
-/* Возвращает сохранённый id пользователя (пустая строка, если не задан) */
-export function getPersonId(): string {
-    return localStorage.getItem(KEY) ?? ''
+/* Запоминает данные входа на время работы вкладки */
+export function setCredentials(email: string, password: string): void {
+    sessionStorage.setItem(KEY, 'Basic ' + btoa(`${email.trim()}:${password}`))
 }
 
-/* Сохраняет id пользователя */
-export function setPersonId(id: string): void {
-    localStorage.setItem(KEY, id.trim())
+/* Значение заголовка Authorization */
+export function getAuthHeader(): string {
+    return sessionStorage.getItem(KEY) ?? ''
+}
+
+export function logout(): void {
+    sessionStorage.removeItem(KEY)
 }
