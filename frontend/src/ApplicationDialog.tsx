@@ -54,11 +54,13 @@ export default function ApplicationDialog(props: Props) {
             {application && (<>
                 <DialogTitle>{application.title}</DialogTitle>
                 <DialogContent>
-                    <p><b>Автор:</b> {application.owner.fullName}, {application.owner.groupName}</p>
+                    <p><b>Автор:</b> {application.owner.fullName}, {application.groupName}</p>
+                    <p><b>Категория:</b> {application.applicantCategory}, {application.fundingType}</p>
                     <p><b>Статус:</b> {STATUS_LABELS[application.status]}</p>
                     {application.moderationComment && (
                         <p><b>Комментарий организатора:</b> {application.moderationComment}</p>
                     )}
+                    <p><b>Аннотация:</b> {application.annotation}</p>
                     <p><b>Текст тезисов:</b></p> <div>{application.thesisText}</div>
                     {application.status === 'SUBMITTED' && (
                         <TextField label="Комментарий" fullWidth margin="normal" value={comment} onChange={(e) => setComment(e.target.value)} />

@@ -6,8 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/organizer': 'http://localhost:8080',
+      '/persons': 'http://localhost:8080',
       '/applications': 'http://localhost:8080',
+      '/organizer': 'http://localhost:8080',
+      '/expert': 'http://localhost:8080',
     },
   },
 })

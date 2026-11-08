@@ -3,16 +3,19 @@ export type ApplicationStatus = 'SUBMITTED' | 'WITHDRAWN' | 'APPROVED' | 'REJECT
 export interface Person {
   id: string
   fullName: string
-  groupName: string
   email: string
   phone: string
-  role: 'PARTICIPANT' | 'ORGANIZER'
+  role: 'PARTICIPANT' | 'ORGANIZER' | 'EXPERT'
 }
 
 export interface Application {
   id: string
   title: string
+  annotation: string
   thesisText: string
+  groupName: string
+  applicantCategory: 'STUDENT' | 'COLLEGE_STUDENT' | 'SCHOOLCHILD'
+  fundingType: 'BUDGET' | 'CONTRACT'
   status: ApplicationStatus
   createdAt: string
   updatedAt: string

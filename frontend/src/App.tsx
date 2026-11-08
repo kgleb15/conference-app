@@ -96,7 +96,7 @@ export default function App() {
             {data.map((a) => (
               <tr key={a.id} className="row" onClick={() => setSelected(a)}>
                 <td>{a.title}</td>
-                <td> {a.owner.fullName}<br />{a.owner.groupName}</td>
+                <td> {a.owner.fullName}<br />{a.groupName}</td>
                 <td>{a.owner.email}<br />{a.owner.phone}</td>
                 <td className={`status status-${a.status}`}>{STATUS_LABELS[a.status]}</td>
                 <td>{formatDate(a.createdAt)}</td>
