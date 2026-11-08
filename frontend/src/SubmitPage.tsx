@@ -6,13 +6,13 @@ import './App.css'
 
 function errorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 400) {
-        return 'Заполните название и текст тезисов'
+        return 'Заполните все поля'
     }
     if (e instanceof ApiError && e.status === 401) {
-        return 'Участник с таким id не найден'
+        return 'Нужно войти заново'
     }
     if (e instanceof ApiError && e.status === 403) {
-        return 'Дата некорректна или пользователь не участник'
+        return 'Дата или роль некорректны'
     }
     if (e instanceof ApiError && e.status === 409) {
         return 'Превышен лимит заявок'
