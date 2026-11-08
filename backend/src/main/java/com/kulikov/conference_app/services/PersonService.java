@@ -7,6 +7,7 @@ import com.kulikov.conference_app.model.Person;
 import com.kulikov.conference_app.model.PersonRequest;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.PersonRepository;
+import java.util.Optional;
 
 /**
  * Сервис работы с людьми
@@ -50,6 +51,16 @@ public class PersonService {
      */
     public PersonResult registerExpert(PersonRequest request) {
         return create(request, PersonRole.EXPERT);
+    }
+
+    /**
+     * Находит человека по id
+     *
+     * @param id - идентификатор человека
+     * @return человек или empty, если не найден
+     */
+    public Optional<Person> findById(String id) {
+        return _personRepository.findById(id);
     }
 
     /**

@@ -6,6 +6,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.Optional;
+import org.springframework.web.bind.annotation.GetMapping;
+import com.kulikov.conference_app.auth.CurrentUser;
+import com.kulikov.conference_app.model.Person;
 
 import com.kulikov.conference_app.model.PersonRequest;
 import com.kulikov.conference_app.model.PersonResponse;
@@ -19,9 +23,25 @@ import jakarta.validation.Valid;
 public class PersonController {
 
     private final PersonService _personService;
+    private final CurrentUser _currentUser;
 
-    public PersonController(PersonService personService) {
+    public PersonController(PersonService personService, CurrentUser currentUser) {
         this._personService = personService;
+        this._currentUser = currentUser;
+    }
+
+    /**
+     * Возвращает данные человека, который вошёл
+     *
+     * @return 200 с данными; 401 если запрос не идентифицирован
+     */
+    @GetMapping("/me")
+    ResponseEntity<PersonResponse> me() {
+        Optional<Person> person = _currentUser.personId().flatMap(_personService::findById);
+        if (person.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(PersonResponse.from(person.get()), HttpStatus.OK);
     }
 
     /**
