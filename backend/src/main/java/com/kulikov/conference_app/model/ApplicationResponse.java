@@ -5,7 +5,7 @@ import java.time.Instant;
 /**
  * Ответ API с данными заявки
  */
-public record ApplicationResponse(String id, String title, String thesisText,
+public record ApplicationResponse(String id, String title, String annotation, String thesisText,
         String groupName, ApplicantCategory applicantCategory, FundingType fundingType,
         ApplicationStatus status, Instant createdAt, Instant updatedAt,
         int editCount, Instant lastEditedAt, Instant withdrawnAt, PersonResponse owner,
@@ -16,7 +16,7 @@ public record ApplicationResponse(String id, String title, String thesisText,
      */
     public static ApplicationResponse from(Application a) {
         String decidedByName = a.getDecidedBy() == null ? null : a.getDecidedBy().getFullName();
-        return new ApplicationResponse(a.getId(), a.getTitle(), a.getThesisText(),
+        return new ApplicationResponse(a.getId(), a.getTitle(), a.getAnnotation(), a.getThesisText(),
                 a.getGroupName(), a.getApplicantCategory(), a.getFundingType(),
                 a.getStatus(), a.getCreatedAt(), a.getUpdatedAt(),
                 a.getEditCount(), a.getLastEditedAt(), a.getWithdrawnAt(), PersonResponse.from(a.getOwner()),

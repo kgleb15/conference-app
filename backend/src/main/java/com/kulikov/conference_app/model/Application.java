@@ -28,6 +28,9 @@ public class Application {
     private String title;
 
     @Column(columnDefinition = "text")
+    private String annotation;
+
+    @Column(columnDefinition = "text")
     private String thesisText;
 
     private String groupName;
@@ -100,6 +103,7 @@ public class Application {
      */
     private void apply(ApplicationRequest r) {
         title = r.title();
+        annotation = r.annotation();
         thesisText = r.thesisText();
         groupName = r.groupName();
         applicantCategory = r.applicantCategory();
@@ -188,6 +192,10 @@ public class Application {
 
     public String getTitle() {
         return title;
+    }
+
+    public String getAnnotation() {
+        return annotation;
     }
 
     public String getThesisText() {
