@@ -96,8 +96,19 @@ td {
 body {
   font-family: Roboto, Helvetica, Arial, sans-serif;
   color: #212121;
+  margin: 0;
 }
 
 .thesis {
   margin-bottom: 24px;
+}
+
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-main {
+  flex: 1;
 }

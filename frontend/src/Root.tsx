@@ -8,6 +8,8 @@ import SubmitPage from '../src/pages/SubmitPage'
 import MyApplicationsPage from '../src/pages/MyApplicationsPage'
 import ExpertPage from '../src/pages/ExpertPage'
 import AddExpertPage from '../src/pages//AddExpertPage'
+import Footer from './components/Footer'
+import './styles/App.css'
 import { getPerson, homePath } from '../src/api/auth'
 
 function redirect(path: string) {
@@ -46,7 +48,10 @@ export default function Root() {
     }
 
     return (<>
-        <Header />
-        {page}
+        <div className="layout">
+            <Header />
+            <main className="layout-main">{page}</main>
+            <Footer />
+        </div>
     </>)
 }
