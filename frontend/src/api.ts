@@ -84,3 +84,7 @@ export async function withdrawApplication(id: string): Promise<void> {
 export function fetchExpertApplications(): Promise<ExpertApplication[]> {
     return request('/expert/applications')
 }
+
+export async function registerExpert(data: Parameters<typeof register>[0]): Promise<void> {
+    await request('/persons/expert', 'POST', data)
+}
