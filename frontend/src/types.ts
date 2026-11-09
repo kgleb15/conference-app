@@ -31,3 +31,12 @@ export interface Application {
 /* Поля, которые участник заполняет в заявке */
 export type ApplicationFields = Pick<Application,
   'title' | 'annotation' | 'thesisText' | 'groupName' | 'applicantCategory' | 'fundingType'>
+
+/* Заявка как её видит эксперт */
+export interface ExpertApplication {
+  id: string
+  title: string
+  annotation: string
+  thesisText: string
+  applicantCategory: Application['applicantCategory']
+}
