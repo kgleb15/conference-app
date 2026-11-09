@@ -6,6 +6,7 @@ import LoginPage from './LoginPage'
 import RegisterPage from './RegisterPage'
 import SubmitPage from './SubmitPage'
 import MyApplicationsPage from './MyApplicationsPage'
+import ExpertPage from './ExpertPage'
 import { getPerson, homePath } from './auth'
 
 function redirect(path: string) {
@@ -35,7 +36,7 @@ export default function Root() {
     } else if (path === '/moderation' && person.role === 'ORGANIZER') {
         page = <App />
     } else if (path === '/review' && person.role === 'EXPERT') {
-        page = <h1 className="page">Раздел эксперта в разработке</h1>
+        page = <ExpertPage />
     } else {
         // Чужая или несуществующая страница
         return redirect(homePath(person.role))
