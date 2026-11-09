@@ -1,20 +1,47 @@
 import { Button } from '@mui/material'
-import '../styles/App.css'
+import Accordion from '../components/Accordion'
+import './HomePage.css'
+
+const FAQ = [
+    {
+        question: 'Кто может участвовать в конкурсе?',
+        answer: 'Студенты ВолгГТУ, студенты колледжей и школьники Волгограда и области',
+    },
+    {
+        question: 'Сколько авторов может быть у работы?',
+        answer: 'Не более двух авторов и не более двух научных руководителей.',
+    },
+    {
+        question: 'Сколько работ можно подать?',
+        answer: 'Один человек может быть автором или соавтором не более чем двух работ в рамках одного направления конкурса.',
+    },
+    {
+        question: 'Как проходит выступление?',
+        answer: 'По принятой работе делается авторский доклад на 5-7 минут. Чертежи, графики и программные продукты демонстрируются при докладе.',
+    },
+]
 
 export default function HomePage() {
     return (
-        <div className="page">
+        <div className="home">
             <h1>Конкурс научно-исследовательских работ ВолгГТУ</h1>
-            <p>
+            <p className="home_lead">
                 Конкурс проходит по 17 направлениям. Участвовать могут студенты ВолгГТУ, студенты колледжей
                 и школьники Волгоградской области. Зарегистрируйтесь, подайте заявку на свою работу
-                и следите за её статусом в личном кабинете.
             </p>
-            <img src="/hero.jpg" alt="ВолгГТУ" style={{ maxWidth: '100%' }} />
-            <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
-                <Button variant="contained" href="/login">Войти</Button>
-                <Button variant="outlined" href="/register">Зарегистрироваться</Button>
+            <img className="home_image" src="/hero.jpg" alt="ВолгГТУ" />
+
+            <div className="home_cta">
+                <h2>Примите участие</h2>
+                <p>Войдите, если у вас уже есть аккаунт, или зарегистрируйтесь за минуту.</p>
+                <div className="home_cta_buttons">
+                    <Button variant="contained" size="large" href="/login">Войти</Button>
+                    <Button variant="outlined" size="large" href="/register">Зарегистрироваться</Button>
+                </div>
             </div>
+
+            <h2>Частые вопросы</h2>
+            <Accordion items={FAQ} />
         </div>
     )
 }
