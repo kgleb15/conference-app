@@ -1,4 +1,4 @@
-import type { Application, ApplicationStatus, Person } from './types'
+import type { Application, ApplicationFields, ApplicationStatus, Person } from './types'
 import { getAuthHeader, logout, savePerson, setCredentials } from './auth'
 
 export type StatusFilter = 'ALL' | ApplicationStatus
@@ -61,10 +61,22 @@ export async function moderateApplication(id: string, action: DecisionAction, co
     await request(`/organizer/applications/${id}/${action}`, 'PATCH', { comment })
 }
 
-export async function submitApplication(data: Partial<Application>): Promise<void> {
+export async function submitApplication(data: ApplicationFields): Promise<void> {
     await request('/applications', 'POST', data)
 }
 
 export async function register(data: { fullName: string, email: string, phone: string, password: string }): Promise<void> {
     await request('/persons', 'POST', data)
+}
+
+export function fetchMyApplications(): Promise<Application[]> {
+    return request('/applications')
+}
+
+export async function editApplication(id: string, data: ApplicationFields): Promise<void> {
+    await request(`/applications/${id}`, 'PUT', data)
+}
+
+export async function withdrawApplication(id: string): Promise<void> {
+    await request(`/applications/${id}/withdraw`, 'PATCH')
 }

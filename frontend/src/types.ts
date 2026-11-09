@@ -27,3 +27,7 @@ export interface Application {
   decidedAt: string | null
   decidedByName: string | null
 }
+
+/* Поля, которые участник заполняет в заявке */
+export type ApplicationFields = Pick<Application,
+  'title' | 'annotation' | 'thesisText' | 'groupName' | 'applicantCategory' | 'fundingType'>
