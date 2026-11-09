@@ -4,12 +4,9 @@ import { ApiError, fetchOrganizerApplications } from './api'
 import type { EditedFilter, StatusFilter } from './api'
 import type { Application, ApplicationStatus } from './types'
 import ApplicationDialog from './ApplicationDialog'
+import { formatDate } from './utils'
 import { STATUS_LABELS } from './statuses'
 import './App.css'
-
-function formatDate(iso: string | null): string {
-  return iso ? new Date(iso).toLocaleString() : '--'
-}
 
 function errorText(e: unknown): string {
   if (e instanceof ApiError && e.status === 401) {
