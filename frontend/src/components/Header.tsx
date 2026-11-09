@@ -1,5 +1,5 @@
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material'
-import { getPerson, logout } from './auth'
+import { getPerson, logout } from '../api/auth'
 
 const ROLE_LABELS = { PARTICIPANT: 'участник', ORGANIZER: 'организатор', EXPERT: 'эксперт' }
 

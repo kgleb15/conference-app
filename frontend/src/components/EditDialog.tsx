@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import ApplicationForm from './ApplicationForm'
-import { editApplication } from './api'
-import type { Application } from './types'
+import { editApplication } from '../api/api'
+import type { Application } from '../common/types'
 
 type Props = {
     application: Application | null

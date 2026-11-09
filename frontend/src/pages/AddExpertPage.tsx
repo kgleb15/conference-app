@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, TextField } from '@mui/material'
-import { ApiError, registerExpert } from './api'
-import './App.css'
+import { ApiError, registerExpert } from '../api/api'
+import '../styles/App.css'
 
 const EMPTY_FORM = { fullName: '', email: '', phone: '', password: '' }
 

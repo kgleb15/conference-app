@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
-import { ApiError, fetchOrganizerApplications } from './api'
-import type { EditedFilter, StatusFilter } from './api'
-import type { Application, ApplicationStatus } from './types'
-import ApplicationDialog from './ApplicationDialog'
-import { formatDate } from './utils'
-import { STATUS_LABELS } from './statuses'
-import './App.css'
+import { ApiError, fetchOrganizerApplications } from '../api/api'
+import type { EditedFilter, StatusFilter } from '../api/api'
+import type { Application, ApplicationStatus } from '../common/types'
+import ApplicationDialog from '../components/ApplicationDialog'
+import { formatDate } from '../common/utils'
+import { STATUS_LABELS } from '../common/statuses'
+import '../styles/App.css'
 
 function errorText(e: unknown): string {
   if (e instanceof ApiError && e.status === 401) {

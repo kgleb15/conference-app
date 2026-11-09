@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@mui/material'
-import { ApiError, fetchMyApplications, withdrawApplication } from './api'
-import EditDialog from './EditDialog'
-import { STATUS_LABELS } from './statuses'
-import { formatDate } from './utils'
-import type { Application } from './types'
-import './App.css'
+import { ApiError, fetchMyApplications, withdrawApplication } from '../api/api'
+import EditDialog from '../components/EditDialog'
+import { STATUS_LABELS } from '../common/statuses'
+import { formatDate } from '../common/utils'
+import type { Application } from '../common/types'
+import '../styles/App.css'
 
 function withdrawErrorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 403) {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, TextField } from '@mui/material'
-import { ApiError, login, register } from './api'
-import './App.css'
+import { ApiError, login, register } from '../api/api'
+import '../styles/App.css'
 
 function errorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 400) {

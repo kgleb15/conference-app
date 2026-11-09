@@ -1,4 +1,4 @@
-import type { Application, ApplicationFields, ApplicationStatus, ExpertApplication, Person } from './types'
+import type { Application, ApplicationFields, ApplicationStatus, ExpertApplication, Person } from '../common/types'
 import { getAuthHeader, logout, savePerson, setCredentials } from './auth'
 
 export type StatusFilter = 'ALL' | ApplicationStatus

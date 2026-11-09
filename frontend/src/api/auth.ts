@@ -1,4 +1,4 @@
-import type { Person } from './types'
+import type { Person } from '../common/types'
 
 const AUTH_KEY = 'authHeader'
 const PERSON_KEY = 'person'

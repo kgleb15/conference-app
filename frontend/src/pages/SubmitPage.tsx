@@ -1,7 +1,7 @@
-import ApplicationForm from './ApplicationForm'
-import { submitApplication } from './api'
-import type { ApplicationFields } from './types'
-import './App.css'
+import ApplicationForm from '../components/ApplicationForm'
+import { submitApplication } from '../api/api'
+import type { ApplicationFields } from '../common/types'
+import '../styles/App.css'
 
 const EMPTY_FORM: ApplicationFields = {
     title: '', annotation: '', thesisText: '', groupName: '',

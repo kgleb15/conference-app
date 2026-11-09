@@ -1,5 +1,5 @@
 import { Button } from '@mui/material'
-import './App.css'
+import '../styles/App.css'
 
 export default function HomePage() {
     return (

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, TextField } from '@mui/material'
-import { ApiError, login } from './api'
-import './App.css'
+import { ApiError, login } from '../api/api'
+import '../styles/App.css'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, MenuItem, TextField } from '@mui/material'
-import { ApiError } from './api'
-import type { ApplicationFields } from './types'
+import { ApiError } from '../api/api'
+import type { ApplicationFields } from '../common/types'
 
 type Props = {
     initial: ApplicationFields // начальные значения полей

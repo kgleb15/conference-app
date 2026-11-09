@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
-import { ApiError, moderateApplication } from './api'
-import type { DecisionAction } from './api'
-import { STATUS_LABELS } from './statuses'
-import type { Application } from './types'
+import { ApiError, moderateApplication } from '../api/api'
+import type { DecisionAction } from '../api/api'
+import { STATUS_LABELS } from '../common/statuses'
+import type { Application } from '../common/types'
 
 type Props = {
     application: Application | null

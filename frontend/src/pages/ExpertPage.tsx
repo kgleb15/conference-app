@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
-import { ApiError, fetchExpertApplications } from './api'
-import type { ExpertApplication } from './types'
-import './App.css'
+import { ApiError, fetchExpertApplications } from '../api/api'
+import type { ExpertApplication } from '../common/types'
+import '../styles/App.css'
 
 const CATEGORY_NAMES = {
     STUDENT: 'Студент',
