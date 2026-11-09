@@ -21,6 +21,10 @@ export default function Header() {
                         <Button color="inherit" href="/my">Мои заявки</Button>
                         <Button color="inherit" href="/submit">Подать заявку</Button>
                     </>)}
+                    {person.role === 'ORGANIZER' && (<>
+                        <Button color="inherit" href="/moderation">Заявки</Button>
+                        <Button color="inherit" href="/add-expert">Добавить эксперта</Button>
+                    </>)}
                     <Typography sx={{ mr: 2 }}>{person.fullName} ({ROLE_LABELS[person.role]})</Typography>
                     <Button color="inherit" onClick={() => { logout(); window.location.href = '/' }}>
                         Выйти

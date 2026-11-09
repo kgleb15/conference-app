@@ -7,6 +7,7 @@ import RegisterPage from './RegisterPage'
 import SubmitPage from './SubmitPage'
 import MyApplicationsPage from './MyApplicationsPage'
 import ExpertPage from './ExpertPage'
+import AddExpertPage from './AddExpertPage'
 import { getPerson, homePath } from './auth'
 
 function redirect(path: string) {
@@ -35,6 +36,8 @@ export default function Root() {
         page = <SubmitPage />
     } else if (path === '/moderation' && person.role === 'ORGANIZER') {
         page = <App />
+    } else if (path === '/add-expert' && person.role === 'ORGANIZER') {
+        page = <AddExpertPage />
     } else if (path === '/review' && person.role === 'EXPERT') {
         page = <ExpertPage />
     } else {
