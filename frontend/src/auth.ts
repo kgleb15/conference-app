@@ -32,5 +32,5 @@ export function logout(): void {
 export function homePath(role: Person['role']): string {
     if (role === 'ORGANIZER') return '/moderation'
     if (role === 'EXPERT') return '/review'
-    return '/submit'
+    return '/my'
 }

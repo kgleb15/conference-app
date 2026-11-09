@@ -5,6 +5,7 @@ import HomePage from './HomePage'
 import LoginPage from './LoginPage'
 import RegisterPage from './RegisterPage'
 import SubmitPage from './SubmitPage'
+import MyApplicationsPage from './MyApplicationsPage'
 import { getPerson, homePath } from './auth'
 
 function redirect(path: string) {
@@ -27,6 +28,8 @@ export default function Root() {
         else page = <RegisterPage />
     } else if (person === null) {
         return redirect('/login')
+    } else if (path === '/my' && person.role === 'PARTICIPANT') {
+        page = <MyApplicationsPage />
     } else if (path === '/submit' && person.role === 'PARTICIPANT') {
         page = <SubmitPage />
     } else if (path === '/moderation' && person.role === 'ORGANIZER') {
