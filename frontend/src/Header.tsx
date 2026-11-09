@@ -17,6 +17,10 @@ export default function Header() {
                 </Box>
 
                 {person ? (<>
+                    {person.role === 'PARTICIPANT' && (<>
+                        <Button color="inherit" href="/my">Мои заявки</Button>
+                        <Button color="inherit" href="/submit">Подать заявку</Button>
+                    </>)}
                     <Typography sx={{ mr: 2 }}>{person.fullName} ({ROLE_LABELS[person.role]})</Typography>
                     <Button color="inherit" onClick={() => { logout(); window.location.href = '/' }}>
                         Выйти
