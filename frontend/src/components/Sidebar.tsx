@@ -18,7 +18,7 @@ const MENU: Record<Person['role'], MenuItem[]> = {
     ],
     EXPERT: [
         { title: 'Главная', path: '/' },
-        { title: 'Заявки для экспертизы', path: '/review' },
+        { title: 'Заявки', path: '/review' },
     ],
 }
 
@@ -27,6 +27,7 @@ export default function Sidebar({ role }: { role: Person['role'] }) {
 
     return (
         <nav className="sidebar">
+            <div className="sidebar_title">Меню:</div>
             <List disablePadding>
                 {MENU[role].map((item) => (
                     <ListItemButton key={item.path} href={item.path} selected={currentPath === item.path}>

@@ -9,3 +9,9 @@
     background: #fafafa;
     border-right: 1px solid #e0e0e0;
 }
+
+.sidebar_title {
+    padding: 0 16px 12px;
+    font-weight: 700;
+    font-size: 19px;
+}
