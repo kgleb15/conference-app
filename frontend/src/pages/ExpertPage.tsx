@@ -29,6 +29,9 @@ export default function ExpertPage() {
     return (
         <div className="page">
             <h1>Заявки для экспертизы</h1>
+            <p className="page_text">
+                В таблице находятся заявки, утверждённые организатором. Персональные данные авторов скрыты. Нажмите на строку, чтобы прочитать тезисы полностью.
+            </p>
 
             {error && <p className="error">{error}</p>}
             {data === null && error === null && <p>Загрузка...</p>}

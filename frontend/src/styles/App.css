@@ -165,3 +165,9 @@ body {
 .hint {
   color: #757575;
 }
+
+.page_text {
+  margin: 0 0 24px;
+  line-height: 1.5;
+  color: #414141;
+}
