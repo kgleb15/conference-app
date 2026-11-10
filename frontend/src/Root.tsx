@@ -22,14 +22,14 @@ export default function Root() {
     const person = getPerson()
     let page: ReactElement | null = null
 
-    if (path === '/' || path === '/login' || path === '/register') {
-        // страницы для тех, кто ещё не вошёл
+    if (path === '/') {
+        page = <HomePage />
+    } else if (path === '/login' || path === '/register') {
+        // Страницы для тех, кто ещё не вошёл
         if (person) {
             return redirect(homePath(person.role))
         }
-        if (path === '/') page = <HomePage />
-        else if (path === '/login') page = <LoginPage />
-        else page = <RegisterPage />
+        page = path === '/login' ? <LoginPage /> : <RegisterPage />
     } else if (person === null) {
         return redirect('/login')
     } else if (path === '/my' && person.role === 'PARTICIPANT') {

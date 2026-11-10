@@ -24,10 +24,11 @@
     max-height: 420px;
     object-fit: cover;
     border-radius: 16px;
+    margin-bottom: 48px;
 }
 
 .home_cta {
-    margin: 48px 0 72px;
+    margin: 0 0 72px;
     padding: 40px 32px;
     text-align: center;
     background: #eef4fb;

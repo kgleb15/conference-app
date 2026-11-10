@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, TextField } from '@mui/material'
 import { ApiError, login, register } from '../api/api'
+import { homePath } from '../api/auth'
 import '../styles/App.css'
 
 function errorText(e: unknown): string {
@@ -29,8 +30,8 @@ export default function RegisterPage() {
         setError(null)
         try {
             await register(form)
-            await login(form.email, form.password) // сразу входим
-            window.location.href = '/'
+            const person = await login(form.email, form.password) // сразу входим
+            window.location.href = homePath(person.role)
         } catch (e) {
             setError(errorText(e))
         }

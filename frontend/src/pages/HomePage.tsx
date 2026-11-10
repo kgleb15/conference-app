@@ -1,6 +1,7 @@
 import { Button } from '@mui/material'
 import Accordion from '../components/Accordion'
 import './HomePage.css'
+import { getPerson } from '../api/auth'
 
 const FAQ = [
     {
@@ -22,6 +23,8 @@ const FAQ = [
 ]
 
 export default function HomePage() {
+    const person = getPerson()
+
     return (
         <div className="home">
             <h1>Конкурс научно-исследовательских работ ВолгГТУ</h1>
@@ -31,14 +34,16 @@ export default function HomePage() {
             </p>
             <img className="home_image" src="/hero.jpg" alt="ВолгГТУ" />
 
-            <div className="home_cta">
-                <h2>Примите участие</h2>
-                <p>Войдите, если у вас уже есть аккаунт, или зарегистрируйтесь за минуту.</p>
-                <div className="home_cta_buttons">
-                    <Button variant="contained" size="large" href="/login">Войти</Button>
-                    <Button variant="outlined" size="large" href="/register">Зарегистрироваться</Button>
+            {!person && (
+                <div className="home_cta">
+                    <h2>Примите участие</h2>
+                    <p>Войдите, если у вас уже есть аккаунт, или зарегистрируйтесь за минуту.</p>
+                    <div className="home_cta_buttons">
+                        <Button variant="contained" size="large" href="/login">Войти</Button>
+                        <Button variant="outlined" size="large" href="/register">Зарегистрироваться</Button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             <h2>Частые вопросы</h2>
             <Accordion items={FAQ} />

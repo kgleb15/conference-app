@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, TextField } from '@mui/material'
 import { ApiError, login } from '../api/api'
+import { homePath } from '../api/auth'
 import '../styles/App.css'
 
 export default function LoginPage() {
@@ -11,8 +12,8 @@ export default function LoginPage() {
     async function send() {
         setError(null)
         try {
-            await login(email, password)
-            window.location.href = '/'
+            const person = await login(email, password)
+            window.location.href = homePath(person.role)
         } catch (e) {
             setError(e instanceof ApiError && e.status === 401 ? 'Неверный email или пароль' : 'Не удалось войти')
         }
