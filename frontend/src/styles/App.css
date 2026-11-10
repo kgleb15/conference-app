@@ -24,15 +24,35 @@
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 th,
 td {
   text-align: left;
-  vertical-align: top;
-  padding: 10px 12px;
-  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background: #eef4fb;
+  color: #37474f;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #d6e2f0;
+}
+
+td {
+  height: 56px;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .status {
