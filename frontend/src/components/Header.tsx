@@ -11,20 +11,12 @@ export default function Header() {
             <Toolbar>
                 <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" component="a" href="/"
-                        sx={{ color: 'inherit', textDecoration: 'none' }}>
+                        sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700, letterSpacing: '0.5px' }}>
                         Конкурс НИРС ВолгГТУ
                     </Typography>
                 </Box>
 
                 {person ? (<>
-                    {person.role === 'PARTICIPANT' && (<>
-                        <Button color="inherit" href="/my">Мои заявки</Button>
-                        <Button color="inherit" href="/submit">Подать заявку</Button>
-                    </>)}
-                    {person.role === 'ORGANIZER' && (<>
-                        <Button color="inherit" href="/moderation">Заявки</Button>
-                        <Button color="inherit" href="/add-expert">Добавить эксперта</Button>
-                    </>)}
                     <Typography sx={{ mr: 2 }}>{person.fullName} ({ROLE_LABELS[person.role]})</Typography>
                     <Button color="inherit" onClick={() => { logout(); window.location.href = '/' }}>
                         Выйти

@@ -9,6 +9,7 @@ import MyApplicationsPage from '../src/pages/MyApplicationsPage'
 import ExpertPage from '../src/pages/ExpertPage'
 import AddExpertPage from '../src/pages//AddExpertPage'
 import Footer from './components/Footer'
+import Sidebar from './components/Sidebar'
 import './styles/App.css'
 import { getPerson, homePath } from '../src/api/auth'
 
@@ -47,11 +48,14 @@ export default function Root() {
         return redirect(homePath(person.role))
     }
 
-    return (<>
-        <div className="layout">
+    return (
+        <div className={person ? 'layout with-sidebar' : 'layout'}>
             <Header />
-            <main className="layout-main">{page}</main>
+            <div className="layout-body">
+                {person && <Sidebar role={person.role} />}
+                <main className="layout-main">{page}</main>
+            </div>
             <Footer />
         </div>
-    </>)
+    )
 }

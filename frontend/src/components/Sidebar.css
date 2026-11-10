@@ -1,0 +1,11 @@
+.sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    box-sizing: border-box;
+    padding: 24px 0;
+    background: #fafafa;
+    border-right: 1px solid #e0e0e0;
+}

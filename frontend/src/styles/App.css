@@ -1,6 +1,9 @@
 .page {
-  max-width: 1400px;
-  margin: 0 auto;
+  --page-width: 1400px;
+  box-sizing: border-box;
+  max-width: var(--page-width);
+  margin-left: max(var(--sidebar-width, 0px), calc((100% - var(--page-width)) / 2));
+  margin-right: auto;
   padding: 32px 24px;
   font-family: sans-serif;
 }
@@ -80,7 +83,7 @@ td {
 }
 
 .form-page {
-  max-width: 720px;
+  --page-width: 720px;
 }
 
 .form {
@@ -109,6 +112,11 @@ body {
   flex-direction: column;
 }
 
-.layout-main {
+.layout-body {
+  position: relative;
   flex: 1;
+}
+
+.layout.with-sidebar {
+  --sidebar-width: 190px;
 }
