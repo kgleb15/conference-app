@@ -20,14 +20,14 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="page form-page">
+        <div className="page auth-page">
             <h1>Вход</h1>
-            <div className="form">
+            <div className="form auth-card">
                 <TextField label="Email" size="small" value={email}
                     onChange={(e) => setEmail(e.target.value)} />
                 <TextField label="Пароль" type="password" size="small" value={password}
                     onChange={(e) => setPassword(e.target.value)} />
-                <Button variant="contained" disabled={email.trim() === '' || password === ''}
+                <Button className="form_button" variant="contained" disabled={email.trim() === '' || password === ''}
                     onClick={send}>Войти</Button>
                 {error && <p className="error">{error}</p>}
             </div>
