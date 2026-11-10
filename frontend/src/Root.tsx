@@ -20,7 +20,7 @@ function redirect(path: string) {
 export default function Root() {
     const path = window.location.pathname
     const person = getPerson()
-    let page: ReactElement | null = null
+    let page: ReactElement
 
     if (path === '/') {
         page = <HomePage />
