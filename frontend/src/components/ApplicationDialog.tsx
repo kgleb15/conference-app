@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
 import { ApiError, moderateApplication } from '../api/api'
 import type { DecisionAction } from '../api/api'
-import { STATUS_LABELS } from '../common/statuses'
+import { CATEGORY_LABELS, FUNDING_LABELS, STATUS_LABELS } from '../common/statuses'
 import type { Application } from '../common/types'
 
 type Props = {
@@ -55,7 +55,7 @@ export default function ApplicationDialog(props: Props) {
                 <DialogTitle>{application.title}</DialogTitle>
                 <DialogContent>
                     <p><b>Автор:</b> {application.owner.fullName}, {application.groupName}</p>
-                    <p><b>Категория:</b> {application.applicantCategory}, {application.fundingType}</p>
+                    <p><b>Категория:</b> {CATEGORY_LABELS[application.applicantCategory]}, {FUNDING_LABELS[application.fundingType]}</p>
                     <p><b>Статус:</b> {STATUS_LABELS[application.status]}</p>
                     {application.moderationComment && (
                         <p><b>Комментарий организатора:</b> {application.moderationComment}</p>

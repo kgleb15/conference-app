@@ -2,13 +2,8 @@ import { useEffect, useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { ApiError, fetchExpertApplications } from '../api/api'
 import type { ExpertApplication } from '../common/types'
+import { CATEGORY_LABELS } from '../common/statuses'
 import '../styles/App.css'
-
-const CATEGORY_NAMES = {
-    STUDENT: 'Студент',
-    COLLEGE_STUDENT: 'Студент колледжа',
-    SCHOOLCHILD: 'Школьник',
-}
 
 function errorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 401) {
@@ -48,7 +43,7 @@ export default function ExpertPage() {
                         {data.map((a) => (
                             <tr key={a.id} className="row" onClick={() => setSelected(a)}>
                                 <td>{a.title}</td>
-                                <td>{CATEGORY_NAMES[a.applicantCategory]}</td>
+                                <td>{CATEGORY_LABELS[a.applicantCategory]}</td>
                                 <td>{a.annotation}</td>
                             </tr>
                         ))}
@@ -60,7 +55,7 @@ export default function ExpertPage() {
                 {selected && (<>
                     <DialogTitle>{selected.title}</DialogTitle>
                     <DialogContent>
-                        <p><b>Категория:</b> {CATEGORY_NAMES[selected.applicantCategory]}</p>
+                        <p><b>Категория:</b> {CATEGORY_LABELS[selected.applicantCategory]}</p>
                         <p><b>Аннотация:</b> {selected.annotation}</p>
                         <p><b>Текст тезисов:</b></p>
                         <div style={{ whiteSpace: 'pre-wrap' }}>{selected.thesisText}</div>
