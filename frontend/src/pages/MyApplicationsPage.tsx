@@ -31,9 +31,6 @@ export default function MyApplicationsPage() {
     }, [reload])
 
     async function withdraw(a: Application) {
-        if (!window.confirm(`Отозвать заявку «${a.title}»?`)) {
-            return
-        }
         try {
             await withdrawApplication(a.id)
         } catch (e) {
