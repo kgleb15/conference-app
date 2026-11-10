@@ -45,7 +45,10 @@ export default function MyApplicationsPage() {
     return (
         <div className="page">
             <h1>Мои заявки</h1>
-            <Button variant="contained" href="/submit">Подать заявку</Button>
+            <div className="actions">
+                <Button variant="contained" href="/submit">Подать заявку</Button>
+                <span className="hint">На конкурс можно подать не более 2 заявок на одно направление</span>
+            </div>
 
             {error && <p className="error">{error}</p>}
             {data === null && error === null && <p>Загрузка...</p>}

@@ -135,4 +135,13 @@ body {
   align-self: flex-start;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.hint {
+  color: #757575;
 }
