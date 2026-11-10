@@ -35,6 +35,15 @@ export default function ApplicationForm({ initial, submitLabel, onSend }: Props)
         setForm({ ...form, [field]: value })
     }
 
+
+    function changeCategory(value: string) {
+        setForm({
+            ...form,
+            applicantCategory: value as ApplicationFields['applicantCategory'],
+            fundingType: value === 'SCHOOLCHILD' ? 'BUDGET' : form.fundingType,
+        })
+    }
+
     const canSend = form.title.trim() !== '' && form.annotation.trim() !== ''
         && form.thesisText.trim() !== '' && form.groupName.trim() !== ''
 
@@ -64,21 +73,30 @@ export default function ApplicationForm({ initial, submitLabel, onSend }: Props)
                 onChange={(e) => change('annotation', e.target.value)} />
             <TextField label="Текст тезисов" multiline minRows={8} value={form.thesisText}
                 onChange={(e) => change('thesisText', e.target.value)} />
-            <TextField label="Группа" size="small" value={form.groupName}
-                onChange={(e) => change('groupName', e.target.value)} />
-            <TextField select label="Категория" size="small" value={form.applicantCategory}
-                onChange={(e) => change('applicantCategory', e.target.value)}>
-                <MenuItem value="STUDENT">Студент</MenuItem>
-                <MenuItem value="COLLEGE_STUDENT">Студент колледжа</MenuItem>
-                <MenuItem value="SCHOOLCHILD">Школьник</MenuItem>
-            </TextField>
-            <TextField select label="Форма обучения" size="small" value={form.fundingType}
-                onChange={(e) => change('fundingType', e.target.value)}>
-                <MenuItem value="BUDGET">Бюджет</MenuItem>
-                <MenuItem value="CONTRACT">Контракт</MenuItem>
-            </TextField>
+            <div className="form_row">
+                <TextField label="Группа" size="small" value={form.groupName}
+                    onChange={(e) => change('groupName', e.target.value)} />
+                <TextField select label="Направление" size="small" value="" disabled>
+                    <MenuItem value="">Не выбрано</MenuItem>
+                </TextField>
+            </div>
+            <div className="form_row">
+                <TextField select label="Категория" size="small" value={form.applicantCategory}
+                    onChange={(e) => changeCategory(e.target.value)}>
+                    <MenuItem value="STUDENT">Студент</MenuItem>
+                    <MenuItem value="COLLEGE_STUDENT">Студент колледжа</MenuItem>
+                    <MenuItem value="SCHOOLCHILD">Школьник</MenuItem>
+                </TextField>
+                <TextField select label="Форма обучения" size="small" value={form.fundingType}
+                    disabled={form.applicantCategory === 'SCHOOLCHILD'}
+                    onChange={(e) => change('fundingType', e.target.value)}>
+                    <MenuItem value="BUDGET">Бюджет</MenuItem>
+                    <MenuItem value="CONTRACT">Контракт</MenuItem>
+                </TextField>
+            </div>
 
-            <Button variant="contained" disabled={!canSend || sending} onClick={send}>{submitLabel}</Button>
+            <Button className="form_button" variant="contained" disabled={!canSend || sending}
+                onClick={send}>{submitLabel}</Button>
 
             {error && <p className="error">{error}</p>}
         </div>

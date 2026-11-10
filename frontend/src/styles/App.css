@@ -120,3 +120,19 @@ body {
 .layout.with-sidebar {
   --sidebar-width: 190px;
 }
+
+.form_row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.form_row * {
+  flex: 1;
+}
+
+.form_button {
+  align-self: flex-start;
+}
+
+}
