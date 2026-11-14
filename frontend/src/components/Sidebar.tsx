@@ -1,5 +1,6 @@
 import { List, ListItemButton, ListItemText } from '@mui/material'
 import type { Person } from '../common/types'
+import { Link, useLocation } from 'react-router'
 import './Sidebar.css'
 
 type MenuItem = { title: string, path: string }
@@ -23,14 +24,14 @@ const MENU: Record<Person['role'], MenuItem[]> = {
 }
 
 export default function Sidebar({ role }: { role: Person['role'] }) {
-    const currentPath = window.location.pathname
+    const { pathname } = useLocation()
 
     return (
         <nav className="sidebar">
             <div className="sidebar_title">Меню:</div>
             <List disablePadding>
                 {MENU[role].map((item) => (
-                    <ListItemButton key={item.path} href={item.path} selected={currentPath === item.path}>
+                    <ListItemButton key={item.path} component={Link} to={item.path} selected={pathname === item.path}>
                         <ListItemText primary={item.title} />
                     </ListItemButton>
                 ))}

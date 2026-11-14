@@ -1,5 +1,6 @@
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material'
 import { getPerson, logout } from '../api/auth'
+import { Link } from 'react-router'
 
 const ROLE_LABELS = { PARTICIPANT: 'участник', ORGANIZER: 'организатор', EXPERT: 'эксперт' }
 
@@ -10,7 +11,7 @@ export default function Header() {
         <AppBar position="static">
             <Toolbar>
                 <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6" component="a" href="/"
+                    <Typography variant="h6" component={Link} to="/"
                         sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700, letterSpacing: '0.5px' }}>
                         Конкурс НИРС ВолгГТУ
                     </Typography>
@@ -22,8 +23,8 @@ export default function Header() {
                         Выйти
                     </Button>
                 </>) : (<>
-                    <Button color="inherit" href="/login">Вход</Button>
-                    <Button color="inherit" href="/register">Регистрация</Button>
+                    <Button color="inherit" component={Link} to="/login">Вход</Button>
+                    <Button color="inherit" component={Link} to="/register">Регистрация</Button>
                 </>)}
             </Toolbar>
         </AppBar>
