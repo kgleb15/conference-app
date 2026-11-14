@@ -4,6 +4,7 @@ import { ApiError, fetchMyApplications, withdrawApplication } from '../api/api'
 import EditDialog from '../components/EditDialog'
 import { STATUS_LABELS } from '../common/statuses'
 import { formatDate } from '../common/utils'
+import { Link } from 'react-router'
 import type { Application } from '../common/types'
 import '../styles/App.css'
 
@@ -43,7 +44,7 @@ export default function MyApplicationsPage() {
         <div className="page">
             <h1>Мои заявки</h1>
             <div className="actions">
-                <Button variant="contained" href="/submit">Подать заявку</Button>
+                <Button variant="contained" component={Link} to="/submit">Подать заявку</Button>
                 <span className="hint">На конкурс можно подать не более 2 заявок на одно направление</span>
             </div>
 

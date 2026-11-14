@@ -1,5 +1,6 @@
 import { Button } from '@mui/material'
 import Accordion from '../components/Accordion'
+import { Link } from 'react-router'
 import './HomePage.css'
 import { getPerson } from '../api/auth'
 
@@ -39,8 +40,8 @@ export default function HomePage() {
                     <h2>Примите участие</h2>
                     <p>Войдите, если у вас уже есть аккаунт, или зарегистрируйтесь за минуту.</p>
                     <div className="home_cta_buttons">
-                        <Button variant="contained" size="large" href="/login">Войти</Button>
-                        <Button variant="outlined" size="large" href="/register">Зарегистрироваться</Button>
+                        <Button variant="contained" size="large" component={Link} to="/login">Войти</Button>
+                        <Button variant="outlined" size="large" component={Link} to="/register">Зарегистрироваться</Button>
                     </div>
                 </div>
             )}
