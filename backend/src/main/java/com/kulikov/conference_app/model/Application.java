@@ -2,26 +2,29 @@ package com.kulikov.conference_app.model;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.EnumType;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 public class Application {
     @Id
     private String id = UUID.randomUUID().toString();
-
-    @ManyToOne(optional = false)
-    private Participant owner;
 
     @Column(updatable = false)
     private final Instant createdAt = Instant.now();
@@ -38,13 +41,8 @@ public class Application {
     @Column(columnDefinition = "text")
     private String thesisText;
 
-    private String groupName;
-
     @Enumerated(EnumType.STRING)
     private ApplicantCategory applicantCategory;
-
-    @Enumerated(EnumType.STRING)
-    private FundingType fundingType;
 
     private int editCount = 0;
 
@@ -62,6 +60,10 @@ public class Application {
     @ManyToOne(optional = false)
     private Direction direction;
 
+    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OrderBy("authorIndex")
+    private List<ApplicationAuthor> authors = new ArrayList<>();
+
     @Embedded
     @AttributeOverrides({
             @AttributeOverride(name = "fullName", column = @Column(name = "supervisor1_full_name")),
@@ -78,8 +80,8 @@ public class Application {
     }
 
     public Application(Participant owner, Direction direction, ApplicationRequest r) {
-        this.owner = owner;
         this.direction = direction;
+        authors.add(new ApplicationAuthor(this, owner, 0, r.groupName(), r.fundingType()));
         apply(r);
     }
 
@@ -93,6 +95,7 @@ public class Application {
             throw new IllegalStateException("Заявку в статусе " + status + " нельзя редактировать");
         }
         apply(r);
+        authors.get(0).change(r.groupName(), r.fundingType());
         if (status == ApplicationStatus.REVISION_REQUESTED) {
             status = ApplicationStatus.SUBMITTED; // доработана, снова ждёт организатора
         }
@@ -126,9 +129,7 @@ public class Application {
         title = r.title();
         annotation = r.annotation();
         thesisText = r.thesisText();
-        groupName = r.groupName();
         applicantCategory = r.applicantCategory();
-        fundingType = r.fundingType();
         supervisor1 = toSupervisor(r.supervisors().get(0));
         supervisor2 = r.supervisors().size() > 1 ? toSupervisor(r.supervisors().get(1)) : null;
     }
@@ -215,10 +216,6 @@ public class Application {
         return id;
     }
 
-    public Participant getOwner() {
-        return owner;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -243,16 +240,8 @@ public class Application {
         return thesisText;
     }
 
-    public String getGroupName() {
-        return groupName;
-    }
-
     public ApplicantCategory getApplicantCategory() {
         return applicantCategory;
-    }
-
-    public FundingType getFundingType() {
-        return fundingType;
     }
 
     public int getEditCount() {
@@ -290,5 +279,40 @@ public class Application {
             result.add(supervisor2);
         }
         return result;
+    }
+
+    /**
+     * Возвращает автора, подавшего заявку
+     */
+    public Participant getOwner() {
+        return authors.get(0).getPerson();
+    }
+
+    public String getGroupName() {
+        return authors.get(0).getGroupName();
+    }
+
+    public FundingType getFundingType() {
+        return authors.get(0).getFundingType();
+    }
+
+    public List<ApplicationAuthor> getAuthors() {
+        return Collections.unmodifiableList(authors);
+    }
+
+    /**
+     * Находит запись автора для данного человека
+     */
+    public Optional<ApplicationAuthor> authorOf(Person person) {
+        for (ApplicationAuthor author : authors) {
+            if (author.getPerson().getId().equals(person.getId())) {
+                return Optional.of(author);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public boolean isAuthor(Person person) {
+        return authorOf(person).isPresent();
     }
 }

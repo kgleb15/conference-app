@@ -7,11 +7,11 @@ import java.util.List;
  * Ответ API с данными заявки
  */
 public record ApplicationResponse(String id, String title, String annotation, String thesisText,
-        String groupName, ApplicantCategory applicantCategory, FundingType fundingType,
+        ApplicantCategory applicantCategory,
         ApplicationStatus status, Instant createdAt, Instant updatedAt,
-        int editCount, Instant lastEditedAt, Instant withdrawnAt, PersonResponse owner,
+        int editCount, Instant lastEditedAt, Instant withdrawnAt,
         String moderationComment, Instant decidedAt, String decidedByName, Integer directionId,
-        List<SupervisorResponse> supervisors) {
+        List<SupervisorResponse> supervisors, List<AuthorResponse> authors) {
 
     /**
      * Собирает ответ из сущности Application
@@ -19,10 +19,11 @@ public record ApplicationResponse(String id, String title, String annotation, St
     public static ApplicationResponse from(Application a) {
         String decidedByName = a.getDecidedBy() == null ? null : a.getDecidedBy().getFullName();
         return new ApplicationResponse(a.getId(), a.getTitle(), a.getAnnotation(), a.getThesisText(),
-                a.getGroupName(), a.getApplicantCategory(), a.getFundingType(),
+                a.getApplicantCategory(),
                 a.getStatus(), a.getCreatedAt(), a.getUpdatedAt(),
-                a.getEditCount(), a.getLastEditedAt(), a.getWithdrawnAt(), PersonResponse.from(a.getOwner()),
+                a.getEditCount(), a.getLastEditedAt(), a.getWithdrawnAt(),
                 a.getModerationComment(), a.getDecidedAt(), decidedByName, a.getDirection().getId(),
-                a.getSupervisors().stream().map(SupervisorResponse::from).toList());
+                a.getSupervisors().stream().map(SupervisorResponse::from).toList(),
+                a.getAuthors().stream().map(AuthorResponse::from).toList());
     }
 }

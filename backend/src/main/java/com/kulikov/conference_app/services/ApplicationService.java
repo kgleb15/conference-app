@@ -62,7 +62,7 @@ public class ApplicationService {
         Person owner = person.get();
         List<Application> ownedApplications = new ArrayList<>();
         for (Application application : _applicationRepository.findAll()) {
-            if (isOwnedBy(application, owner)) {
+            if (isAuthor(application, owner)) {
                 ownedApplications.add(application);
             }
         }
@@ -83,7 +83,7 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty() || !isOwnedBy(found.get(), person.get())) {
+        if (found.isEmpty() || !isAuthor(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
         return new ServiceResult(found.get(), ServiceStatus.OK);
@@ -139,7 +139,7 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty() || !isOwnedBy(found.get(), person.get())) {
+        if (found.isEmpty() || !isAuthor(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
 
@@ -170,7 +170,7 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty() || !isOwnedBy(found.get(), person.get())) {
+        if (found.isEmpty() || !isAuthor(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
 
@@ -471,14 +471,14 @@ public class ApplicationService {
     }
 
     /**
-     * Проверяет, принадлежит ли заявка указанному человеку
+     * Проверяет, является ли человек автором или соавтором заявки
      *
      * @param a      - заявка
-     * @param person - предполагаемый владелец
-     * @return true, если owner совпадает по id; false если нет
+     * @param person - предполагаемый автор (соавтор)
+     * @return true, если является; false если нет
      */
-    private boolean isOwnedBy(Application a, Person person) {
-        return a.getOwner() != null && a.getOwner().getId().equals(person.getId());
+    private boolean isAuthor(Application a, Person person) {
+        return a.isAuthor(person);
     }
 
     /**
@@ -501,7 +501,7 @@ public class ApplicationService {
             boolean active = application.getStatus() != ApplicationStatus.WITHDRAWN
                     && application.getStatus() != ApplicationStatus.REJECTED;
             boolean sameDirection = application.getDirection().getId() == direction.getId();
-            if (active && sameDirection && isOwnedBy(application, owner)) {
+            if (active && sameDirection && isAuthor(application, owner)) {
                 count++;
             }
         }
