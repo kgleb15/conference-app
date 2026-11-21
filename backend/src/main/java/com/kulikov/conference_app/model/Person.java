@@ -2,38 +2,41 @@ package com.kulikov.conference_app.model;
 
 import java.util.UUID;
 
+import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 
 /**
- * Человек, работающий с системой
+ * Человек, работающий с системой. Конкретная роль определяется подклассом,
+ * все они хранятся в одной таблице person, роль лежит в колонке role
  */
 @Entity
-public class Person {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "role")
+public abstract class Person {
 
     @Id
     private String id = UUID.randomUUID().toString();
 
     private String fullName;
     private String email;
-    private String phone;
     private String passwordHash;
-
-    @Enumerated(EnumType.STRING)
-    private PersonRole role;
 
     protected Person() {
     }
 
-    public Person(ParticipantRequest r, String passwordHash, PersonRole role) {
-        this.fullName = r.fullName();
-        this.email = r.email();
-        this.phone = r.phone();
+    protected Person(String fullName, String email, String passwordHash) {
+        this.fullName = fullName;
+        this.email = email;
         this.passwordHash = passwordHash;
-        this.role = role;
     }
+
+    /**
+     * Роль человека в системе
+     */
+    public abstract PersonRole getRole();
 
     // ------------- Геттеры ----------------
 
@@ -49,15 +52,7 @@ public class Person {
         return email;
     }
 
-    public String getPhone() {
-        return phone;
-    }
-
     public String getPasswordHash() {
         return passwordHash;
-    }
-
-    public PersonRole getRole() {
-        return role;
     }
 }
