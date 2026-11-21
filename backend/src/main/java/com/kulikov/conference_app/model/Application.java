@@ -1,6 +1,9 @@
 package com.kulikov.conference_app.model;
 
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
@@ -8,7 +11,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.List;
 
 @Entity
 public class Application {
@@ -56,6 +61,18 @@ public class Application {
 
     @ManyToOne(optional = false)
     private Direction direction;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "fullName", column = @Column(name = "supervisor1_full_name")),
+            @AttributeOverride(name = "workplace", column = @Column(name = "supervisor1_workplace")) })
+    private Supervisor supervisor1;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "fullName", column = @Column(name = "supervisor2_full_name")),
+            @AttributeOverride(name = "workplace", column = @Column(name = "supervisor2_workplace")) })
+    private Supervisor supervisor2;
 
     protected Application() {
     }
@@ -112,6 +129,8 @@ public class Application {
         groupName = r.groupName();
         applicantCategory = r.applicantCategory();
         fundingType = r.fundingType();
+        supervisor1 = toSupervisor(r.supervisors().get(0));
+        supervisor2 = r.supervisors().size() > 1 ? toSupervisor(r.supervisors().get(1)) : null;
     }
 
     /**
@@ -186,6 +205,10 @@ public class Application {
         updatedAt = now;
     }
 
+    private static Supervisor toSupervisor(SupervisorRequest s) {
+        return new Supervisor(s.fullName(), s.workplace());
+    }
+
     // ------------- Геттеры ----------------
 
     public String getId() {
@@ -258,5 +281,14 @@ public class Application {
 
     public Direction getDirection() {
         return direction;
+    }
+
+    public List<Supervisor> getSupervisors() {
+        List<Supervisor> result = new ArrayList<>();
+        result.add(supervisor1);
+        if (supervisor2 != null) {
+            result.add(supervisor2);
+        }
+        return result;
     }
 }
