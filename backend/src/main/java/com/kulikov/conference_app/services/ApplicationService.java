@@ -16,6 +16,7 @@ import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.Person;
 import com.kulikov.conference_app.model.Direction;
 import com.kulikov.conference_app.model.PersonRole;
+import com.kulikov.conference_app.model.Staff;
 import com.kulikov.conference_app.repositories.ApplicationRepository;
 import com.kulikov.conference_app.repositories.DirectionRepository;
 import com.kulikov.conference_app.repositories.PersonRepository;
@@ -185,7 +186,7 @@ public class ApplicationService {
     }
 
     /**
-     * Возвращает все заявки для организатора
+     * Возвращает все заявки для организатора (для его направления)
      *
      * @param status - фильтр по статусу заявки или null, если без фильтра
      * @param edited - true - только изменённые; false - только неизменённые; null -
@@ -194,7 +195,8 @@ public class ApplicationService {
      *         если пользователь не организатор
      */
     public ServiceListResult findAllForOrganizer(ApplicationStatus status, Boolean edited) {
-        ServiceStatus access = checkRole(currentPerson(), PersonRole.ORGANIZER);
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
         if (access != ServiceStatus.OK) {
             return new ServiceListResult(null, access);
         }
@@ -203,7 +205,7 @@ public class ApplicationService {
         for (Application application : _applicationRepository.findAll()) {
             boolean statusMatches = status == null || application.getStatus() == status;
             boolean editedMatches = edited == null || (application.getEditCount() > 0) == edited;
-            if (statusMatches && editedMatches) {
+            if (statusMatches && editedMatches && inSameDirection(application, person.get())) {
                 filtered.add(application);
             }
         }
@@ -212,7 +214,7 @@ public class ApplicationService {
     }
 
     /**
-     * Утверждает заявку
+     * Утверждает заявку (для его направления)
      *
      * @param id      - идентификатор заявки
      * @param comment - комментарий организатора
@@ -229,7 +231,7 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty()) {
+        if (found.isEmpty() || !inSameDirection(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
 
@@ -243,7 +245,7 @@ public class ApplicationService {
     }
 
     /**
-     * Отклоняет заявку
+     * Отклоняет заявку (для его направления)
      *
      * @param id      - идентификатор заявки
      * @param comment - комментарий организатора
@@ -260,7 +262,7 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty()) {
+        if (found.isEmpty() || !inSameDirection(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
 
@@ -291,7 +293,7 @@ public class ApplicationService {
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty()) {
+        if (found.isEmpty() || !inSameDirection(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
 
@@ -305,20 +307,22 @@ public class ApplicationService {
     }
 
     /**
-     * Возвращает утверждённые заявки для члена экспертной комиссии
+     * Возвращает утверждённые заявки для члена экспертной комиссии (для его
+     * направления)
      *
      * @return OK и список утверждённых заявок; UNAUTHORIZED если запрос не
      *         идентифицирован; FORBIDDEN если пользователь не эксперт
      */
     public ServiceListResult findAllForExpert() {
-        ServiceStatus access = checkRole(currentPerson(), PersonRole.EXPERT);
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.EXPERT);
         if (access != ServiceStatus.OK) {
             return new ServiceListResult(null, access);
         }
 
         List<Application> approved = new ArrayList<>();
         for (Application application : _applicationRepository.findAll()) {
-            if (application.getStatus() == ApplicationStatus.APPROVED) {
+            if (application.getStatus() == ApplicationStatus.APPROVED && inSameDirection(application, person.get())) {
                 approved.add(application);
             }
         }
@@ -334,13 +338,15 @@ public class ApplicationService {
      *         пользователь не эксперт
      */
     public ServiceResult getForExpert(String id) {
-        ServiceStatus access = checkRole(currentPerson(), PersonRole.EXPERT);
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.EXPERT);
         if (access != ServiceStatus.OK) {
             return new ServiceResult(null, access);
         }
 
         Optional<Application> found = _applicationRepository.findById(id);
-        if (found.isEmpty() || found.get().getStatus() != ApplicationStatus.APPROVED) {
+        if (found.isEmpty() || found.get().getStatus() != ApplicationStatus.APPROVED
+                || !inSameDirection(found.get(), person.get())) {
             return new ServiceResult(null, ServiceStatus.NOT_FOUND);
         }
         return new ServiceResult(found.get(), ServiceStatus.OK);
@@ -428,6 +434,14 @@ public class ApplicationService {
      */
     private boolean isOwnedBy(Application a, Person person) {
         return a.getOwner() != null && a.getOwner().getId().equals(person.getId());
+    }
+
+    /**
+     * Проверяет, что заявка относится к направлению организатора или эксперта
+     */
+    private boolean inSameDirection(Application a, Person person) {
+        return person instanceof Staff staff
+                && a.getDirection().getId() == staff.getDirection().getId();
     }
 
     /**
