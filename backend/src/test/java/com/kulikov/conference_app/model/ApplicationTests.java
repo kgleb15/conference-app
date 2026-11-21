@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -19,6 +20,9 @@ public class ApplicationTests {
     private static final Direction DIRECTION = new Direction(7, "Программно-информационное обеспечение");
     private static final Direction OTHER_DIRECTION = new Direction(8, "Экономика и управление");
 
+    private static final List<SupervisorRequest> SUPERVISORS = List.of(
+        new SupervisorRequest("Дроботов Алексей Владимирович", "ВолгГТУ, каф. АПП"));
+        
     private Participant owner() {
         ParticipantRequest req = new ParticipantRequest("Иванов Иван Иванович",
                 "abc123@yandex.ru", "88000000000", "password123");
@@ -33,7 +37,7 @@ public class ApplicationTests {
 
     private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET, 7);
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7, SUPERVISORS, null);
     }
 
     @Test
@@ -80,7 +84,7 @@ public class ApplicationTests {
         Instant createdAt = a.getCreatedAt();
 
         a.update(new ApplicationRequest("Новая", "Новая аннотация", "Новый текст", "ПрИн-468",
-                ApplicantCategory.COLLEGE_STUDENT, FundingType.CONTRACT, 7));
+                ApplicantCategory.COLLEGE_STUDENT, FundingType.CONTRACT, 7, SUPERVISORS, null));
 
         assertEquals("Новая", a.getTitle());
         assertEquals("Новый текст", a.getThesisText());
@@ -177,12 +181,12 @@ public class ApplicationTests {
         Application a = new Application(owner, DIRECTION, request("Тема"));
 
         a.update(new ApplicationRequest("Новая", "Новая аннотация", "Новый текст", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET, 7));
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7, SUPERVISORS, null));
         assertEquals(1, a.getEditCount());
         assertNotNull(a.getLastEditedAt());
 
         a.update(new ApplicationRequest("Ещё", "Новая аннотация", "Ещё текст", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET, 7));
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7, SUPERVISORS, null));
         assertEquals(2, a.getEditCount());
 
         a.withdraw();
@@ -304,7 +308,7 @@ public class ApplicationTests {
         a.requestRevision(org, "Допишите", NOW);
 
         a.update(new ApplicationRequest("Доработанная", "Новая аннотация", "Новый текст", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET, 7));
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7, SUPERVISORS, null));
 
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
         assertEquals("Доработанная", a.getTitle());

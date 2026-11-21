@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import com.kulikov.conference_app.model.Participant;
 import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.model.Person;
 import com.kulikov.conference_app.model.StaffRequest;
+import com.kulikov.conference_app.model.SupervisorRequest;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.InMemoryApplicationRepository;
 import com.kulikov.conference_app.repositories.InMemoryDirectionRepository;
@@ -39,6 +41,9 @@ public class ApplicationServiceTests {
 
     private static final Instant DEADLINE_T2 = Instant.parse("2026-03-20T23:59:59Z");
     private static final String AFTER_T2 = "2026-03-21T00:00:00Z";
+
+    private static final List<SupervisorRequest> SUPERVISORS = List.of(
+            new SupervisorRequest("Дроботов Алексей Владимирович", "ВолгГТУ, каф. АПП"));
 
     private final InMemoryApplicationRepository _appRepo = new InMemoryApplicationRepository();
     private final InMemoryPersonRepository _personRepo = new InMemoryPersonRepository();
@@ -97,13 +102,13 @@ public class ApplicationServiceTests {
     /** Создаёт запрос заявки с заданным заголовком */
     private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET, 7);
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7, SUPERVISORS, null);
     }
 
     /** Создаёт запрос заявки в указанное направление */
     private ApplicationRequest requestIn(String title, int directionId) {
         return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET, directionId);
+                ApplicantCategory.STUDENT, FundingType.BUDGET, directionId, SUPERVISORS, null);
     }
 
     private Application create(ApplicationService service, String title) {

@@ -3,9 +3,13 @@ package com.kulikov.conference_app.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 public class ExpertApplicationResponseTests {
+    private static final List<SupervisorRequest> SUPERVISORS = List.of(
+        new SupervisorRequest("Дроботов Алексей Владимирович", "ВолгГТУ, каф. АПП"));
 
     @Test
     void test_from_doesNotContainPersonalData() {
@@ -14,7 +18,7 @@ public class ExpertApplicationResponseTests {
         Direction direction = new Direction(7, "Программно-информационное обеспечение");
         Application app = new Application(owner, direction,
                 new ApplicationRequest("Название", "Аннотация", "Текст", "ПрИн-467",
-                        ApplicantCategory.STUDENT, FundingType.CONTRACT, 7));
+                        ApplicantCategory.STUDENT, FundingType.CONTRACT, 7, SUPERVISORS, null));
 
         ExpertApplicationResponse response = ExpertApplicationResponse.from(app);
 
