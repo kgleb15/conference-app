@@ -16,27 +16,30 @@ public class ApplicationTests {
 
     private static final Instant NOW = Instant.parse("2026-11-01T10:00:00Z");
 
-    private Person owner() {
+    private static final Direction DIRECTION = new Direction(7, "Программно-информационное обеспечение");
+    private static final Direction OTHER_DIRECTION = new Direction(8, "Экономика и управление");
+
+    private Participant owner() {
         ParticipantRequest req = new ParticipantRequest("Иванов Иван Иванович",
                 "abc123@yandex.ru", "88000000000", "password123");
-        return new Person(req, "hash", PersonRole.PARTICIPANT);
+        return new Participant(req, "hash");
     }
 
-    private Person organizer() {
-        ParticipantRequest req = new ParticipantRequest("Сидоров Сидор Сидорович",
-                "org@yandex.ru", "80000000000", "password123");
-        return new Person(req, "hash", PersonRole.ORGANIZER);
+    private Organizer organizer() {
+        StaffRequest req = new StaffRequest("Сидоров Сидор Сидорович",
+                "org@yandex.ru", "password123", 7);
+        return new Organizer(req, "hash", DIRECTION);
     }
 
     private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET);
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7);
     }
 
     @Test
     void test_constructor() {
-        Person owner = owner();
-        Application a = new Application(owner, request("Тема"));
+        Participant owner = owner();
+        Application a = new Application(owner, DIRECTION, request("Тема"));
 
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
 
@@ -72,12 +75,12 @@ public class ApplicationTests {
 
     @Test
     void test_update_allFields() {
-        Person owner = owner();
-        Application a = new Application(owner, request("Старая"));
+        Participant owner = owner();
+        Application a = new Application(owner, DIRECTION, request("Старая"));
         Instant createdAt = a.getCreatedAt();
 
         a.update(new ApplicationRequest("Новая", "Новая аннотация", "Новый текст", "ПрИн-468",
-                ApplicantCategory.COLLEGE_STUDENT, FundingType.CONTRACT));
+                ApplicantCategory.COLLEGE_STUDENT, FundingType.CONTRACT, 7));
 
         assertEquals("Новая", a.getTitle());
         assertEquals("Новый текст", a.getThesisText());
@@ -103,8 +106,8 @@ public class ApplicationTests {
 
     @Test
     void test_withdraw_changesStatusToWithdrawn() {
-        Person owner = owner();
-        Application a = new Application(owner, request("Тема"));
+        Participant owner = owner();
+        Application a = new Application(owner, DIRECTION, request("Тема"));
         Instant createdAt = a.getCreatedAt();
 
         a.withdraw();
@@ -132,8 +135,8 @@ public class ApplicationTests {
 
     @Test
     void test_withdraw_doubleTimes() {
-        Person owner = owner();
-        Application a = new Application(owner, request("Тема"));
+        Participant owner = owner();
+        Application a = new Application(owner, DIRECTION, request("Тема"));
         Instant createdAt = a.getCreatedAt();
 
         a.withdraw();
@@ -170,16 +173,16 @@ public class ApplicationTests {
 
     @Test
     void test_update_incrementsEditCount() {
-        Person owner = owner();
-        Application a = new Application(owner, request("Тема"));
+        Participant owner = owner();
+        Application a = new Application(owner, DIRECTION, request("Тема"));
 
         a.update(new ApplicationRequest("Новая", "Новая аннотация", "Новый текст", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET));
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7));
         assertEquals(1, a.getEditCount());
         assertNotNull(a.getLastEditedAt());
 
         a.update(new ApplicationRequest("Ещё", "Новая аннотация", "Ещё текст", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET));
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7));
         assertEquals(2, a.getEditCount());
 
         a.withdraw();
@@ -200,9 +203,9 @@ public class ApplicationTests {
 
     @Test
     void test_approve() {
-        Person owner = owner();
+        Participant owner = owner();
         Person org = organizer();
-        Application a = new Application(owner, request("Тема"));
+        Application a = new Application(owner, DIRECTION, request("Тема"));
         Instant createdAt = a.getCreatedAt();
 
         a.approve(org, "Отлично", NOW);
@@ -231,7 +234,7 @@ public class ApplicationTests {
     @Test
     void test_reject() {
         Person org = organizer();
-        Application a = new Application(owner(), request("Тема"));
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
 
         a.reject(org, "Не по теме", NOW);
 
@@ -255,7 +258,7 @@ public class ApplicationTests {
     @Test
     void test_requestRevision() {
         Person org = organizer();
-        Application a = new Application(owner(), request("Тема"));
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
 
         a.requestRevision(org, "Допишите введение", NOW);
 
@@ -277,7 +280,7 @@ public class ApplicationTests {
 
     @Test
     void test_decision_commentNull() {
-        Application a = new Application(owner(), request("Тема"));
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
 
         a.approve(organizer(), null, NOW);
 
@@ -297,11 +300,11 @@ public class ApplicationTests {
     @Test
     void test_update_afterRevisionRequested() {
         Person org = organizer();
-        Application a = new Application(owner(), request("Тема"));
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
         a.requestRevision(org, "Допишите", NOW);
 
         a.update(new ApplicationRequest("Доработанная", "Новая аннотация", "Новый текст", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET));
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7));
 
         assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
         assertEquals("Доработанная", a.getTitle());
@@ -321,5 +324,55 @@ public class ApplicationTests {
         a.approve(org, "Теперь хорошо", NOW.plusSeconds(60));
         assertEquals(ApplicationStatus.APPROVED, a.getStatus());
         assertEquals("Теперь хорошо", a.getModerationComment());
+    }
+
+    @Test
+    void test_transferTo_changesDirection() {
+        Participant owner = owner();
+        Application a = new Application(owner, DIRECTION, request("Тема"));
+        Instant createdAt = a.getCreatedAt();
+
+        a.transferTo(OTHER_DIRECTION, NOW);
+
+        assertSame(OTHER_DIRECTION, a.getDirection());
+        assertEquals(8, a.getDirection().getId());
+        assertEquals("Экономика и управление", a.getDirection().getName());
+        assertEquals(NOW, a.getUpdatedAt());
+        assertEquals(createdAt, a.getCreatedAt());
+
+        assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
+        assertEquals("Тема", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
+        assertSame(owner, a.getOwner());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNull(a.getWithdrawnAt());
+        assertNull(a.getDecidedBy());
+        assertNull(a.getModerationComment());
+        assertNull(a.getDecidedAt());
+    }
+
+    @Test
+    void test_transferTo_notAllowedAfterDecision() {
+        Organizer org = organizer();
+        Application approved = new Application(owner(), DIRECTION, request("Принятая"));
+        approved.approve(org, "Принята", NOW);
+
+        assertSame(DIRECTION, approved.getDirection());
+        assertEquals(ApplicationStatus.APPROVED, approved.getStatus());
+        assertEquals(NOW, approved.getUpdatedAt());
+        assertSame(org, approved.getDecidedBy());
+        assertEquals("Принята", approved.getModerationComment());
+
+        Application withdrawn = new Application(owner(), DIRECTION, request("Отозванная"));
+        withdrawn.withdraw();
+
+        assertThrows(IllegalStateException.class, () -> withdrawn.transferTo(OTHER_DIRECTION, NOW));
+        assertSame(DIRECTION, withdrawn.getDirection());
+        assertEquals(ApplicationStatus.WITHDRAWN, withdrawn.getStatus());
     }
 }

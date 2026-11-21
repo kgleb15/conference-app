@@ -16,7 +16,7 @@ public class Application {
     private String id = UUID.randomUUID().toString();
 
     @ManyToOne(optional = false)
-    private Person owner;
+    private Participant owner;
 
     @Column(updatable = false)
     private final Instant createdAt = Instant.now();
@@ -60,7 +60,7 @@ public class Application {
     protected Application() {
     }
 
-    public Application(Person owner, Direction direction, ApplicationRequest r) {
+    public Application(Participant owner, Direction direction, ApplicationRequest r) {
         this.owner = owner;
         this.direction = direction;
         apply(r);
@@ -143,7 +143,7 @@ public class Application {
      * Переводит заявку в другое направление
      *
      * @param newDirection - новое направление
-     * @param now - время перевода
+     * @param now          - время перевода
      */
     public void transferTo(Direction newDirection, Instant now) {
         if (!canBeModerated()) {
@@ -192,7 +192,7 @@ public class Application {
         return id;
     }
 
-    public Person getOwner() {
+    public Participant getOwner() {
         return owner;
     }
 

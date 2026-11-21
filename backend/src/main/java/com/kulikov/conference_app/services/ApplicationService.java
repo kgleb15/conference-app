@@ -15,6 +15,7 @@ import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.Person;
 import com.kulikov.conference_app.model.Direction;
+import com.kulikov.conference_app.model.Participant;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.model.Staff;
 import com.kulikov.conference_app.repositories.ApplicationRepository;
@@ -37,8 +38,8 @@ public class ApplicationService {
     DirectionRepository _directionRepository;
 
     public ApplicationService(ApplicationRepository applicationRepository,
-            PersonRepository personRepository, CurrentUser currentUser,
-            ConferenceProperties conferenceProperties, Clock clock, DirectionRepository directionRepository) {
+            PersonRepository personRepository, DirectionRepository directionRepository,
+            CurrentUser currentUser, ConferenceProperties conferenceProperties, Clock clock) {
         this._applicationRepository = applicationRepository;
         this._personRepository = personRepository;
         this._currentUser = currentUser;
@@ -114,7 +115,8 @@ public class ApplicationService {
         if (countActiveApplications(person.get(), direction.get()) >= MAX_APPLICATIONS_PER_PERSON) {
             return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
         }
-        Application saved = _applicationRepository.save(new Application(person.get(), direction.get(), request));
+        Application saved = _applicationRepository
+                .save(new Application((Participant) person.get(), direction.get(), request));
         return new ServiceResult(saved, ServiceStatus.CREATED);
     }
 
@@ -315,7 +317,7 @@ public class ApplicationService {
      *         направления; INVALID_STATE если по заявке уже нельзя принять решение
      *         или направление то же самое; INVALID_DIRECTION если такого
      *         направления нет; LIMIT_EXCEEDED если у автора уже 2 действующие
-     *         заявки в новом направлении; 
+     *         заявки в новом направлении;
      */
     public ServiceResult transfer(String id, int directionId) {
         Optional<Person> person = currentPerson();

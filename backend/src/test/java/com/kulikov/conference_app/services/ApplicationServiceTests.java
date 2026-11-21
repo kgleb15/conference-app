@@ -3,6 +3,7 @@ package com.kulikov.conference_app.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -18,10 +19,16 @@ import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.FundingType;
-import com.kulikov.conference_app.model.Person;
+import com.kulikov.conference_app.model.Direction;
+import com.kulikov.conference_app.model.Expert;
+import com.kulikov.conference_app.model.Organizer;
+import com.kulikov.conference_app.model.Participant;
 import com.kulikov.conference_app.model.ParticipantRequest;
+import com.kulikov.conference_app.model.Person;
+import com.kulikov.conference_app.model.StaffRequest;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.InMemoryApplicationRepository;
+import com.kulikov.conference_app.repositories.InMemoryDirectionRepository;
 import com.kulikov.conference_app.repositories.InMemoryPersonRepository;
 
 public class ApplicationServiceTests {
@@ -35,6 +42,7 @@ public class ApplicationServiceTests {
 
     private final InMemoryApplicationRepository _appRepo = new InMemoryApplicationRepository();
     private final InMemoryPersonRepository _personRepo = new InMemoryPersonRepository();
+    private final InMemoryDirectionRepository _dirRepo = new InMemoryDirectionRepository();
 
     private ApplicationService serviceAt(String now, String personId) {
         ConferenceProperties props = new ConferenceProperties();
@@ -50,34 +58,52 @@ public class ApplicationServiceTests {
                 return Optional.of(personId);
             }
         };
-        return new ApplicationService(_appRepo, _personRepo, currentUser, props, clock);
+        return new ApplicationService(_appRepo, _personRepo, _dirRepo, currentUser, props, clock);
+    }
+
+    private Direction direction(int id) {
+        return _dirRepo.findById(id).orElseThrow();
     }
 
     /** Регистрирует участника и возвращает его сущность */
     private Person registerPerson(String fullName) {
         ParticipantRequest req = new ParticipantRequest(fullName,
                 "abc123@yandex.ru", "88000000000", "password123");
-        return _personRepo.save(new Person(req, "hash", PersonRole.PARTICIPANT));
+        return _personRepo.save(new Participant(req, "hash"));
     }
 
-    /** Регистрирует организатора */
+    /** Регистрирует организатора направления 7 */
     private Person registerOrganizer(String fullName) {
-        ParticipantRequest req = new ParticipantRequest(fullName,
-                "org@yandex.ru", "80000000000", "password123");
-        return _personRepo.save(new Person(req, "hash", PersonRole.ORGANIZER));
+        return registerOrganizer(fullName, 7);
     }
 
-    /** Регистрирует члена экспертной комиссии */
+    /** Регистрирует организатора указанного направления */
+    private Person registerOrganizer(String fullName, int directionId) {
+        StaffRequest req = new StaffRequest(fullName, "org" + directionId + "@yandex.ru", "password123", directionId);
+        return _personRepo.save(new Organizer(req, "hash", direction(directionId)));
+    }
+
+    /** Регистрирует члена экспертной комиссии направления 7 */
     private Person registerExpert(String fullName) {
-        ParticipantRequest req = new ParticipantRequest(fullName,
-                "exp@yandex.ru", "81111111111", "password123");
-        return _personRepo.save(new Person(req, "hash", PersonRole.EXPERT));
+        return registerExpert(fullName, 7);
+    }
+
+    /** Регистрирует члена экспертной комиссии указанного направления */
+    private Person registerExpert(String fullName, int directionId) {
+        StaffRequest req = new StaffRequest(fullName, "exp" + directionId + "@yandex.ru", "password123", directionId);
+        return _personRepo.save(new Expert(req, "hash", direction(directionId)));
     }
 
     /** Создаёт запрос заявки с заданным заголовком */
     private ApplicationRequest request(String title) {
         return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
-                ApplicantCategory.STUDENT, FundingType.BUDGET);
+                ApplicantCategory.STUDENT, FundingType.BUDGET, 7);
+    }
+
+    /** Создаёт запрос заявки в указанное направление */
+    private ApplicationRequest requestIn(String title, int directionId) {
+        return new ApplicationRequest(title, "Аннотация", "Текст тезиса", "ПрИн-467",
+                ApplicantCategory.STUDENT, FundingType.BUDGET, directionId);
     }
 
     private Application create(ApplicationService service, String title) {
@@ -1033,4 +1059,159 @@ public class ApplicationServiceTests {
         assertNull(unknown.application());
     }
 
+    // ---------------- Направления ----------------
+
+    @Test
+    void test_submit_limitIsPerDirection() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        ApplicationService service = serviceAt(BEFORE, owner.getId());
+
+        ServiceResult first = service.submit(requestIn("Первая", 7));
+        assertEquals(ServiceStatus.CREATED, first.status());
+        assertEquals(7, first.application().getDirection().getId());
+        assertEquals("Программно-информационное обеспечение", first.application().getDirection().getName());
+        assertEquals(owner.getId(), first.application().getOwner().getId());
+        assertEquals(ServiceStatus.CREATED, service.submit(requestIn("Вторая", 7)).status());
+
+        ServiceResult third = service.submit(requestIn("Третья", 7));
+        assertEquals(ServiceStatus.LIMIT_EXCEEDED, third.status());
+        assertNull(third.application());
+        assertEquals(2, _appRepo.findAll().size());
+
+        // в другое направление можно подать ещё две
+        ServiceResult other = service.submit(requestIn("В другое", 8));
+        assertEquals(ServiceStatus.CREATED, other.status());
+        assertEquals(8, other.application().getDirection().getId());
+        assertEquals("Экономика и управление", other.application().getDirection().getName());
+        assertEquals(ServiceStatus.CREATED, service.submit(requestIn("В другое 2", 8)).status());
+
+        ServiceResult fourth = service.submit(requestIn("В другое 3", 8));
+        assertEquals(ServiceStatus.LIMIT_EXCEEDED, fourth.status());
+        assertNull(fourth.application());
+        assertEquals(4, _appRepo.findAll().size());
+        assertEquals(4, count(service));
+    }
+
+    @Test
+    void test_findAllForOrganizer_onlyOwnDirection() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer7 = registerOrganizer("Сидоров Сидор", 7);
+        Person organizer8 = registerOrganizer("Орлов Олег", 8);
+        Person organizer9 = registerOrganizer("Громов Глеб", 9);
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application a7 = ownerService.submit(requestIn("В седьмое", 7)).application();
+        Application a8 = ownerService.submit(requestIn("В восьмое", 8)).application();
+
+        ServiceListResult r7 = serviceAt(BEFORE, organizer7.getId()).findAllForOrganizer(null, null);
+        ServiceListResult r8 = serviceAt(BEFORE, organizer8.getId()).findAllForOrganizer(null, null);
+        ServiceListResult r9 = serviceAt(BEFORE, organizer9.getId()).findAllForOrganizer(null, null);
+
+        assertEquals(ServiceStatus.OK, r7.status());
+        assertEquals(1, r7.applications().size());
+        assertEquals(a7.getId(), r7.applications().get(0).getId());
+        assertEquals("В седьмое", r7.applications().get(0).getTitle());
+        assertEquals(7, r7.applications().get(0).getDirection().getId());
+        assertEquals(owner.getId(), r7.applications().get(0).getOwner().getId());
+
+        assertEquals(ServiceStatus.OK, r8.status());
+        assertEquals(1, r8.applications().size());
+        assertEquals(a8.getId(), r8.applications().get(0).getId());
+        assertEquals(8, r8.applications().get(0).getDirection().getId());
+    }
+
+    @Test
+    void test_moderation_otherDirectionIsNotFound() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person foreignOrganizer = registerOrganizer("Орлов Олег", 8);
+        Person ownOrganizer = registerOrganizer("Сидоров Сидор", 7);
+        Application created = serviceAt(BEFORE, owner.getId()).submit(requestIn("В седьмое", 7)).application();
+        ApplicationService service = serviceAt(BEFORE, foreignOrganizer.getId());
+
+        ServiceResult approve = service.approve(created.getId(), null);
+        ServiceResult reject = service.reject(created.getId(), "Нет");
+        ServiceResult revision = service.requestRevision(created.getId(), "Допишите");
+
+        assertEquals(ServiceStatus.NOT_FOUND, approve.status());
+        assertNull(approve.application());
+        assertEquals(ServiceStatus.NOT_FOUND, reject.status());
+        assertNull(reject.application());
+        assertEquals(ServiceStatus.NOT_FOUND, revision.status());
+        assertNull(revision.application());
+
+        assertEquals(ApplicationStatus.SUBMITTED, created.getStatus());
+        assertNull(created.getDecidedBy());
+        assertNull(created.getModerationComment());
+        assertNull(created.getDecidedAt());
+    }
+
+    @Test
+    void test_expert_seesOnlyOwnDirection() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer7 = registerOrganizer("Сидоров Сидор", 7);
+        Person organizer8 = registerOrganizer("Орлов Олег", 8);
+        Person expert7 = registerExpert("Кузнецов Кузьма", 7);
+        Person expert8 = registerExpert("Лебедев Лев", 8);
+        ApplicationService ownerService = serviceAt(BEFORE, owner.getId());
+        Application a7 = ownerService.submit(requestIn("В седьмое", 7)).application();
+        Application a8 = ownerService.submit(requestIn("В восьмое", 8)).application();
+        serviceAt(BEFORE, organizer7.getId()).approve(a7.getId(), null);
+        serviceAt(BEFORE, organizer8.getId()).approve(a8.getId(), null);
+
+        ServiceListResult list7 = serviceAt(BEFORE, expert7.getId()).findAllForExpert();
+        ServiceListResult list8 = serviceAt(BEFORE, expert8.getId()).findAllForExpert();
+
+        assertEquals(ServiceStatus.OK, list7.status());
+        assertEquals(1, list7.applications().size());
+        assertEquals(a7.getId(), list7.applications().get(0).getId());
+        assertEquals("В седьмое", list7.applications().get(0).getTitle());
+        assertEquals(ServiceStatus.OK, list8.status());
+        assertEquals(1, list8.applications().size());
+        assertEquals(a8.getId(), list8.applications().get(0).getId());
+
+        ServiceResult own = serviceAt(BEFORE, expert7.getId()).getForExpert(a7.getId());
+        assertEquals(ServiceStatus.OK, own.status());
+        assertEquals(a7.getId(), own.application().getId());
+        assertEquals(ApplicationStatus.APPROVED, own.application().getStatus());
+    }
+
+    @Test
+    void test_transfer_movesApplicationToOtherDirection() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer7 = registerOrganizer("Сидоров Сидор", 7);
+        Person organizer8 = registerOrganizer("Орлов Олег", 8);
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        Instant createdAt = created.getCreatedAt();
+
+        ServiceResult result = serviceAt(BEFORE, organizer7.getId()).transfer(created.getId(), 8);
+
+        assertEquals(ServiceStatus.OK, result.status());
+        Application a = result.application();
+        assertEquals(created.getId(), a.getId());
+        assertEquals(8, a.getDirection().getId());
+        assertEquals("Экономика и управление", a.getDirection().getName());
+        assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
+        assertEquals(Instant.parse(BEFORE), a.getUpdatedAt());
+        assertEquals(createdAt, a.getCreatedAt());
+        assertEquals("Тема", a.getTitle());
+        assertEquals(owner.getId(), a.getOwner().getId());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getDecidedBy());
+        assertEquals(8, _appRepo.findById(created.getId()).get().getDirection().getId());
+
+        ServiceResult forOwner = serviceAt(BEFORE, owner.getId()).get(created.getId());
+        assertEquals(ServiceStatus.OK, forOwner.status());
+        assertEquals(8, forOwner.application().getDirection().getId());
+
+        // прежний организатор больше не видит заявку и не может её модерировать
+        ApplicationService oldService = serviceAt(BEFORE, organizer7.getId());
+        assertEquals(0, oldService.findAllForOrganizer(null, null).applications().size());
+        assertEquals(ServiceStatus.NOT_FOUND, oldService.approve(created.getId(), null).status());
+
+        // новый организатор видит и может принять
+        ApplicationService newService = serviceAt(BEFORE, organizer8.getId());
+        assertEquals(1, newService.findAllForOrganizer(null, null).applications().size());
+        ServiceResult approved = newService.approve(created.getId(), null);
+        assertEquals(ServiceStatus.OK, approved.status());
+        assertEquals(ApplicationStatus.APPROVED, approved.application().getStatus());
+    }
 }
