@@ -15,4 +15,6 @@ public enum ServiceStatus {
     LIMIT_EXCEEDED,
     CONFLICT,
     INVALID_DIRECTION, // направление не существует
+    INVALID_COAUTHOR,
+    COAUTHOR_LIMIT_EXCEEDED
 }

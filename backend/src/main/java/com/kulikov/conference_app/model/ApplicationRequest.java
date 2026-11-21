@@ -15,5 +15,6 @@ public record ApplicationRequest(
         @NotNull ApplicantCategory applicantCategory,
         @NotNull FundingType fundingType,
         @NotNull Integer directionId,
-        @NotEmpty @Size(max = 2) @Valid List<@NotNull SupervisorRequest> supervisors) {
+        @NotEmpty @Size(max = 2) @Valid List<@NotNull SupervisorRequest> supervisors,
+        @Valid CoAuthorRequest coAuthor) {
 }

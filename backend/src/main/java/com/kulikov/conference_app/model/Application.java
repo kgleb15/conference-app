@@ -80,8 +80,15 @@ public class Application {
     }
 
     public Application(Participant owner, Direction direction, ApplicationRequest r) {
+        this(owner, null, direction, r);
+    }
+
+    public Application(Participant owner, Participant coAuthor, Direction direction, ApplicationRequest r) {
         this.direction = direction;
         authors.add(new ApplicationAuthor(this, owner, 0, r.groupName(), r.fundingType()));
+        if (coAuthor != null) {
+            authors.add(new ApplicationAuthor(this, coAuthor, 1, r.coAuthor().groupName(), r.coAuthor().fundingType()));
+        }
         apply(r);
     }
 
@@ -96,6 +103,9 @@ public class Application {
         }
         apply(r);
         authors.get(0).change(r.groupName(), r.fundingType());
+        if (r.coAuthor() != null && authors.size() > 1) {
+            authors.get(1).change(r.coAuthor().groupName(), r.coAuthor().fundingType());
+        }
         if (status == ApplicationStatus.REVISION_REQUESTED) {
             status = ApplicationStatus.SUBMITTED; // доработана, снова ждёт организатора
         }

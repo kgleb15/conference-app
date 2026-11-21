@@ -43,7 +43,8 @@ public class ApplicationController {
      * Возвращает заявку по id
      * 
      * @param id - идентификатор заявки
-     * @return 200 с заявкой или 404, если не найдена, 401 если запрос не идентифицирован
+     * @return 200 с заявкой или 404, если не найдена, 401 если запрос не
+     *         идентифицирован
      */
     @GetMapping("/{id}")
     ResponseEntity<ApplicationResponse> getApplication(@PathVariable String id) {
@@ -54,8 +55,10 @@ public class ApplicationController {
      * Создает новую заявку
      * 
      * @param request - данные новой заявки
-     * @return 201 с созданной заявкой; 403 если дата некорректна или пользователь не участник; 
-     *         400 если некорректны поля запроса; 401 если запрос не идентифицирован;
+     * @return 201 с созданной заявкой; 403 если дата некорректна или пользователь
+     *         не участник;
+     *         400 если некорректны поля запроса; 401 если запрос не
+     *         идентифицирован;
      *         409 если превышен лимит заявок
      */
     @PostMapping
@@ -68,8 +71,10 @@ public class ApplicationController {
      * 
      * @param id      - идентификатор заявки
      * @param request - новые данные заявки
-     * @return 404 если такой заявки нет; 409 если отозвана или по ней принято решение; 
-     *         200 если успешно обновлена; 403 если дата некорректна или пользователь не участник;
+     * @return 404 если такой заявки нет; 409 если отозвана или по ней принято
+     *         решение;
+     *         200 если успешно обновлена; 403 если дата некорректна или
+     *         пользователь не участник;
      *         400 если некорректны поля запроса; 401 если пользователь не найден
      */
     @PutMapping("/{id}")
@@ -82,7 +87,8 @@ public class ApplicationController {
      * 
      * @param id - идентификатор заявки
      * @return 200 с отозванной заявкой если успешно отозвана; 404 если не найдена;
-     *         409 если по ней принято решение; 403 если дата некорректна или пользователь не участник;
+     *         409 если по ней принято решение; 403 если дата некорректна или
+     *         пользователь не участник;
      *         401 если пользователь не найден
      */
     @PatchMapping("/{id}/withdraw")
@@ -99,20 +105,48 @@ public class ApplicationController {
     private ResponseEntity<ApplicationResponse> toResponse(ServiceResult result) {
         HttpStatus httpStatus;
         switch (result.status()) {
-            case OK: httpStatus = HttpStatus.OK; break;
-            case CREATED: httpStatus = HttpStatus.CREATED; break;
-            case NOT_FOUND: httpStatus = HttpStatus.NOT_FOUND; break;
-            case DEADLINE_PASSED: httpStatus = HttpStatus.FORBIDDEN; break;
-            case WITHDRAWN: httpStatus = HttpStatus.CONFLICT; break;
-            case UNAUTHORIZED: httpStatus = HttpStatus.UNAUTHORIZED; break;
-            case FORBIDDEN: httpStatus = HttpStatus.FORBIDDEN; break;
-            case INVALID_STATE: httpStatus = HttpStatus.CONFLICT; break;
-            case LIMIT_EXCEEDED: httpStatus = HttpStatus.CONFLICT; break;
-            case INVALID_DIRECTION: httpStatus = HttpStatus.BAD_REQUEST; break;
-            default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            case OK:
+                httpStatus = HttpStatus.OK;
+                break;
+            case CREATED:
+                httpStatus = HttpStatus.CREATED;
+                break;
+            case NOT_FOUND:
+                httpStatus = HttpStatus.NOT_FOUND;
+                break;
+            case DEADLINE_PASSED:
+                httpStatus = HttpStatus.FORBIDDEN;
+                break;
+            case WITHDRAWN:
+                httpStatus = HttpStatus.CONFLICT;
+                break;
+            case UNAUTHORIZED:
+                httpStatus = HttpStatus.UNAUTHORIZED;
+                break;
+            case FORBIDDEN:
+                httpStatus = HttpStatus.FORBIDDEN;
+                break;
+            case INVALID_STATE:
+                httpStatus = HttpStatus.CONFLICT;
+                break;
+            case LIMIT_EXCEEDED:
+                httpStatus = HttpStatus.CONFLICT;
+                break;
+            case INVALID_DIRECTION:
+                httpStatus = HttpStatus.BAD_REQUEST;
+                break;
+            case INVALID_COAUTHOR:
+                httpStatus = HttpStatus.BAD_REQUEST;
+                break;
+            case COAUTHOR_LIMIT_EXCEEDED:
+                httpStatus = HttpStatus.CONFLICT;
+                break;
+            default:
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         ApplicationResponse body = result.application() == null
-                ? null : ApplicationResponse.from(result.application());
+                ? null
+                : ApplicationResponse.from(result.application());
         return new ResponseEntity<>(body, httpStatus);
     }
 
@@ -125,9 +159,14 @@ public class ApplicationController {
     private ResponseEntity<List<ApplicationResponse>> toListResponse(ServiceListResult result) {
         HttpStatus httpStatus;
         switch (result.status()) {
-            case OK: httpStatus = HttpStatus.OK; break;
-            case UNAUTHORIZED: httpStatus = HttpStatus.UNAUTHORIZED; break;
-            default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            case OK:
+                httpStatus = HttpStatus.OK;
+                break;
+            case UNAUTHORIZED:
+                httpStatus = HttpStatus.UNAUTHORIZED;
+                break;
+            default:
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
         List<ApplicationResponse> body = new ArrayList<>();

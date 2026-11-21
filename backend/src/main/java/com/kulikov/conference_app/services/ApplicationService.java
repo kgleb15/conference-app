@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.kulikov.conference_app.auth.CurrentUser;
 import com.kulikov.conference_app.config.ConferenceProperties;
 import com.kulikov.conference_app.model.Application;
+import com.kulikov.conference_app.model.ApplicationAuthor;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.Person;
@@ -112,11 +113,23 @@ public class ApplicationService {
         if (direction.isEmpty()) {
             return new ServiceResult(null, ServiceStatus.INVALID_DIRECTION);
         }
+        Participant coAuthor = null;
+        if (request.coAuthor() != null) {
+            Optional<Person> found = _personRepository.findByEmail(request.coAuthor().email());
+            if (found.isEmpty() || found.get().getRole() != PersonRole.PARTICIPANT
+                    || found.get().getId().equals(person.get().getId())) {
+                return new ServiceResult(null, ServiceStatus.INVALID_COAUTHOR);
+            }
+            coAuthor = (Participant) found.get();
+        }
         if (countActiveApplications(person.get(), direction.get()) >= MAX_APPLICATIONS_PER_PERSON) {
             return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
         }
+        if (coAuthor != null && countActiveApplications(coAuthor, direction.get()) >= MAX_APPLICATIONS_PER_PERSON) {
+            return new ServiceResult(null, ServiceStatus.COAUTHOR_LIMIT_EXCEEDED);
+        }
         Application saved = _applicationRepository
-                .save(new Application((Participant) person.get(), direction.get(), request));
+                .save(new Application((Participant) person.get(), coAuthor, direction.get(), request));
         return new ServiceResult(saved, ServiceStatus.CREATED);
     }
 
@@ -343,8 +356,10 @@ public class ApplicationService {
         if (target.get().getId() == application.getDirection().getId()) {
             return new ServiceResult(null, ServiceStatus.INVALID_STATE);
         }
-        if (countActiveApplications(application.getOwner(), target.get()) >= MAX_APPLICATIONS_PER_PERSON) {
-            return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
+        for (ApplicationAuthor author : application.getAuthors()) {
+            if (countActiveApplications(author.getPerson(), target.get()) >= MAX_APPLICATIONS_PER_PERSON) {
+                return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
+            }
         }
 
         application.transferTo(target.get(), Instant.now(_clock));
