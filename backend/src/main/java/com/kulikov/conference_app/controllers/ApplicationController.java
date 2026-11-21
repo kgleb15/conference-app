@@ -108,6 +108,7 @@ public class ApplicationController {
             case FORBIDDEN: httpStatus = HttpStatus.FORBIDDEN; break;
             case INVALID_STATE: httpStatus = HttpStatus.CONFLICT; break;
             case LIMIT_EXCEEDED: httpStatus = HttpStatus.CONFLICT; break;
+            case INVALID_DIRECTION: httpStatus = HttpStatus.BAD_REQUEST; break;
             default: httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
         ApplicationResponse body = result.application() == null

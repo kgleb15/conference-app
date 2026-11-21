@@ -54,11 +54,15 @@ public class Application {
 
     private Instant decidedAt;
 
+    @ManyToOne(optional = false)
+    private Direction direction;
+
     protected Application() {
     }
 
-    public Application(Person owner, ApplicationRequest r) {
+    public Application(Person owner, Direction direction, ApplicationRequest r) {
         this.owner = owner;
+        this.direction = direction;
         apply(r);
     }
 
@@ -236,5 +240,9 @@ public class Application {
 
     public Instant getDecidedAt() {
         return decidedAt;
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 }

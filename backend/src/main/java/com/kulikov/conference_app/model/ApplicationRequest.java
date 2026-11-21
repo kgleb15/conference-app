@@ -9,5 +9,6 @@ public record ApplicationRequest(
         @NotBlank String thesisText,
         @NotBlank String groupName,
         @NotNull ApplicantCategory applicantCategory,
-        @NotNull FundingType fundingType) {
+        @NotNull FundingType fundingType,
+        @NotNull Integer directionId) {
 }

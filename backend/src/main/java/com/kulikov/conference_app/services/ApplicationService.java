@@ -14,8 +14,10 @@ import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.Person;
+import com.kulikov.conference_app.model.Direction;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.ApplicationRepository;
+import com.kulikov.conference_app.repositories.DirectionRepository;
 import com.kulikov.conference_app.repositories.PersonRepository;
 
 /**
@@ -31,15 +33,17 @@ public class ApplicationService {
     private final CurrentUser _currentUser;
     private final ConferenceProperties _conferenceProperties;
     private final Clock _clock;
+    DirectionRepository _directionRepository;
 
     public ApplicationService(ApplicationRepository applicationRepository,
             PersonRepository personRepository, CurrentUser currentUser,
-            ConferenceProperties conferenceProperties, Clock clock) {
+            ConferenceProperties conferenceProperties, Clock clock, DirectionRepository directionRepository) {
         this._applicationRepository = applicationRepository;
         this._personRepository = personRepository;
         this._currentUser = currentUser;
         this._conferenceProperties = conferenceProperties;
         this._clock = clock;
+        this._directionRepository = directionRepository;
     }
 
     /**
@@ -89,8 +93,9 @@ public class ApplicationService {
      * @param request - данные новой заявки
      * @return CREATED и сохранённая заявка; UNAUTHORIZED если запрос не
      *         идентифицирован; DEADLINE_PASSED если дедлайн прошёл; FORBIDDEN если
-     *         пользователь не участник; LIMIT_EXCEEDED если у участника уже 2
-     *         действующие заявки
+     *         пользователь не участник; INVALID_DIRECTION, если направление не
+     *         существует; LIMIT_EXCEEDED, если уже 2 действующие заявки в этом
+     *         направлении
      */
     public ServiceResult submit(ApplicationRequest request) {
         Optional<Person> person = currentPerson();
@@ -101,10 +106,14 @@ public class ApplicationService {
         if (isDeadlinePassed()) {
             return new ServiceResult(null, ServiceStatus.DEADLINE_PASSED);
         }
-        if (countActiveApplications(person.get()) >= MAX_APPLICATIONS_PER_PERSON) {
+        Optional<Direction> direction = _directionRepository.findById(request.directionId());
+        if (direction.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_DIRECTION);
+        }
+        if (countActiveApplications(person.get(), direction.get()) >= MAX_APPLICATIONS_PER_PERSON) {
             return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
         }
-        Application saved = _applicationRepository.save(new Application(person.get(), request));
+        Application saved = _applicationRepository.save(new Application(person.get(), direction.get(), request));
         return new ServiceResult(saved, ServiceStatus.CREATED);
     }
 
@@ -427,12 +436,13 @@ public class ApplicationService {
      * @param owner - участник
      * @return количество действующих заявок
      */
-    private int countActiveApplications(Person owner) {
+    private int countActiveApplications(Person owner, Direction direction) {
         int count = 0;
         for (Application application : _applicationRepository.findAll()) {
             boolean active = application.getStatus() != ApplicationStatus.WITHDRAWN
                     && application.getStatus() != ApplicationStatus.REJECTED;
-            if (active && isOwnedBy(application, owner)) {
+            boolean sameDirection = application.getDirection().getId() == direction.getId();
+            if (active && sameDirection && isOwnedBy(application, owner)) {
                 count++;
             }
         }
