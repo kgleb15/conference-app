@@ -307,6 +307,49 @@ public class ApplicationService {
     }
 
     /**
+     * Переводит заявку в другое направление
+     *
+     * @param id          - идентификатор заявки
+     * @param directionId - номер направления, в которое перевод
+     * @return OK и заявка; NOT_FOUND если заявки нет или она не из вашего
+     *         направления; INVALID_STATE если по заявке уже нельзя принять решение
+     *         или направление то же самое; INVALID_DIRECTION если такого
+     *         направления нет; LIMIT_EXCEEDED если у автора уже 2 действующие
+     *         заявки в новом направлении; 
+     */
+    public ServiceResult transfer(String id, int directionId) {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty() || !inSameDirection(found.get(), person.get())) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        if (!application.canBeModerated()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_STATE);
+        }
+
+        Optional<Direction> target = _directionRepository.findById(directionId);
+        if (target.isEmpty()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_DIRECTION);
+        }
+        if (target.get().getId() == application.getDirection().getId()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_STATE);
+        }
+        if (countActiveApplications(application.getOwner(), target.get()) >= MAX_APPLICATIONS_PER_PERSON) {
+            return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
+        }
+
+        application.transferTo(target.get(), Instant.now(_clock));
+        return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
+    }
+
+    /**
      * Возвращает утверждённые заявки для члена экспертной комиссии (для его
      * направления)
      *

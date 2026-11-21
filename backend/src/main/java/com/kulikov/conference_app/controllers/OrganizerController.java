@@ -17,6 +17,7 @@ import com.kulikov.conference_app.model.Application;
 import com.kulikov.conference_app.model.ApplicationResponse;
 import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.ModerationRequest;
+import com.kulikov.conference_app.model.TransferRequest;
 import com.kulikov.conference_app.services.ApplicationService;
 import com.kulikov.conference_app.services.ServiceListResult;
 import com.kulikov.conference_app.services.ServiceResult;
@@ -124,6 +125,21 @@ public class OrganizerController {
     }
 
     /**
+     * Переводит заявку в другое направление
+     *
+     * @param id      - идентификатор заявки
+     * @param request - номер направления, в которое переводим
+     * @return 200 с заявкой; 400 если направления нет; 404 если заявки нет или она
+     *         не из вашего направления; 409 если заявку нельзя перевести или у
+     *         автора уже 2 заявки в новом направлении; 401 / 403
+     */
+    @PatchMapping("/{id}/transfer")
+    ResponseEntity<ApplicationResponse> transfer(@PathVariable String id,
+            @Valid @RequestBody TransferRequest request) {
+        return toResponse(_applicationService.transfer(id, request.directionId()));
+    }
+
+    /**
      * Переводит ServiceStatus в HTTP ответ
      *
      * @param result - результат операции сервиса
@@ -146,6 +162,12 @@ public class OrganizerController {
                 break;
             case FORBIDDEN:
                 httpStatus = HttpStatus.FORBIDDEN;
+                break;
+            case INVALID_DIRECTION:
+                httpStatus = HttpStatus.BAD_REQUEST;
+                break;
+            case LIMIT_EXCEEDED:
+                httpStatus = HttpStatus.CONFLICT;
                 break;
             default:
                 httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
