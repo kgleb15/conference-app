@@ -13,5 +13,6 @@ public enum ServiceStatus {
     FORBIDDEN, // недостаточно прав
     INVALID_STATE, // действие недопустимо в текущем статусе
     LIMIT_EXCEEDED,
-    CONFLICT
+    CONFLICT,
+    INVALID_DIRECTION, // направление не существует
 }
