@@ -29,8 +29,6 @@ public class ApplicationAuthor {
     @Enumerated(EnumType.STRING)
     private FundingType fundingType;
 
-    private Instant acknowledgedAt;
-
     protected ApplicationAuthor() {
     }
 
@@ -51,15 +49,6 @@ public class ApplicationAuthor {
         this.fundingType = fundingType;
     }
 
-    /**
-     * Отмечает, что автор ознакомлен
-     */
-    public void acknowledge(Instant now) {
-        if (acknowledgedAt == null) {
-            acknowledgedAt = now;
-        }
-    }
-
     public Participant getPerson() {
         return person;
     }
@@ -74,9 +63,5 @@ public class ApplicationAuthor {
 
     public FundingType getFundingType() {
         return fundingType;
-    }
-
-    public Instant getAcknowledgedAt() {
-        return acknowledgedAt;
     }
 }
