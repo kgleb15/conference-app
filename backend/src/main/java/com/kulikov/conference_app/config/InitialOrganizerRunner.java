@@ -6,6 +6,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import com.kulikov.conference_app.model.ParticipantRequest;
+import com.kulikov.conference_app.model.StaffRequest;
 import com.kulikov.conference_app.services.PersonService;
 
 /**
@@ -17,13 +18,16 @@ public class InitialOrganizerRunner implements ApplicationRunner {
     private final PersonService _personService;
     private final String _email;
     private final String _password;
+    private final int _directionId;
 
     public InitialOrganizerRunner(PersonService personService,
             @Value("${conference.organizer.email:}") String email,
-            @Value("${conference.organizer.password:}") String password) {
+            @Value("${conference.organizer.password:}") String password,
+            @Value("${conference.organizer.direction-id:7}") int directionId) {
         this._personService = personService;
         this._email = email;
         this._password = password;
+        this._directionId = directionId;
     }
 
     /**
@@ -34,6 +38,6 @@ public class InitialOrganizerRunner implements ApplicationRunner {
         if (_email.isBlank() || _password.isBlank()) {
             return;
         }
-        _personService.registerOrganizer(new ParticipantRequest("Организатор", _email, "не указан", _password));
+        _personService.registerOrganizer(new StaffRequest("Организатор", _email, _password, _directionId));
     }
 }
