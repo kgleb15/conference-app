@@ -4,8 +4,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.kulikov.conference_app.model.Person;
+import com.kulikov.conference_app.model.Expert;
+import com.kulikov.conference_app.model.Organizer;
+import com.kulikov.conference_app.model.Participant;
 import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.model.PersonRole;
+import com.kulikov.conference_app.model.Staff;
+import com.kulikov.conference_app.model.Direction;
+import com.kulikov.conference_app.model.StaffRequest;
+import com.kulikov.conference_app.repositories.DirectionRepository;
 import com.kulikov.conference_app.repositories.PersonRepository;
 import java.util.Optional;
 
@@ -17,40 +24,62 @@ public class PersonService {
 
     private final PersonRepository _personRepository;
     private final PasswordEncoder _passwordEncoder;
+    private final DirectionRepository _directionRepository;
 
-    public PersonService(PersonRepository personRepository, PasswordEncoder passwordEncoder) {
+    public PersonService(PersonRepository personRepository, PasswordEncoder passwordEncoder,
+            DirectionRepository directionRepository) {
         this._personRepository = personRepository;
         this._passwordEncoder = passwordEncoder;
+        this._directionRepository = directionRepository;
     }
 
     /**
      * Регистрирует нового участника конференции
      *
-     * @param request - данные участника
      * @return CREATED и участник; CONFLICT если email уже занят
      */
     public PersonResult register(ParticipantRequest request) {
-        return create(request, PersonRole.PARTICIPANT);
+        if (_personRepository.findByEmail(request.email()).isPresent()) {
+            return new PersonResult(null, ServiceStatus.CONFLICT);
+        }
+        String hash = _passwordEncoder.encode(request.password());
+        Person saved = _personRepository.save(new Participant(request, hash));
+        return new PersonResult(saved, ServiceStatus.CREATED);
     }
 
     /**
-     * Регистрирует нового организатора конференции
+     * Регистрирует нового организатора направления
      *
-     * @param request - данные организатора
-     * @return CREATED и организатор; CONFLICT если email уже занят
+     * @return CREATED и организатор; CONFLICT если email уже занят;
+     *         INVALID_DIRECTION если направления нет
      */
-    public PersonResult registerOrganizer(ParticipantRequest request) {
-        return create(request, PersonRole.ORGANIZER);
+    public PersonResult registerOrganizer(StaffRequest request) {
+        return createStaff(request, PersonRole.ORGANIZER);
     }
 
     /**
-     * Регистрирует нового члена экспертной комиссии
+     * Регистрирует нового члена экспертной комиссии направления
      *
-     * @param request - данные эксперта
-     * @return CREATED и эксперт; CONFLICT если email уже занят
+     * @return CREATED и эксперт; CONFLICT если email уже занят;
+     *         INVALID_DIRECTION если направления нет
      */
-    public PersonResult registerExpert(ParticipantRequest request) {
-        return create(request, PersonRole.EXPERT);
+    public PersonResult registerExpert(StaffRequest request) {
+        return createStaff(request, PersonRole.EXPERT);
+    }
+
+    private PersonResult createStaff(StaffRequest request, PersonRole role) {
+        Optional<Direction> direction = _directionRepository.findById(request.directionId());
+        if (direction.isEmpty()) {
+            return new PersonResult(null, ServiceStatus.INVALID_DIRECTION);
+        }
+        if (_personRepository.findByEmail(request.email()).isPresent()) {
+            return new PersonResult(null, ServiceStatus.CONFLICT);
+        }
+        String hash = _passwordEncoder.encode(request.password());
+        Staff staff = role == PersonRole.ORGANIZER
+                ? new Organizer(request, hash, direction.get())
+                : new Expert(request, hash, direction.get());
+        return new PersonResult(_personRepository.save(staff), ServiceStatus.CREATED);
     }
 
     /**
@@ -61,17 +90,5 @@ public class PersonService {
      */
     public Optional<Person> findById(String id) {
         return _personRepository.findById(id);
-    }
-
-    /**
-     * Создаёт человека с заданной ролью
-     */
-    private PersonResult create(ParticipantRequest request, PersonRole role) {
-        if (_personRepository.findByEmail(request.email()).isPresent()) {
-            return new PersonResult(null, ServiceStatus.CONFLICT);
-        }
-        String hash = _passwordEncoder.encode(request.password());
-        Person saved = _personRepository.save(new Person(request, hash, role));
-        return new PersonResult(saved, ServiceStatus.CREATED);
     }
 }

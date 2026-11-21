@@ -13,6 +13,7 @@ import com.kulikov.conference_app.model.Person;
 
 import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.model.PersonResponse;
+import com.kulikov.conference_app.model.StaffRequest;
 import com.kulikov.conference_app.services.PersonService;
 import com.kulikov.conference_app.services.PersonResult;
 
@@ -64,7 +65,7 @@ public class PersonController {
      *         email уже занят
      */
     @PostMapping("/organizer")
-    ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody ParticipantRequest request) {
+    ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody StaffRequest request) {
         return toResponse(_personService.registerOrganizer(request));
     }
 
@@ -76,7 +77,7 @@ public class PersonController {
      *         уже занят
      */
     @PostMapping("/expert")
-    ResponseEntity<PersonResponse> registerExpert(@Valid @RequestBody ParticipantRequest request) {
+    ResponseEntity<PersonResponse> registerExpert(@Valid @RequestBody StaffRequest request) {
         return toResponse(_personService.registerExpert(request));
     }
 
@@ -86,6 +87,8 @@ public class PersonController {
                 return new ResponseEntity<>(PersonResponse.from(result.person()), HttpStatus.CREATED);
             case CONFLICT:
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
+            case INVALID_DIRECTION:
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
             default:
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
