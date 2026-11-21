@@ -5,7 +5,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import com.kulikov.conference_app.model.PersonRequest;
+import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.services.PersonService;
 
 /**
@@ -34,6 +34,6 @@ public class InitialOrganizerRunner implements ApplicationRunner {
         if (_email.isBlank() || _password.isBlank()) {
             return;
         }
-        _personService.registerOrganizer(new PersonRequest("Организатор", _email, "не указан", _password));
+        _personService.registerOrganizer(new ParticipantRequest("Организатор", _email, "не указан", _password));
     }
 }

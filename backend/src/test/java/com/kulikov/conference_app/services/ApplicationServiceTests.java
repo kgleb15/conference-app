@@ -19,7 +19,7 @@ import com.kulikov.conference_app.model.ApplicationRequest;
 import com.kulikov.conference_app.model.ApplicationStatus;
 import com.kulikov.conference_app.model.FundingType;
 import com.kulikov.conference_app.model.Person;
-import com.kulikov.conference_app.model.PersonRequest;
+import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.InMemoryApplicationRepository;
 import com.kulikov.conference_app.repositories.InMemoryPersonRepository;
@@ -55,21 +55,21 @@ public class ApplicationServiceTests {
 
     /** Регистрирует участника и возвращает его сущность */
     private Person registerPerson(String fullName) {
-        PersonRequest req = new PersonRequest(fullName,
+        ParticipantRequest req = new ParticipantRequest(fullName,
                 "abc123@yandex.ru", "88000000000", "password123");
         return _personRepo.save(new Person(req, "hash", PersonRole.PARTICIPANT));
     }
 
     /** Регистрирует организатора */
     private Person registerOrganizer(String fullName) {
-        PersonRequest req = new PersonRequest(fullName,
+        ParticipantRequest req = new ParticipantRequest(fullName,
                 "org@yandex.ru", "80000000000", "password123");
         return _personRepo.save(new Person(req, "hash", PersonRole.ORGANIZER));
     }
 
     /** Регистрирует члена экспертной комиссии */
     private Person registerExpert(String fullName) {
-        PersonRequest req = new PersonRequest(fullName,
+        ParticipantRequest req = new ParticipantRequest(fullName,
                 "exp@yandex.ru", "81111111111", "password123");
         return _personRepo.save(new Person(req, "hash", PersonRole.EXPERT));
     }

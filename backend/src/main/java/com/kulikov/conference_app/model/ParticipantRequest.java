@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record PersonRequest(
+public record ParticipantRequest(
                 @NotBlank String fullName,
                 @NotBlank @Email String email,
                 @NotBlank String phone,
@@ -12,7 +12,7 @@ public record PersonRequest(
 
         @Override
         public String toString() {
-                return "PersonRequest[fullName=" + fullName + ", email=" + email
+                return "ParticipantRequest[fullName=" + fullName + ", email=" + email
                                 + ", phone=" + phone + ", password=***]";
         }
 }

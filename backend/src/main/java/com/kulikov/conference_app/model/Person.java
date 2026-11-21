@@ -27,7 +27,7 @@ public class Person {
     protected Person() {
     }
 
-    public Person(PersonRequest r, String passwordHash, PersonRole role) {
+    public Person(ParticipantRequest r, String passwordHash, PersonRole role) {
         this.fullName = r.fullName();
         this.email = r.email();
         this.phone = r.phone();

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.kulikov.conference_app.auth.CurrentUser;
 import com.kulikov.conference_app.model.Person;
 
-import com.kulikov.conference_app.model.PersonRequest;
+import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.model.PersonResponse;
 import com.kulikov.conference_app.services.PersonService;
 import com.kulikov.conference_app.services.PersonResult;
@@ -52,7 +52,7 @@ public class PersonController {
      *         уже занят
      */
     @PostMapping
-    ResponseEntity<PersonResponse> register(@Valid @RequestBody PersonRequest request) {
+    ResponseEntity<PersonResponse> register(@Valid @RequestBody ParticipantRequest request) {
         return toResponse(_personService.register(request));
     }
 
@@ -64,7 +64,7 @@ public class PersonController {
      *         email уже занят
      */
     @PostMapping("/organizer")
-    ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody PersonRequest request) {
+    ResponseEntity<PersonResponse> registerOrganizer(@Valid @RequestBody ParticipantRequest request) {
         return toResponse(_personService.registerOrganizer(request));
     }
 
@@ -76,7 +76,7 @@ public class PersonController {
      *         уже занят
      */
     @PostMapping("/expert")
-    ResponseEntity<PersonResponse> registerExpert(@Valid @RequestBody PersonRequest request) {
+    ResponseEntity<PersonResponse> registerExpert(@Valid @RequestBody ParticipantRequest request) {
         return toResponse(_personService.registerExpert(request));
     }
 

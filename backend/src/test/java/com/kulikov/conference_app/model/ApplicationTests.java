@@ -17,13 +17,13 @@ public class ApplicationTests {
     private static final Instant NOW = Instant.parse("2026-11-01T10:00:00Z");
 
     private Person owner() {
-        PersonRequest req = new PersonRequest("Иванов Иван Иванович",
+        ParticipantRequest req = new ParticipantRequest("Иванов Иван Иванович",
                 "abc123@yandex.ru", "88000000000", "password123");
         return new Person(req, "hash", PersonRole.PARTICIPANT);
     }
 
     private Person organizer() {
-        PersonRequest req = new PersonRequest("Сидоров Сидор Сидорович",
+        ParticipantRequest req = new ParticipantRequest("Сидоров Сидор Сидорович",
                 "org@yandex.ru", "80000000000", "password123");
         return new Person(req, "hash", PersonRole.ORGANIZER);
     }

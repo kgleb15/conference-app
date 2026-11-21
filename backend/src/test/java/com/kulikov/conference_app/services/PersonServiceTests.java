@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.kulikov.conference_app.model.Person;
-import com.kulikov.conference_app.model.PersonRequest;
+import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.InMemoryPersonRepository;
 
@@ -16,8 +16,8 @@ public class PersonServiceTests {
     private final BCryptPasswordEncoder _encoder = new BCryptPasswordEncoder();
     private final PersonService _service = new PersonService(_repo, _encoder);
 
-    private PersonRequest request(String fullName) {
-        return new PersonRequest(fullName, "abc123@yandex.ru", "88000000000", "password123");
+    private ParticipantRequest request(String fullName) {
+        return new ParticipantRequest(fullName, "abc123@yandex.ru", "88000000000", "password123");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class PersonServiceTests {
     void test_register_duplicateEmail() {
         Person first = _service.register(request("Иванов Иван Иванович")).person();
 
-        PersonRequest duplicate = new PersonRequest("Петров Пётр Петрович",
+        ParticipantRequest duplicate = new ParticipantRequest("Петров Пётр Петрович",
                 "ABC123@Yandex.ru", "89990000000", "password456");
         PersonResult asParticipant = _service.register(duplicate);
         PersonResult asOrganizer = _service.registerOrganizer(duplicate);

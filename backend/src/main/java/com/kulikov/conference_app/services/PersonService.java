@@ -4,7 +4,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.kulikov.conference_app.model.Person;
-import com.kulikov.conference_app.model.PersonRequest;
+import com.kulikov.conference_app.model.ParticipantRequest;
 import com.kulikov.conference_app.model.PersonRole;
 import com.kulikov.conference_app.repositories.PersonRepository;
 import java.util.Optional;
@@ -29,7 +29,7 @@ public class PersonService {
      * @param request - данные участника
      * @return CREATED и участник; CONFLICT если email уже занят
      */
-    public PersonResult register(PersonRequest request) {
+    public PersonResult register(ParticipantRequest request) {
         return create(request, PersonRole.PARTICIPANT);
     }
 
@@ -39,7 +39,7 @@ public class PersonService {
      * @param request - данные организатора
      * @return CREATED и организатор; CONFLICT если email уже занят
      */
-    public PersonResult registerOrganizer(PersonRequest request) {
+    public PersonResult registerOrganizer(ParticipantRequest request) {
         return create(request, PersonRole.ORGANIZER);
     }
 
@@ -49,7 +49,7 @@ public class PersonService {
      * @param request - данные эксперта
      * @return CREATED и эксперт; CONFLICT если email уже занят
      */
-    public PersonResult registerExpert(PersonRequest request) {
+    public PersonResult registerExpert(ParticipantRequest request) {
         return create(request, PersonRole.EXPERT);
     }
 
@@ -66,7 +66,7 @@ public class PersonService {
     /**
      * Создаёт человека с заданной ролью
      */
-    private PersonResult create(PersonRequest request, PersonRole role) {
+    private PersonResult create(ParticipantRequest request, PersonRole role) {
         if (_personRepository.findByEmail(request.email()).isPresent()) {
             return new PersonResult(null, ServiceStatus.CONFLICT);
         }
