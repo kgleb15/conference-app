@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 import java.time.Instant;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 
 @Validated
@@ -36,5 +37,13 @@ public class ConferenceProperties {
 
     public void setDeadlineT2(Instant deadlineT2) {
         this.deadlineT2 = deadlineT2;
+    }
+
+    /**
+     * Проверяет, что срок T2 не раньше срока T1
+     */
+    @AssertTrue(message = "deadlineT2 должен быть не раньше deadlineT1")
+    public boolean isDeadlinesOrdered() {
+        return !deadlineT2.isBefore(deadlineT1);
     }
 }
