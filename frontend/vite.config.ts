@@ -10,6 +10,7 @@ export default defineConfig({
       '/applications': 'http://localhost:8080',
       '/organizer': 'http://localhost:8080',
       '/expert': 'http://localhost:8080',
+      '/directions': 'http://localhost:8080',
     },
   },
 })

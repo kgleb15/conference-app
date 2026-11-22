@@ -1,4 +1,4 @@
-import type { Application, ApplicationFields, ApplicationStatus, ExpertApplication, Person } from '../common/types'
+import type { Application, ApplicationFields, ApplicationStatus, Direction, ExpertApplication, Person } from '../common/types'
 import { getAuthHeader, logout, savePerson, setCredentials } from './auth'
 
 export type StatusFilter = 'ALL' | ApplicationStatus
@@ -87,4 +87,12 @@ export function fetchExpertApplications(): Promise<ExpertApplication[]> {
 
 export async function registerExpert(data: Parameters<typeof register>[0]): Promise<void> {
     await request('/persons/expert', 'POST', data)
+}
+
+export function fetchDirections(): Promise<Direction[]> {
+    return request('/directions')
+}
+
+export async function transferApplication(id: string, directionId: number): Promise<void> {
+    await request(`/organizer/applications/${id}/transfer`, 'PATCH', { directionId })
 }
