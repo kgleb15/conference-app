@@ -4,8 +4,9 @@ export interface Person {
   id: string
   fullName: string
   email: string
-  phone: string
+  phone: string | null
   role: 'PARTICIPANT' | 'ORGANIZER' | 'EXPERT'
+  directionId: number | null
 }
 
 export interface Application {
@@ -26,6 +27,9 @@ export interface Application {
   moderationComment: string | null
   decidedAt: string | null
   decidedByName: string | null
+  directionId: number
+  supervisors: Supervisor[]
+  authors: Author[]
 }
 
 /* Поля, которые участник заполняет в заявке */
@@ -39,4 +43,23 @@ export interface ExpertApplication {
   annotation: string
   thesisText: string
   applicantCategory: Application['applicantCategory']
+}
+
+/* Направление конкурса */
+export interface Direction {
+  id: number
+  name: string
+}
+
+/* Научный руководитель */
+export interface Supervisor {
+  fullName: string
+  workplace: string
+}
+
+/* Автор заявки */
+export interface Author {
+  person: Person
+  groupName: string
+  fundingType: 'BUDGET' | 'CONTRACT'
 }
