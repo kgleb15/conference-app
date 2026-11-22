@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@mui/material'
-import { ApiError, fetchMyApplications, withdrawApplication } from '../api/api'
+import { ApiError, fetchDirections, fetchMyApplications, withdrawApplication } from '../api/api'
+import { getPerson } from '../api/auth'
 import EditDialog from '../components/EditDialog'
 import { STATUS_LABELS } from '../common/statuses'
 import { formatDate } from '../common/utils'
 import { Link } from 'react-router'
-import type { Application } from '../common/types'
+import type { Application, Direction } from '../common/types'
 import '../styles/App.css'
 
 function withdrawErrorText(e: unknown): string {
@@ -23,6 +24,12 @@ export default function MyApplicationsPage() {
     const [error, setError] = useState<string | null>(null)
     const [editing, setEditing] = useState<Application | null>(null) // заявка в окне редактирования
     const [reload, setReload] = useState(0) // увеличиваем, чтобы заново загрузить список
+    const [directions, setDirections] = useState<Direction[]>([])
+    const me = getPerson()
+
+    useEffect(() => {
+        fetchDirections().then(setDirections).catch(() => setError('Не удалось загрузить направления'))
+    }, [])
 
     useEffect(() => {
         fetchMyApplications().then((apps) => {
@@ -55,26 +62,31 @@ export default function MyApplicationsPage() {
             {data && data.length > 0 && (
                 <table>
                     <thead>
-                        <tr> <th>Заявка</th> <th>Статус</th> <th>Подана</th> <th>Правок</th>
+                        <tr> <th>Заявка</th> <th>Направление</th> <th>Авторы</th> <th>Статус</th> <th>Подана</th> <th>Правок</th>
                             <th>Комментарий организатора</th> <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {data.map((a) => {
-                            // изменять и отзывать можно, пока решение не принято
-                            const canChange = a.status === 'SUBMITTED' || a.status === 'REVISION_REQUESTED'
+                            const isOwner = a.authors[0].person.id === me?.id
+                            const canWithdraw = a.status === 'SUBMITTED' || a.status === 'REVISION_REQUESTED'
+                            const canEdit = isOwner && canWithdraw
+                            const direction = directions.find((d) => d.id === a.directionId)
                             return (
                                 <tr key={a.id}>
                                     <td>{a.title}</td>
+                                    <td>{direction ? `${direction.id}. ${direction.name}` : '--'}</td>
+                                    <td>{a.authors.map((x) => x.person.fullName).join(', ')}</td>
                                     <td className={`status status-${a.status}`}>{STATUS_LABELS[a.status]}</td>
                                     <td>{formatDate(a.createdAt)}</td>
                                     <td>{a.editCount}</td>
                                     <td>{a.moderationComment ?? '--'}</td>
                                     <td>
-                                        {canChange && (<>
-                                            <Button size="small" onClick={() => setEditing(a)}>Изменить</Button>
+                                        {canEdit && <Button size="small" onClick={() => setEditing(a)}>Изменить</Button>}
+                                        {canWithdraw && (
                                             <Button size="small" color="error" onClick={() => withdraw(a)}>Отозвать</Button>
-                                        </>)}
+                                        )}
+                                        {!isOwner && <span className="hint">Вы соавтор: изменять нельзя</span>}
                                     </td>
                                 </tr>
                             )
