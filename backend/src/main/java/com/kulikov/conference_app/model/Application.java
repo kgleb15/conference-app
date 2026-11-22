@@ -325,4 +325,8 @@ public class Application {
     public boolean isAuthor(Person person) {
         return authorOf(person).isPresent();
     }
+
+    public boolean isOwner(Person person) {
+        return getOwner().getId().equals(person.getId());
+    }
 }

@@ -141,8 +141,8 @@ public class ApplicationService {
      * @return OK если обновлена; NOT_FOUND если не найдена или чужая;
      *         WITHDRAWN если отозвана; DEADLINE_PASSED если дедлайн прошёл;
      *         UNAUTHORIZED если запрос не идентифицирован; FORBIDDEN если
-     *         пользователь не участник; INVALID_STATE если решение по заявке уже
-     *         принято
+     *         пользователь не участник или не владелец заявки; INVALID_STATE если
+     *         решение по заявке уже принято
      */
     public ServiceResult edit(String id, ApplicationRequest request) {
         Optional<Person> person = currentPerson();
@@ -157,6 +157,9 @@ public class ApplicationService {
         }
 
         Application application = found.get();
+        if (!application.isOwner(person.get())) {
+            return new ServiceResult(null, ServiceStatus.FORBIDDEN);
+        }
         ServiceStatus modifiable = checkModifiable(application);
         if (modifiable != ServiceStatus.OK) {
             return new ServiceResult(null, modifiable);
