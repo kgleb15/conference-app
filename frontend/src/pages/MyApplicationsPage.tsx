@@ -86,7 +86,6 @@ export default function MyApplicationsPage() {
                                         {canWithdraw && (
                                             <Button size="small" color="error" onClick={() => withdraw(a)}>Отозвать</Button>
                                         )}
-                                        {!isOwner && <span className="hint">Вы соавтор: изменять нельзя</span>}
                                     </td>
                                 </tr>
                             )
