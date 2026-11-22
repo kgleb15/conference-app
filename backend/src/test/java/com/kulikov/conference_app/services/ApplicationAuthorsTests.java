@@ -61,13 +61,13 @@ public class ApplicationAuthorsTests {
 
     private Participant participant(String fullName, String email) {
         ParticipantRequest req = new ParticipantRequest(fullName, email, "88000000000", "password123");
-        return (Participant)_personRepo.save(new Participant(req, "hash"));
+        return (Participant) _personRepo.save(new Participant(req, "hash"));
     }
 
     private Organizer organizer(int directionId) {
         StaffRequest req = new StaffRequest("Сидоров Сидор", "org" + directionId + "@yandex.ru",
                 "password123", directionId);
-        return (Organizer)_personRepo.save(new Organizer(req, "hash", _dirRepo.findById(directionId).orElseThrow()));
+        return (Organizer) _personRepo.save(new Organizer(req, "hash", _dirRepo.findById(directionId).orElseThrow()));
     }
 
     private CoAuthorRequest coAuthor(String email) {
@@ -129,7 +129,7 @@ public class ApplicationAuthorsTests {
     }
 
     @Test
-    void test_coAuthor_canEdit() {
+    void test_coAuthor_canViewButNotEdit() {
         Participant ivan = participant("Иванов Иван Иванович", "ivan@yandex.ru");
         Participant petr = participant("Петров Пётр Петрович", "petr@yandex.ru");
         Application created = serviceAt(BEFORE, ivan.getId())
@@ -142,13 +142,17 @@ public class ApplicationAuthorsTests {
         assertEquals(created.getId(), list.applications().get(0).getId());
         assertEquals(ServiceStatus.OK, petrService.get(created.getId()).status());
 
-        // правит заявку
-        CoAuthorRequest newData = new CoAuthorRequest("petr@yandex.ru", "ПрИн-466", FundingType.BUDGET);
-        ServiceResult edited = petrService.edit(created.getId(), request("Новая тема", 7, newData));
-        assertEquals(ServiceStatus.OK, edited.status());
-        assertEquals("Новая тема", edited.application().getTitle());
-        assertEquals("ПрИн-466", edited.application().getAuthors().get(1).getGroupName());
-        assertEquals(FundingType.BUDGET, edited.application().getAuthors().get(1).getFundingType());
+        // не может править и отзывать
+        ServiceResult edited = petrService.edit(created.getId(), request("Новая тема", 7, coAuthor("petr@yandex.ru")));
+        assertEquals(ServiceStatus.FORBIDDEN, edited.status());
+        assertNull(edited.application());
+        ServiceResult withdrawn = petrService.withdraw(created.getId());
+        assertEquals(ServiceStatus.FORBIDDEN, withdrawn.status());
+
+        // заявка не изменилась
+        assertEquals("Тема", created.getTitle());
+        assertEquals(ApplicationStatus.SUBMITTED, created.getStatus());
+        assertEquals("ПрИн-468", created.getAuthors().get(1).getGroupName());
     }
 
     @Test
