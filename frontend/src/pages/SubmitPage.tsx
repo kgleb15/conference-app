@@ -1,13 +1,8 @@
 import ApplicationForm from '../components/ApplicationForm'
 import { submitApplication } from '../api/api'
-import type { ApplicationFields } from '../common/types'
+import { EMPTY_FORM } from '../common/applicationFields'
 import { useNavigate } from 'react-router'
 import '../styles/App.css'
-
-const EMPTY_FORM: ApplicationFields = {
-    title: '', annotation: '', thesisText: '', groupName: '',
-    applicantCategory: 'STUDENT', fundingType: 'BUDGET',
-}
 
 export default function SubmitPage() {
     const navigate = useNavigate()

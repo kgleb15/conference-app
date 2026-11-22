@@ -1,6 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import ApplicationForm from './ApplicationForm'
 import { editApplication } from '../api/api'
+import { fieldsFromApplication } from '../common/applicationFields'
 import type { Application } from '../common/types'
 
 type Props = {
@@ -19,7 +20,7 @@ export default function EditDialog({ application, onClose, onChanged }: Props) {
                         <p><b>Комментарий организатора:</b> {application.moderationComment}</p>
                     )}
                     <div style={{ paddingTop: 8 }}>
-                        <ApplicationForm initial={application} submitLabel="Сохранить"
+                        <ApplicationForm initial={fieldsFromApplication(application)} isEdit submitLabel="Сохранить"
                             onSend={async (data) => {
                                 await editApplication(application.id, data)
                                 onChanged()

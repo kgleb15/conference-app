@@ -1,4 +1,5 @@
 export type ApplicationStatus = 'SUBMITTED' | 'WITHDRAWN' | 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED'
+export type FundingType = 'BUDGET' | 'CONTRACT'
 
 export interface Person {
   id: string
@@ -32,9 +33,25 @@ export interface Application {
   authors: Author[]
 }
 
+/* Соавтор в форме заявки */
+export interface CoAuthorFields {
+  email: string
+  groupName: string
+  fundingType: FundingType
+}
+
 /* Поля, которые участник заполняет в заявке */
-export type ApplicationFields = Pick<Application,
-  'title' | 'annotation' | 'thesisText' | 'groupName' | 'applicantCategory' | 'fundingType'>
+export interface ApplicationFields {
+  title: string
+  annotation: string
+  thesisText: string
+  groupName: string
+  applicantCategory: Application['applicantCategory']
+  fundingType: FundingType
+  directionId: number | null // null пока направление не выбрано
+  supervisors: Supervisor[]
+  coAuthor: CoAuthorFields | null
+}
 
 /* Заявка как её видит эксперт */
 export interface ExpertApplication {
@@ -61,5 +78,5 @@ export interface Supervisor {
 export interface Author {
   person: Person
   groupName: string
-  fundingType: 'BUDGET' | 'CONTRACT'
+  fundingType: FundingType
 }
