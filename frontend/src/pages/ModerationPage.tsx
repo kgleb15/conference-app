@@ -73,7 +73,7 @@ export default function App() {
       {data && data.length > 0 && (
         <table>
           <thead>
-            <tr> <th>Заявка</th> <th>Автор</th> <th>Контакты</th> <th>Статус</th> <th>Подана</th>
+            <tr> <th>Заявка</th> <th>Авторы</th> <th>Контакты</th> <th>Статус</th> <th>Подана</th>
               <th>Правок</th> <th>Последняя правка</th> <th>Отозвана</th> <th>Последнее решение</th>
             </tr>
           </thead>
@@ -81,8 +81,16 @@ export default function App() {
             {data.map((a) => (
               <tr key={a.id} className="row" onClick={() => setSelected(a)}>
                 <td>{a.title}</td>
-                <td> {a.owner.fullName}<br />{a.groupName}</td>
-                <td>{a.owner.email}<br />{a.owner.phone}</td>
+                <td>
+                  {a.authors.map((x) => (
+                    <div key={x.person.id}>{x.person.fullName}<br />{x.groupName}</div>
+                  ))}
+                </td>
+                <td>
+                  {a.authors.map((x) => (
+                    <div key={x.person.id}>{x.person.email}<br />{x.person.phone}</div>
+                  ))}
+                </td>
                 <td className={`status status-${a.status}`}>{STATUS_LABELS[a.status]}</td>
                 <td>{formatDate(a.createdAt)}</td>
                 <td>{a.editCount}</td>

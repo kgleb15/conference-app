@@ -1,4 +1,4 @@
-import type { Application, ApplicationStatus } from './types'
+import type { Application, ApplicationStatus, FundingType } from './types'
 
 /* Виды статусов заявки (подписи) */
 export const STATUS_LABELS: Record<ApplicationStatus, string> = {
@@ -18,7 +18,7 @@ export const CATEGORY_LABELS: Record<Application['applicantCategory'], string> =
 }
 
 /* Подписи форм обучения */
-export const FUNDING_LABELS: Record<Application['fundingType'], string> = {
+export const FUNDING_LABELS: Record<FundingType, string> = {
     BUDGET: 'Бюджет',
     CONTRACT: 'Контракт',
 }

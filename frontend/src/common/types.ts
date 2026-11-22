@@ -15,16 +15,13 @@ export interface Application {
   title: string
   annotation: string
   thesisText: string
-  groupName: string
   applicantCategory: 'STUDENT' | 'COLLEGE_STUDENT' | 'SCHOOLCHILD'
-  fundingType: 'BUDGET' | 'CONTRACT'
   status: ApplicationStatus
   createdAt: string
   updatedAt: string
   editCount: number
   lastEditedAt: string | null
   withdrawnAt: string | null
-  owner: Person
   moderationComment: string | null
   decidedAt: string | null
   decidedByName: string | null
