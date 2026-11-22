@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
-import { ApiError, moderateApplication } from '../api/api'
+import { useEffect, useState } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@mui/material'
+import { ApiError, fetchDirections, moderateApplication, transferApplication } from '../api/api'
 import type { DecisionAction } from '../api/api'
 import { CATEGORY_LABELS, FUNDING_LABELS, STATUS_LABELS } from '../common/statuses'
-import type { Application } from '../common/types'
+import type { Application, Direction } from '../common/types'
 
 type Props = {
     application: Application | null
@@ -21,16 +21,36 @@ function errorText(e: unknown): string {
     return 'Не удалось выполнить действие'
 }
 
+function transferErrorText(e: unknown): string {
+    if (e instanceof ApiError && e.status === 400) {
+        return 'Такого направления нет'
+    }
+    if (e instanceof ApiError && e.status === 409) {
+        return 'Заявку нельзя передать или у автора уже 2 заявки в этом направлении'
+    }
+    if (e instanceof ApiError && e.status === 404) {
+        return 'Заявка не найдена'
+    }
+    return 'Не удалось передать заявку'
+}
+
 export default function ApplicationDialog(props: Props) {
     const { application, onClose, onChanged } = props
 
     const [error, setError] = useState<string | null>(null)
     const [sending, setSending] = useState(false)
     const [comment, setComment] = useState('')
+    const [directions, setDirections] = useState<Direction[]>([])
+    const [targetDirection, setTargetDirection] = useState<number | ''>('')
+
+    useEffect(() => {
+        fetchDirections().then(setDirections).catch(() => setError('Не удалось загрузить направления'))
+    }, [])
 
     function close() {
         setError(null)
         setComment('')
+        setTargetDirection('')
         onClose()
     }
 
@@ -49,14 +69,35 @@ export default function ApplicationDialog(props: Props) {
         setSending(false)
     }
 
+    async function transfer() {
+        if (application === null || targetDirection === '') { return }
+        setSending(true)
+        setError(null)
+        try {
+            await transferApplication(application.id, targetDirection)
+            onChanged()
+            close()
+        } catch (e) {
+            setError(transferErrorText(e))
+            onChanged()
+        }
+        setSending(false)
+    }
+
     return (
         <Dialog open={application !== null} onClose={onClose} maxWidth="md" fullWidth>
             {application && (<>
                 <DialogTitle>{application.title}</DialogTitle>
                 <DialogContent>
-                    <p><b>Автор:</b> {application.owner.fullName}, {application.groupName}</p>
-                    <p><b>Категория:</b> {CATEGORY_LABELS[application.applicantCategory]}, {FUNDING_LABELS[application.fundingType]}</p>
-                    <p><b>Статус:</b> {STATUS_LABELS[application.status]}</p>
+                    {application.authors.map((x, i) => (
+                        <p key={x.person.id}>
+                            <b>Автор {i + 1}:</b> {x.person.fullName}, {x.groupName}, {FUNDING_LABELS[x.fundingType]}
+                        </p>
+                    ))}
+                    {application.supervisors.map((s, i) => (
+                        <p key={i}><b>Научный руководитель {i + 1}:</b> {s.fullName}, {s.workplace}</p>
+                    ))}
+                    <p><b>Категория:</b> {CATEGORY_LABELS[application.applicantCategory]}</p>
                     {application.moderationComment && (
                         <p><b>Комментарий организатора:</b> {application.moderationComment}</p>
                     )}
@@ -64,6 +105,18 @@ export default function ApplicationDialog(props: Props) {
                     <p><b>Текст тезисов:</b></p> <div>{application.thesisText}</div>
                     {application.status === 'SUBMITTED' && (
                         <TextField label="Комментарий" fullWidth margin="normal" value={comment} onChange={(e) => setComment(e.target.value)} />
+                    )}
+                    {application.status === 'SUBMITTED' && (
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 16 }}>
+                            <TextField select label="Передать в направление" size="small" style={{ minWidth: 360 }}
+                                value={directions.length > 0 ? targetDirection : ''}
+                                onChange={(e) => setTargetDirection(Number(e.target.value))}>
+                                {directions.filter((d) => d.id !== application.directionId).map((d) => (
+                                    <MenuItem key={d.id} value={d.id}>{d.id}. {d.name}</MenuItem>
+                                ))}
+                            </TextField>
+                            <Button disabled={sending || targetDirection === ''} onClick={transfer}>Передать</Button>
+                        </div>
                     )}
                     {error && <p className="error">{error}</p>}
                 </DialogContent>
