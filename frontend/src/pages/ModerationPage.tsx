@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material'
-import { ApiError, fetchOrganizerApplications } from '../api/api'
+import { ApiError, fetchDirections, fetchIncomingTransfers, fetchOrganizerApplications } from '../api/api'
 import type { EditedFilter, StatusFilter } from '../api/api'
-import type { Application, ApplicationStatus } from '../common/types'
+import type { Application, ApplicationStatus, Direction } from '../common/types'
 import DirectionLabel from '../components/DirectionLabel'
 import ApplicationDialog from '../components/ApplicationDialog'
 import { formatDate } from '../common/utils'
 import { STATUS_LABELS } from '../common/statuses'
 import '../styles/App.css'
+import './ModerationPage.css'
 
 function errorText(e: unknown): string {
   if (e instanceof ApiError && e.status === 401) {
@@ -28,6 +29,17 @@ export default function App() {
   const [reload, setReload] = useState(0) // увеличиваем, чтобы заново загрузить список
   const [searchText, setSearchText] = useState('') // то, что набрано в поле поиска
   const [search, setSearch] = useState('') // поиск, который применяется
+  const [incoming, setIncoming] = useState<Application[]>([]) // заявки, переданные из других направлений
+  const [selectedIncoming, setSelectedIncoming] = useState<Application | null>(null)
+  const [directions, setDirections] = useState<Direction[]>([])
+
+  useEffect(() => {
+    fetchDirections().then(setDirections).catch(() => setDirections([]))
+  }, [])
+
+  useEffect(() => {
+    fetchIncomingTransfers().then(setIncoming).catch(() => setIncoming([]))
+  }, [reload])
 
   // Debounce 500 мс
   useEffect(() => {
@@ -58,6 +70,26 @@ export default function App() {
       <DirectionLabel />
 
       {error && <p className="error">{error}</p>}
+
+      {incoming.length > 0 && (
+        <div className="incoming">
+          <h2>Входящие заявки из других направлений</h2>
+          <table>
+            <thead>
+              <tr> <th>Заявка</th> <th>Авторы</th> <th>Из направления</th> </tr>
+            </thead>
+            <tbody>
+              {incoming.map((a) => (
+                <tr key={a.id} className="row" onClick={() => setSelectedIncoming(a)}>
+                  <td>{a.title}</td>
+                  <td>{a.authors.map((x) => x.person.fullName).join(', ')}</td>
+                  <td>{directions.find((d) => d.id === a.directionId)?.name ?? a.directionId}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="filters">
         <FormControl size="small" className="filter">
@@ -125,6 +157,10 @@ export default function App() {
       )}
 
       <ApplicationDialog application={selected} onClose={() => { setSelected(null) }}
+        onChanged={() => setReload((r) => r + 1)}
+      />
+
+      <ApplicationDialog application={selectedIncoming} incoming onClose={() => setSelectedIncoming(null)}
         onChanged={() => setReload((r) => r + 1)}
       />
     </div>
