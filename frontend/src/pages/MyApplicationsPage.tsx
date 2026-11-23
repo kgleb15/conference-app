@@ -79,8 +79,9 @@ export default function MyApplicationsPage() {
                     <tbody>
                         {data.map((a) => {
                             const isOwner = a.authors[0].person.id === me?.id
-                            const canWithdraw = a.status === 'SUBMITTED' || a.status === 'REVISION_REQUESTED'
-                            const canEdit = isOwner && canWithdraw
+                            const active = a.status === 'SUBMITTED' || a.status === 'REVISION_REQUESTED'
+                            const canWithdraw = active || a.status === 'TRANSFER_PENDING'
+                            const canEdit = isOwner && active
                             const direction = directions.find((d) => d.id === a.directionId)
                             return (
                                 <tr key={a.id}>

@@ -7,6 +7,7 @@ export const STATUS_LABELS: Record<ApplicationStatus, string> = {
     APPROVED: 'Утверждена',
     REJECTED: 'Отклонена',
     REVISION_REQUESTED: 'На доработке',
+    TRANSFER_PENDING: 'Передается в другое направление',
 }
 
 

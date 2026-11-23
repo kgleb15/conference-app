@@ -4,6 +4,7 @@ import { getAuthHeader, logout, savePerson, setCredentials } from './auth'
 export type StatusFilter = 'ALL' | ApplicationStatus
 export type EditedFilter = 'ALL' | 'true' | 'false'
 export type DecisionAction = 'approve' | 'reject' | 'request-revision'
+export type TransferAction = 'accept-transfer' | 'decline-transfer' | 'cancel-transfer'
 
 /* Ошибка HTTP: хранит код ответа сервера */
 export class ApiError extends Error {
@@ -99,4 +100,12 @@ export async function transferApplication(id: string, directionId: number): Prom
 
 export async function registerOrganizer(data: { fullName: string, email: string, password: string, directionId: number }): Promise<void> {
     await request('/persons/organizer', 'POST', data)
+}
+
+export function fetchIncomingTransfers(): Promise<Application[]> {
+    return request('/organizer/applications/incoming')
+}
+
+export async function changeTransfer(id: string, action: TransferAction): Promise<void> {
+    await request(`/organizer/applications/${id}/${action}`, 'PATCH')
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, TextField } from '@mui/material'
-import { ApiError, fetchDirections, moderateApplication, transferApplication } from '../api/api'
-import type { DecisionAction } from '../api/api'
+import { ApiError, changeTransfer, fetchDirections, moderateApplication, transferApplication } from '../api/api'
+import type { DecisionAction, TransferAction } from '../api/api'
 import { CATEGORY_LABELS, FUNDING_LABELS, STATUS_LABELS } from '../common/statuses'
 import type { Application, Direction } from '../common/types'
 
@@ -9,6 +9,7 @@ type Props = {
     application: Application | null
     onClose: () => void
     onChanged: () => void // вызывается, когда нужно перезагрузить список
+    incoming?: boolean
 }
 
 function errorText(e: unknown): string {
@@ -34,8 +35,18 @@ function transferErrorText(e: unknown): string {
     return 'Не удалось передать заявку'
 }
 
+function changeTransferErrorText(e: unknown): string {
+    if (e instanceof ApiError && e.status === 409) {
+        return 'Передачу уже нельзя изменить или у автора уже 2 заявки в этом направлении'
+    }
+    if (e instanceof ApiError && e.status === 404) {
+        return 'Заявка не найдена или передача уже изменена'
+    }
+    return 'Не удалось выполнить действие'
+}
+
 export default function ApplicationDialog(props: Props) {
-    const { application, onClose, onChanged } = props
+    const { application, onClose, onChanged, incoming = false } = props
 
     const [error, setError] = useState<string | null>(null)
     const [sending, setSending] = useState(false)
@@ -84,6 +95,21 @@ export default function ApplicationDialog(props: Props) {
         setSending(false)
     }
 
+    async function doTransferAction(action: TransferAction) {
+        if (application === null) { return }
+        setSending(true)
+        setError(null)
+        try {
+            await changeTransfer(application.id, action)
+            onChanged()
+            close()
+        } catch (e) {
+            setError(changeTransferErrorText(e))
+            onChanged()
+        }
+        setSending(false)
+    }
+
     return (
         <Dialog open={application !== null} onClose={onClose} maxWidth="md" fullWidth>
             {application && (<>
@@ -98,6 +124,13 @@ export default function ApplicationDialog(props: Props) {
                         <p key={i}><b>Научный руководитель {i + 1}:</b> {s.fullName}, {s.workplace}</p>
                     ))}
                     <p><b>Категория:</b> {CATEGORY_LABELS[application.applicantCategory]}</p>
+                    <p><b>Статус:</b> {STATUS_LABELS[application.status]}</p>
+                    {incoming && (
+                        <p><b>Из направления:</b> {directions.find((d) => d.id === application.directionId)?.name ?? application.directionId}</p>
+                    )}
+                    {!incoming && application.status === 'TRANSFER_PENDING' && (
+                        <p><b>Передаётся в направление:</b> {directions.find((d) => d.id === application.transferDirectionId)?.name ?? application.transferDirectionId}</p>
+                    )}
                     {application.moderationComment && (
                         <p><b>Комментарий организатора:</b> {application.moderationComment}</p>
                     )}
@@ -134,6 +167,19 @@ export default function ApplicationDialog(props: Props) {
                             Отклонить
                         </Button>
                     </>
+                    )}
+                    {incoming && (<>
+                        <Button color="success" disabled={sending} onClick={() => doTransferAction('accept-transfer')}>
+                            Принять
+                        </Button>
+                        <Button color="error" disabled={sending} onClick={() => doTransferAction('decline-transfer')}>
+                            Отклонить передачу
+                        </Button>
+                    </>)}
+                    {!incoming && application.status === 'TRANSFER_PENDING' && (
+                        <Button color="warning" disabled={sending} onClick={() => doTransferAction('cancel-transfer')}>
+                            Отменить передачу
+                        </Button>
                     )}
                     <Button onClick={onClose}>Закрыть</Button>
                 </DialogActions>

@@ -1,4 +1,4 @@
-export type ApplicationStatus = 'SUBMITTED' | 'WITHDRAWN' | 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED'
+export type ApplicationStatus = 'SUBMITTED' | 'WITHDRAWN' | 'APPROVED' | 'REJECTED' | 'REVISION_REQUESTED' | 'TRANSFER_PENDING'
 export type FundingType = 'BUDGET' | 'CONTRACT'
 
 export interface Person {
@@ -25,6 +25,7 @@ export interface Application {
   moderationComment: string | null
   decidedAt: string | null
   decidedByName: string | null
+  transferDirectionId: number | null
   directionId: number
   supervisors: Supervisor[]
   authors: Author[]
