@@ -85,7 +85,7 @@ export function fetchExpertApplications(): Promise<ExpertApplication[]> {
     return request('/expert/applications')
 }
 
-export async function registerExpert(data: Parameters<typeof register>[0]): Promise<void> {
+export async function registerExpert(data: { fullName: string, email: string, password: string, directionId: number }): Promise<void> {
     await request('/persons/expert', 'POST', data)
 }
 

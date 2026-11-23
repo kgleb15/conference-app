@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Button, TextField } from '@mui/material'
 import { ApiError, registerExpert } from '../api/api'
+import { getPerson } from '../api/auth'
 import '../styles/App.css'
 
-const EMPTY_FORM = { fullName: '', email: '', phone: '', password: '' }
+const EMPTY_FORM = { fullName: '', email: '', password: '' }
 
 function errorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 400) {
@@ -23,19 +24,22 @@ export default function AddExpertPage() {
     const [error, setError] = useState<string | null>(null)
     const [created, setCreated] = useState<string | null>(null) // email созданного эксперта
 
+    const directionId = getPerson()?.directionId ?? null // эксперт добавляется в направление организатора
+
     // Обновляет одно поле формы
     function change(field: string, value: string) {
         setForm({ ...form, [field]: value })
     }
 
     const canSend = form.fullName.trim() !== '' && form.email.trim() !== ''
-        && form.phone.trim() !== '' && form.password.length >= 8
+        && form.password.length >= 8 && directionId !== null
 
     async function send() {
         setError(null)
         setCreated(null)
         try {
-            await registerExpert(form)
+            if (directionId === null) { return }
+            await registerExpert({ ...form, directionId })
             setCreated(form.email)
             setForm(EMPTY_FORM)
         } catch (e) {
@@ -51,11 +55,10 @@ export default function AddExpertPage() {
                     onChange={(e) => change('fullName', e.target.value)} />
                 <TextField label="Email" size="small" value={form.email}
                     onChange={(e) => change('email', e.target.value)} />
-                <TextField label="Телефон" size="small" value={form.phone}
-                    onChange={(e) => change('phone', e.target.value)} />
                 <TextField label="Пароль" size="small" value={form.password}
                     helperText="Не короче 8 символов"
                     onChange={(e) => change('password', e.target.value)} />
+                <p className="hint">Эксперт будет добавлен в ваше направление</p>
                 <Button variant="contained" disabled={!canSend} onClick={send}>Создать эксперта</Button>
 
                 {created && <p>Эксперт {created} создан</p>}
