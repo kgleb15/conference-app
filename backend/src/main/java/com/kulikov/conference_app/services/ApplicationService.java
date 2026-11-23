@@ -164,6 +164,9 @@ public class ApplicationService {
         if (modifiable != ServiceStatus.OK) {
             return new ServiceResult(null, modifiable);
         }
+        if (!application.canBeEdited()) {
+            return new ServiceResult(null, ServiceStatus.INVALID_STATE);
+        }
 
         application.update(request);
         return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
@@ -365,7 +368,105 @@ public class ApplicationService {
             }
         }
 
-        application.transferTo(target.get(), Instant.now(_clock));
+        application.requestTransfer(target.get(), Instant.now(_clock));
+        return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
+    }
+
+    /**
+     * Заявки, которые другие направления передали в направление текущего организатора
+     */
+    public ServiceListResult findIncomingTransfers() {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceListResult(null, access);
+        }
+
+        List<Application> incoming = new ArrayList<>();
+        for (Application application : _applicationRepository.findAll()) {
+            if (isIncomingFor(application, person.get())) {
+                incoming.add(application);
+            }
+        }
+        return new ServiceListResult(incoming, ServiceStatus.OK);
+    }
+
+    /**
+     * Принимает заявку, переданную из другого направления
+     *
+     * @return OK; NOT_FOUND если заявка не передана в ваше направление;
+     *         LIMIT_EXCEEDED если у автора уже 2 заявки в вашем направлении
+     */
+    public ServiceResult acceptTransfer(String id) {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty() || !isIncomingFor(found.get(), person.get())) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        Direction myDirection = ((Staff) person.get()).getDirection();
+        for (ApplicationAuthor author : application.getAuthors()) {
+            if (countActiveApplications(author.getPerson(), myDirection) >= MAX_APPLICATIONS_PER_PERSON) {
+                return new ServiceResult(null, ServiceStatus.LIMIT_EXCEEDED);
+            }
+        }
+
+        application.acceptTransfer(Instant.now(_clock));
+        return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
+    }
+
+    /**
+     * Отклоняет передачу заявки
+     *
+     * @return OK; NOT_FOUND если заявка не передана в ваше направление
+     */
+    public ServiceResult declineTransfer(String id) {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty() || !isIncomingFor(found.get(), person.get())) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        application.cancelTransfer(Instant.now(_clock));
+        return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
+    }
+
+    /**
+     * Отменяет передачу заявки своего направления, пока её не приняли
+     *
+     * @return OK; NOT_FOUND если заявки нет в вашем направлении; INVALID_STATE
+     *         если заявка не передаётся
+     */
+    public ServiceResult cancelTransfer(String id) {
+        Optional<Person> person = currentPerson();
+        ServiceStatus access = checkRole(person, PersonRole.ORGANIZER);
+        if (access != ServiceStatus.OK) {
+            return new ServiceResult(null, access);
+        }
+
+        Optional<Application> found = _applicationRepository.findById(id);
+        if (found.isEmpty() || !inSameDirection(found.get(), person.get())) {
+            return new ServiceResult(null, ServiceStatus.NOT_FOUND);
+        }
+
+        Application application = found.get();
+        if (application.getStatus() != ApplicationStatus.TRANSFER_PENDING) {
+            return new ServiceResult(null, ServiceStatus.INVALID_STATE);
+        }
+
+        application.cancelTransfer(Instant.now(_clock));
         return new ServiceResult(_applicationRepository.save(application), ServiceStatus.OK);
     }
 
@@ -505,6 +606,13 @@ public class ApplicationService {
     private boolean inSameDirection(Application a, Person person) {
         return person instanceof Staff staff
                 && a.getDirection().getId() == staff.getDirection().getId();
+    }
+
+    private boolean isIncomingFor(Application a, Person person) {
+        return person instanceof Staff staff
+                && a.getStatus() == ApplicationStatus.TRANSFER_PENDING
+                && a.getTransferTarget() != null
+                && a.getTransferTarget().getId() == staff.getDirection().getId();
     }
 
     /**

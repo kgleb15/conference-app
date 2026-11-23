@@ -47,33 +47,17 @@ public class OrganizerController {
     @GetMapping
     ResponseEntity<List<ApplicationResponse>> getApplications(@RequestParam(required = false) ApplicationStatus status,
             @RequestParam(required = false) Boolean edited) {
+        return toListResponse(_applicationService.findAllForOrganizer(status, edited));
+    }
 
-        ServiceListResult result = _applicationService.findAllForOrganizer(status, edited);
-
-        HttpStatus httpStatus;
-        switch (result.status()) {
-            case OK:
-                httpStatus = HttpStatus.OK;
-                break;
-            case UNAUTHORIZED:
-                httpStatus = HttpStatus.UNAUTHORIZED;
-                break;
-            case FORBIDDEN:
-                httpStatus = HttpStatus.FORBIDDEN;
-                break;
-            default:
-                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-        }
-
-        List<ApplicationResponse> body = null;
-        if (result.applications() != null) {
-            body = new ArrayList<>();
-            for (Application application : result.applications()) {
-                body.add(ApplicationResponse.from(application));
-            }
-        }
-
-        return new ResponseEntity<>(body, httpStatus);
+    /**
+     * Возвращает заявки, которые передали в направление организатора из других направлений
+     *
+     * @return 200 со списком; 401 / 403
+     */
+    @GetMapping("/incoming")
+    ResponseEntity<List<ApplicationResponse>> getIncoming() {
+        return toListResponse(_applicationService.findIncomingTransfers());
     }
 
     /**
@@ -140,6 +124,38 @@ public class OrganizerController {
     }
 
     /**
+     * Принимает заявку, переданную из другого направления
+     *
+     * @return 200 с заявкой; 404 если заявка не передана вам; 409 если у автора уже
+     *         2 заявки в вашем направлении; 401 / 403
+     */
+    @PatchMapping("/{id}/accept-transfer")
+    ResponseEntity<ApplicationResponse> acceptTransfer(@PathVariable String id) {
+        return toResponse(_applicationService.acceptTransfer(id));
+    }
+
+    /**
+     * Отклоняет передачу, заявка возвращается в прежнее направление
+     *
+     * @return 200 с заявкой; 404 если заявка не передана вам; 401 / 403
+     */
+    @PatchMapping("/{id}/decline-transfer")
+    ResponseEntity<ApplicationResponse> declineTransfer(@PathVariable String id) {
+        return toResponse(_applicationService.declineTransfer(id));
+    }
+
+    /**
+     * Отменяет передачу заявки своего направления
+     *
+     * @return 200 с заявкой; 404 если заявки нет в вашем направлении; 409 если
+     *         заявка не передаётся; 401 / 403
+     */
+    @PatchMapping("/{id}/cancel-transfer")
+    ResponseEntity<ApplicationResponse> cancelTransfer(@PathVariable String id) {
+        return toResponse(_applicationService.cancelTransfer(id));
+    }
+
+    /**
      * Переводит ServiceStatus в HTTP ответ
      *
      * @param result - результат операции сервиса
@@ -175,6 +191,32 @@ public class OrganizerController {
         ApplicationResponse body = result.application() == null
                 ? null
                 : ApplicationResponse.from(result.application());
+        return new ResponseEntity<>(body, httpStatus);
+    }
+
+    private ResponseEntity<List<ApplicationResponse>> toListResponse(ServiceListResult result) {
+        HttpStatus httpStatus;
+        switch (result.status()) {
+            case OK:
+                httpStatus = HttpStatus.OK;
+                break;
+            case UNAUTHORIZED:
+                httpStatus = HttpStatus.UNAUTHORIZED;
+                break;
+            case FORBIDDEN:
+                httpStatus = HttpStatus.FORBIDDEN;
+                break;
+            default:
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        List<ApplicationResponse> body = null;
+        if (result.applications() != null) {
+            body = new ArrayList<>();
+            for (Application application : result.applications()) {
+                body.add(ApplicationResponse.from(application));
+            }
+        }
         return new ResponseEntity<>(body, httpStatus);
     }
 }

@@ -174,20 +174,6 @@ public class Application {
     }
 
     /**
-     * Переводит заявку в другое направление
-     *
-     * @param newDirection - новое направление
-     * @param now          - время перевода
-     */
-    public void transferTo(Direction newDirection, Instant now) {
-        if (!canBeModerated()) {
-            throw new IllegalStateException("Заявку в статусе " + status + " нельзя перевести");
-        }
-        direction = newDirection;
-        updatedAt = now;
-    }
-
-    /**
      * Начинает передачу заявки в другое направление
      *
      * @param target - направление, в которое передаём
