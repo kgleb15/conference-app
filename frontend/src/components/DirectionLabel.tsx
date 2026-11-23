@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchDirections } from '../api/api'
 import { getPerson } from '../api/auth'
+import './DirectionLabel.css'
 
 /* Подпись с направлением текущего пользователя */
 export default function DirectionLabel() {
@@ -11,5 +12,5 @@ export default function DirectionLabel() {
         fetchDirections().then((list) => setName(list.find((d) => d.id === directionId)?.name ?? "Направление"))
     }, [directionId])
 
-    return <p className="page_text">Направление {directionId}. {name}</p>
+    return <p className="page_text direction_value">Направление {directionId}. {name}</p>
 }
