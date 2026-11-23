@@ -3,6 +3,7 @@ import { Button, MenuItem, TextField } from '@mui/material'
 import { ApiError, fetchDirections, registerOrganizer } from '../api/api'
 import type { Direction } from '../common/types'
 import '../styles/App.css'
+import '../styles/Form.css'
 
 const EMPTY_FORM = { fullName: '', email: '', password: '' }
 

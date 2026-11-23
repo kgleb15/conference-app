@@ -5,6 +5,7 @@ import type { ExpertApplication } from '../common/types'
 import { CATEGORY_LABELS } from '../common/statuses'
 import '../styles/App.css'
 import DirectionLabel from '../components/DirectionLabel'
+import '../styles/Table.css'
 
 function errorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 401) {

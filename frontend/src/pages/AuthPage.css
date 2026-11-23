@@ -1,0 +1,17 @@
+.page.auth-page {
+  --page-width: 480px;
+}
+
+.auth-card {
+  padding: 32px;
+  background: #f2f4f8;
+  border-radius: 16px;
+}
+
+.auth-card .MuiOutlinedInput-root {
+  background: #fff;
+}
+
+.auth-page h1 {
+  text-align: center;
+}

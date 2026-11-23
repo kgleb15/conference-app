@@ -1,0 +1,14 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-body {
+  position: relative;
+  flex: 1;
+}
+
+.layout.with-sidebar {
+  --sidebar-width: 190px;
+}

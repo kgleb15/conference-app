@@ -3,6 +3,7 @@ import { Button, TextField } from '@mui/material'
 import { ApiError, registerExpert } from '../api/api'
 import { getPerson } from '../api/auth'
 import '../styles/App.css'
+import '../styles/Form.css'
 
 const EMPTY_FORM = { fullName: '', email: '', password: '' }
 

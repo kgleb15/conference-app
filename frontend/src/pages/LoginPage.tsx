@@ -3,6 +3,8 @@ import { Button, TextField } from '@mui/material'
 import { ApiError, login } from '../api/api'
 import { homePath } from '../api/auth'
 import '../styles/App.css'
+import '../styles/Form.css'
+import './AuthPage.css'
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')

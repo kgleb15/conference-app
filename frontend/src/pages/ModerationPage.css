@@ -1,7 +1,17 @@
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.filter {
+  min-width: 180px;
+}
+
 .incoming {
-    margin-bottom: 48px;
+  margin-bottom: 48px;
 }
 
 .incoming h2 {
-    margin: 0 0 16px;
+  margin: 0 0 16px;
 }

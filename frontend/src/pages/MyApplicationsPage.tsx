@@ -8,6 +8,8 @@ import { formatDate } from '../common/utils'
 import { Link } from 'react-router'
 import type { Application, Direction } from '../common/types'
 import '../styles/App.css'
+import '../styles/Table.css'
+import './MyApplicationsPage.css'
 
 function withdrawErrorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 403) {

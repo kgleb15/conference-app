@@ -4,6 +4,7 @@ import { getPerson } from '../api/auth'
 import Footer from './Footer'
 import Header from './Header'
 import Sidebar from './Sidebar'
+import './Layout.css'
 
 export default function Layout() {
     const person = getPerson()

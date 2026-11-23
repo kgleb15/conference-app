@@ -3,6 +3,7 @@ import { submitApplication } from '../api/api'
 import { EMPTY_FORM } from '../common/applicationFields'
 import { useNavigate } from 'react-router'
 import '../styles/App.css'
+import '../styles/Form.css'
 
 export default function SubmitPage() {
     const navigate = useNavigate()

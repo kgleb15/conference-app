@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button, MenuItem, TextField } from '@mui/material'
 import { ApiError, fetchDirections } from '../api/api'
 import type { ApplicationFields, CoAuthorFields, Direction, FundingType, Supervisor } from '../common/types'
+import '../styles/Form.css'
 
 type Props = {
     initial: ApplicationFields // начальные значения полей

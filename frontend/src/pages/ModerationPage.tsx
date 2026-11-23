@@ -9,6 +9,7 @@ import { formatDate } from '../common/utils'
 import { STATUS_LABELS } from '../common/statuses'
 import '../styles/App.css'
 import './ModerationPage.css'
+import '../styles/Table.css'
 
 function errorText(e: unknown): string {
   if (e instanceof ApiError && e.status === 401) {

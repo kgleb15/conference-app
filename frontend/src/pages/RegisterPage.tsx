@@ -3,6 +3,8 @@ import { Button, TextField } from '@mui/material'
 import { ApiError, login, register } from '../api/api'
 import { homePath } from '../api/auth'
 import '../styles/App.css'
+import '../styles/Form.css'
+import './AuthPage.css'
 
 function errorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 400) {

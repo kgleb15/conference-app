@@ -1,0 +1,27 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page.form-page {
+  --page-width: 720px;
+}
+
+.form_row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.form_row * {
+  flex: 1;
+}
+
+.form_button {
+  align-self: flex-start;
+}
+
+.form>.form_button {
+  margin-top: 16px;
+}
