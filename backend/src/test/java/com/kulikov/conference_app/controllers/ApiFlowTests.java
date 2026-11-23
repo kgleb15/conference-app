@@ -217,14 +217,26 @@ public class ApiFlowTests {
         patchJson("/organizer/applications/" + id + "/transfer", "{\"directionId\":99}", ORGANIZER,
                 ORGANIZER_PASSWORD).andExpect(status().isBadRequest());
 
-        String moved = body(patchJson("/organizer/applications/" + id + "/transfer", "{\"directionId\":8}",
+        String pending = body(patchJson("/organizer/applications/" + id + "/transfer", "{\"directionId\":8}",
                 ORGANIZER, ORGANIZER_PASSWORD).andExpect(status().isOk()));
-        assertTrue(moved.contains("\"directionId\":8"));
+        assertTrue(pending.contains("\"status\":\"TRANSFER_PENDING\""));
+        assertTrue(pending.contains("\"directionId\":7"));
+        assertTrue(pending.contains("\"transferDirectionId\":8"));
 
-        String organizerList = body(getAs("/organizer/applications", ORGANIZER, ORGANIZER_PASSWORD)
-                .andExpect(status().isOk()));
-        assertFalse(organizerList.contains(id));
+        // пока заявка передаётся, решение по ней принять нельзя
         patchJson("/organizer/applications/" + id + "/approve", "", ORGANIZER, ORGANIZER_PASSWORD)
-                .andExpect(status().isNotFound());
+                .andExpect(status().isConflict());
+
+        // она не во входящих организатора направления 7
+        String incoming = body(getAs("/organizer/applications/incoming", ORGANIZER, ORGANIZER_PASSWORD)
+                .andExpect(status().isOk()));
+        assertFalse(incoming.contains(id));
+
+        // отправитель отменяет передачу
+        String back = body(patchJson("/organizer/applications/" + id + "/cancel-transfer", "", ORGANIZER,
+                ORGANIZER_PASSWORD).andExpect(status().isOk()));
+        assertTrue(back.contains("\"status\":\"SUBMITTED\""));
+        patchJson("/organizer/applications/" + id + "/cancel-transfer", "", ORGANIZER, ORGANIZER_PASSWORD)
+                .andExpect(status().isConflict());
     }
 }

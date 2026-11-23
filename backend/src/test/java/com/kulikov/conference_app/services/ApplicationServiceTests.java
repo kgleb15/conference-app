@@ -1180,43 +1180,66 @@ public class ApplicationServiceTests {
     }
 
     @Test
-    void test_transfer_movesApplicationToOtherDirection() {
+    void test_transfer_waitsForAcceptanceInOtherDirection() {
         Person owner = registerPerson("Иванов Иван Иванович");
         Person organizer7 = registerOrganizer("Сидоров Сидор", 7);
         Person organizer8 = registerOrganizer("Орлов Олег", 8);
         Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
-        Instant createdAt = created.getCreatedAt();
 
         ServiceResult result = serviceAt(BEFORE, organizer7.getId()).transfer(created.getId(), 8);
 
         assertEquals(ServiceStatus.OK, result.status());
-        Application a = result.application();
-        assertEquals(created.getId(), a.getId());
-        assertEquals(8, a.getDirection().getId());
-        assertEquals("Экономика и управление", a.getDirection().getName());
-        assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
-        assertEquals(Instant.parse(BEFORE), a.getUpdatedAt());
-        assertEquals(createdAt, a.getCreatedAt());
-        assertEquals("Тема", a.getTitle());
-        assertEquals(owner.getId(), a.getOwner().getId());
-        assertEquals(0, a.getEditCount());
-        assertNull(a.getDecidedBy());
+        assertEquals(ApplicationStatus.TRANSFER_PENDING, result.application().getStatus());
+        assertEquals(7, result.application().getDirection().getId());
+        assertEquals(8, result.application().getTransferTarget().getId());
+
+        // у прежнего организатора заявка видна, но решение по ней принять нельзя
+        ApplicationService oldService = serviceAt(BEFORE, organizer7.getId());
+        assertEquals(1, oldService.findAllForOrganizer(null, null).applications().size());
+        assertEquals(ServiceStatus.INVALID_STATE, oldService.approve(created.getId(), null).status());
+
+        // у нового она во входящих, но не в основном списке
+        ApplicationService newService = serviceAt(BEFORE, organizer8.getId());
+        assertEquals(0, newService.findAllForOrganizer(null, null).applications().size());
+        assertEquals(1, newService.findIncomingTransfers().applications().size());
+        assertEquals(ServiceStatus.NOT_FOUND, newService.approve(created.getId(), null).status());
+
+        // после принятия заявка в новом направлении
+        ServiceResult accepted = newService.acceptTransfer(created.getId());
+        assertEquals(ServiceStatus.OK, accepted.status());
+        assertEquals(ApplicationStatus.SUBMITTED, accepted.application().getStatus());
+        assertEquals(8, accepted.application().getDirection().getId());
+        assertNull(accepted.application().getTransferTarget());
         assertEquals(8, _appRepo.findById(created.getId()).get().getDirection().getId());
 
-        ServiceResult forOwner = serviceAt(BEFORE, owner.getId()).get(created.getId());
-        assertEquals(ServiceStatus.OK, forOwner.status());
-        assertEquals(8, forOwner.application().getDirection().getId());
-
-        // прежний организатор больше не видит заявку и не может её модерировать
-        ApplicationService oldService = serviceAt(BEFORE, organizer7.getId());
+        assertEquals(1, newService.findAllForOrganizer(null, null).applications().size());
+        assertEquals(0, newService.findIncomingTransfers().applications().size());
         assertEquals(0, oldService.findAllForOrganizer(null, null).applications().size());
         assertEquals(ServiceStatus.NOT_FOUND, oldService.approve(created.getId(), null).status());
+        assertEquals(ServiceStatus.OK, newService.approve(created.getId(), null).status());
+    }
 
-        // новый организатор видит и может принять
-        ApplicationService newService = serviceAt(BEFORE, organizer8.getId());
-        assertEquals(1, newService.findAllForOrganizer(null, null).applications().size());
-        ServiceResult approved = newService.approve(created.getId(), null);
-        assertEquals(ServiceStatus.OK, approved.status());
-        assertEquals(ApplicationStatus.APPROVED, approved.application().getStatus());
+    @Test
+    void test_declineAndCancelTransfer_returnApplicationToSubmitted() {
+        Person owner = registerPerson("Иванов Иван Иванович");
+        Person organizer7 = registerOrganizer("Сидоров Сидор", 7);
+        Person organizer8 = registerOrganizer("Орлов Олег", 8);
+        Application created = create(serviceAt(BEFORE, owner.getId()), "Тема");
+        ApplicationService service7 = serviceAt(BEFORE, organizer7.getId());
+        ApplicationService service8 = serviceAt(BEFORE, organizer8.getId());
+
+        // получатель отказывается
+        service7.transfer(created.getId(), 8);
+        ServiceResult declined = service8.declineTransfer(created.getId());
+        assertEquals(ServiceStatus.OK, declined.status());
+        assertEquals(ApplicationStatus.SUBMITTED, declined.application().getStatus());
+        assertEquals(7, declined.application().getDirection().getId());
+        assertNull(declined.application().getTransferTarget());
+
+        // отправитель сам отменяет
+        service7.transfer(created.getId(), 8);
+        ServiceResult cancelled = service7.cancelTransfer(created.getId());
+        assertEquals(ServiceStatus.OK, cancelled.status());
+        assertEquals(ApplicationStatus.SUBMITTED, cancelled.application().getStatus());
     }
 }

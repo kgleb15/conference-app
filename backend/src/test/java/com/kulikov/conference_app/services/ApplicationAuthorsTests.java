@@ -142,16 +142,16 @@ public class ApplicationAuthorsTests {
         assertEquals(created.getId(), list.applications().get(0).getId());
         assertEquals(ServiceStatus.OK, petrService.get(created.getId()).status());
 
-        // не может править и отзывать
+        // не может править
         ServiceResult edited = petrService.edit(created.getId(), request("Новая тема", 7, coAuthor("petr@yandex.ru")));
         assertEquals(ServiceStatus.FORBIDDEN, edited.status());
         assertNull(edited.application());
         ServiceResult withdrawn = petrService.withdraw(created.getId());
-        assertEquals(ServiceStatus.FORBIDDEN, withdrawn.status());
+        assertEquals(ServiceStatus.OK, withdrawn.status());
 
         // заявка не изменилась
         assertEquals("Тема", created.getTitle());
-        assertEquals(ApplicationStatus.SUBMITTED, created.getStatus());
+        assertEquals(ApplicationStatus.WITHDRAWN, created.getStatus());
         assertEquals("ПрИн-468", created.getAuthors().get(1).getGroupName());
     }
 
@@ -170,6 +170,26 @@ public class ApplicationAuthorsTests {
 
         assertEquals(ServiceStatus.LIMIT_EXCEEDED, result.status());
         assertNull(result.application());
+        assertEquals(7, moving.getDirection().getId());
+    }
+
+    @Test
+    void test_acceptTransfer_limitCheckedAgain() {
+        Participant ivan = participant("Иванов Иван Иванович", "ivan@yandex.ru");
+        Organizer organizer7 = organizer(7);
+        Organizer organizer8 = organizer(8);
+        ApplicationService ivanService = serviceAt(BEFORE, ivan.getId());
+        Application moving = ivanService.submit(request("Передаваемая", 7, null)).application();
+        serviceAt(BEFORE, organizer7.getId()).transfer(moving.getId(), 8);
+
+        // пока заявка ждёт принятия, автор подаёт две другие в направление 8
+        ivanService.submit(request("Своя 1", 8, null));
+        ivanService.submit(request("Своя 2", 8, null));
+
+        ServiceResult result = serviceAt(BEFORE, organizer8.getId()).acceptTransfer(moving.getId());
+
+        assertEquals(ServiceStatus.LIMIT_EXCEEDED, result.status());
+        assertEquals(ApplicationStatus.TRANSFER_PENDING, moving.getStatus());
         assertEquals(7, moving.getDirection().getId());
     }
 }

@@ -331,56 +331,6 @@ public class ApplicationTests {
     }
 
     @Test
-    void test_transferTo_changesDirection() {
-        Participant owner = owner();
-        Application a = new Application(owner, DIRECTION, request("Тема"));
-        Instant createdAt = a.getCreatedAt();
-
-        a.transferTo(OTHER_DIRECTION, NOW);
-
-        assertSame(OTHER_DIRECTION, a.getDirection());
-        assertEquals(8, a.getDirection().getId());
-        assertEquals("Экономика и управление", a.getDirection().getName());
-        assertEquals(NOW, a.getUpdatedAt());
-        assertEquals(createdAt, a.getCreatedAt());
-
-        assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
-        assertEquals("Тема", a.getTitle());
-        assertEquals("Текст тезиса", a.getThesisText());
-        assertEquals("Аннотация", a.getAnnotation());
-        assertEquals("ПрИн-467", a.getGroupName());
-        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
-        assertEquals(FundingType.BUDGET, a.getFundingType());
-        assertSame(owner, a.getOwner());
-        assertEquals(0, a.getEditCount());
-        assertNull(a.getLastEditedAt());
-        assertNull(a.getWithdrawnAt());
-        assertNull(a.getDecidedBy());
-        assertNull(a.getModerationComment());
-        assertNull(a.getDecidedAt());
-    }
-
-    @Test
-    void test_transferTo_notAllowedAfterDecision() {
-        Organizer org = organizer();
-        Application approved = new Application(owner(), DIRECTION, request("Принятая"));
-        approved.approve(org, "Принята", NOW);
-
-        assertSame(DIRECTION, approved.getDirection());
-        assertEquals(ApplicationStatus.APPROVED, approved.getStatus());
-        assertEquals(NOW, approved.getUpdatedAt());
-        assertSame(org, approved.getDecidedBy());
-        assertEquals("Принята", approved.getModerationComment());
-
-        Application withdrawn = new Application(owner(), DIRECTION, request("Отозванная"));
-        withdrawn.withdraw();
-
-        assertThrows(IllegalStateException.class, () -> withdrawn.transferTo(OTHER_DIRECTION, NOW));
-        assertSame(DIRECTION, withdrawn.getDirection());
-        assertEquals(ApplicationStatus.WITHDRAWN, withdrawn.getStatus());
-    }
-
-    @Test
     void test_requestTransfer_waitsForAcceptance() {
         Application a = new Application(owner(), DIRECTION, request("Тема"));
 
