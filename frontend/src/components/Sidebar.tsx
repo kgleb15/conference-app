@@ -16,6 +16,7 @@ const MENU: Record<Person['role'], MenuItem[]> = {
         { title: 'Главная', path: '/' },
         { title: 'Заявки', path: '/moderation' },
         { title: 'Добавить эксперта', path: '/add-expert' },
+        { title: 'Добавить организатора', path: '/add-organizer' },
     ],
     EXPERT: [
         { title: 'Главная', path: '/' },

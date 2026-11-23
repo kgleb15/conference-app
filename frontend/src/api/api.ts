@@ -96,3 +96,7 @@ export function fetchDirections(): Promise<Direction[]> {
 export async function transferApplication(id: string, directionId: number): Promise<void> {
     await request(`/organizer/applications/${id}/transfer`, 'PATCH', { directionId })
 }
+
+export async function registerOrganizer(data: { fullName: string, email: string, password: string, directionId: number }): Promise<void> {
+    await request('/persons/organizer', 'POST', data)
+}

@@ -9,6 +9,7 @@ import SubmitPage from '../src/pages/SubmitPage'
 import MyApplicationsPage from '../src/pages/MyApplicationsPage'
 import ExpertPage from '../src/pages/ExpertPage'
 import AddExpertPage from '../src/pages//AddExpertPage'
+import AddOrganizerPage from './pages/AddOrganizerPage'
 import ModerationPage from './pages/ModerationPage'
 
 import './styles/App.css'
@@ -26,6 +27,7 @@ export default function Root() {
 
                 <Route path="/moderation" element={<RoleRoute role="ORGANIZER"><ModerationPage /></RoleRoute>} />
                 <Route path="/add-expert" element={<RoleRoute role="ORGANIZER"><AddExpertPage /></RoleRoute>} />
+                <Route path="/add-organizer" element={<RoleRoute role="ORGANIZER"><AddOrganizerPage /></RoleRoute>} />
 
                 <Route path="/review" element={<RoleRoute role="EXPERT"><ExpertPage /></RoleRoute>} />
 
