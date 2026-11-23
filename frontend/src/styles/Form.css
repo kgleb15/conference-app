@@ -25,3 +25,13 @@
 .form>.form_button {
   margin-top: 16px;
 }
+
+@media (max-width: 800px) {
+  .form_row {
+    flex-wrap: wrap;
+  }
+
+  .form_row > * {
+    min-width: 200px;
+  }
+}

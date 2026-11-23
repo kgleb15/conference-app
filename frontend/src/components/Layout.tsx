@@ -8,7 +8,7 @@ import './Layout.css'
 
 export default function Layout() {
     const person = getPerson()
-    const [sidebarOpen, setSidebarOpen] = useState(true) // боковая панель изначально открыта
+    const [sidebarOpen, setSidebarOpen] = useState(window.matchMedia('(min-width: 801px)').matches)
 
     return (
         <div className={person && sidebarOpen ? 'layout with-sidebar' : 'layout'}>

@@ -1,6 +1,19 @@
 .actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 16px;
   margin-bottom: 40px;
+}
+
+.actions .MuiButton-root {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .actions {
+    gap: 12px;
+    margin-bottom: 24px;
+  }
 }

@@ -62,3 +62,20 @@ tbody tr:last-child td {
 .row:hover {
     background: #f5f5f5;
 }
+
+@media (max-width: 800px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  th,
+  td {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  td {
+    height: 44px;
+  }
+}

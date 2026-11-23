@@ -1,0 +1,21 @@
+.transfer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.transfer .MuiTextField-root {
+  min-width: 360px;
+}
+
+@media (max-width: 800px) {
+  .transfer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .transfer .MuiTextField-root {
+    min-width: 0;
+  }
+}

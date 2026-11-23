@@ -1,0 +1,10 @@
+@media (max-width: 800px) {
+  .header_bar .header_title {
+    font-size: 16px;
+  }
+
+  .header_bar .header_user {
+    font-size: 14px;
+    margin-right: 8px;
+  }
+}

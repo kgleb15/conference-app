@@ -114,7 +114,7 @@ export default function App() {
           </Select>
         </FormControl>
 
-        <TextField size="small" label="Поиск по названию или автору" style={{ minWidth: 320 }}
+        <TextField size="small" label="Поиск по названию или автору" className="search"
           value={searchText} onChange={(e) => setSearchText(e.target.value)} />
       </div>
 

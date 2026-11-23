@@ -4,6 +4,7 @@ import { ApiError, changeTransfer, fetchDirections, moderateApplication, transfe
 import type { DecisionAction, TransferAction } from '../api/api'
 import { CATEGORY_LABELS, FUNDING_LABELS, STATUS_LABELS } from '../common/statuses'
 import type { Application, Direction } from '../common/types'
+import './ApplicationDialog.css'
 
 type Props = {
     application: Application | null
@@ -140,8 +141,8 @@ export default function ApplicationDialog(props: Props) {
                         <TextField label="Комментарий" fullWidth margin="normal" value={comment} onChange={(e) => setComment(e.target.value)} />
                     )}
                     {application.status === 'SUBMITTED' && (
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 16 }}>
-                            <TextField select label="Передать в направление" size="small" style={{ minWidth: 360 }}
+                        <div className="transfer">
+                            <TextField select label="Передать в направление" size="small"
                                 value={directions.length > 0 ? targetDirection : ''}
                                 onChange={(e) => setTargetDirection(Number(e.target.value))}>
                                 {directions.filter((d) => d.id !== application.directionId).map((d) => (

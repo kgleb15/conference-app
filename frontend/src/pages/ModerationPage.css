@@ -1,5 +1,6 @@
 .filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -8,10 +9,25 @@
   min-width: 180px;
 }
 
+.search {
+  flex: 1 1 280px;
+  max-width: 480px;
+}
+
 .incoming {
   margin-bottom: 48px;
 }
 
 .incoming h2 {
   margin: 0 0 16px;
+}
+
+@media (max-width: 800px) {
+  .incoming {
+    margin-bottom: 32px;
+  }
+
+  .incoming h2 {
+    font-size: 18px;
+  }
 }

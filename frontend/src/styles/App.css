@@ -36,3 +36,29 @@ body {
 .hint {
   color: #757575;
 }
+
+@media (max-width: 800px) {
+  .page {
+    padding: 20px 16px;
+  }
+
+  .page h1 {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+
+  .page_text {
+    font-size: 15px;
+  }
+
+  .MuiDialog-container .MuiDialog-paper {
+    margin: 12px;
+    width: calc(100% - 24px);
+    max-width: none;
+    max-height: calc(100% - 24px);
+  }
+
+  .MuiDialogActions-root {
+    flex-wrap: wrap;
+  }
+}
