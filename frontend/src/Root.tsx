@@ -1,16 +1,16 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { GuestRoute, RoleRoute } from './components/Guards'
-import Layout from './components/Layout'
+import Layout from './components/Layout/Layout.tsx'
 
-import HomePage from '../src/pages/HomePage'
-import LoginPage from '../src/pages/LoginPage'
-import RegisterPage from '../src/pages/RegisterPage'
+import HomePage from './pages/HomePage/HomePage.tsx'
+import LoginPage from './pages/AuthPages/LoginPage.tsx'
+import RegisterPage from './pages/AuthPages/RegisterPage.tsx'
 import SubmitPage from '../src/pages/SubmitPage'
-import MyApplicationsPage from '../src/pages/MyApplicationsPage'
+import MyApplicationsPage from './pages/MyApplicationsPage/MyApplicationsPage.tsx'
 import ExpertPage from '../src/pages/ExpertPage'
 import AddExpertPage from '../src/pages//AddExpertPage'
 import AddOrganizerPage from './pages/AddOrganizerPage'
-import ModerationPage from './pages/ModerationPage'
+import ModerationPage from './pages/ModerationPage/ModerationPage.tsx'
 
 import './styles/App.css'
 

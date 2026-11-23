@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kulikov.conference_app.model.Application;
-import com.kulikov.conference_app.model.ApplicationResponse;
-import com.kulikov.conference_app.model.ApplicationStatus;
-import com.kulikov.conference_app.model.ModerationRequest;
-import com.kulikov.conference_app.model.TransferRequest;
+import com.kulikov.conference_app.model.application.Application;
+import com.kulikov.conference_app.dto.response.ApplicationResponse;
+import com.kulikov.conference_app.model.application.ApplicationStatus;
+import com.kulikov.conference_app.dto.request.ModerationRequest;
+import com.kulikov.conference_app.dto.request.TransferRequest;
 import com.kulikov.conference_app.services.ApplicationService;
 import com.kulikov.conference_app.services.ServiceListResult;
 import com.kulikov.conference_app.services.ServiceResult;

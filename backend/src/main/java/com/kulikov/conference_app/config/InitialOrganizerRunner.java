@@ -5,8 +5,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-import com.kulikov.conference_app.model.ParticipantRequest;
-import com.kulikov.conference_app.model.StaffRequest;
+import com.kulikov.conference_app.dto.request.StaffRequest;
 import com.kulikov.conference_app.services.PersonService;
 
 /**

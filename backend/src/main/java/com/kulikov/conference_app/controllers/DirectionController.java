@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kulikov.conference_app.model.DirectionResponse;
+import com.kulikov.conference_app.dto.response.DirectionResponse;
 import com.kulikov.conference_app.model.Direction;
 import com.kulikov.conference_app.repositories.DirectionRepository;
 

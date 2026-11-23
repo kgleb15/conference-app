@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.kulikov.conference_app.auth.CurrentUser;
-import com.kulikov.conference_app.model.Person;
+import com.kulikov.conference_app.model.person.Person;
 
-import com.kulikov.conference_app.model.ParticipantRequest;
-import com.kulikov.conference_app.model.PersonResponse;
-import com.kulikov.conference_app.model.StaffRequest;
+import com.kulikov.conference_app.dto.request.ParticipantRequest;
+import com.kulikov.conference_app.dto.response.PersonResponse;
+import com.kulikov.conference_app.dto.request.StaffRequest;
 import com.kulikov.conference_app.services.PersonService;
 import com.kulikov.conference_app.services.PersonResult;
 

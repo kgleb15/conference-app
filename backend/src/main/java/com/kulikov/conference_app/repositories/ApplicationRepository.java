@@ -3,7 +3,7 @@ package com.kulikov.conference_app.repositories;
 import java.util.List;
 import java.util.Optional;
 
-import com.kulikov.conference_app.model.Application;
+import com.kulikov.conference_app.model.application.Application;
 
 /**
  * Интерфейс хранилища заявок

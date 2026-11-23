@@ -1,6 +1,6 @@
 package com.kulikov.conference_app.services;
 
-import com.kulikov.conference_app.model.Person;
+import com.kulikov.conference_app.model.person.Person;
 
 /**
  * Результат операции сервиса людей.

@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.kulikov.conference_app.model.Application;
-import com.kulikov.conference_app.model.ApplicationRequest;
-import com.kulikov.conference_app.model.ApplicationResponse;
+import com.kulikov.conference_app.model.application.Application;
+import com.kulikov.conference_app.dto.request.ApplicationRequest;
+import com.kulikov.conference_app.dto.response.ApplicationResponse;
 import com.kulikov.conference_app.services.ApplicationService;
 import com.kulikov.conference_app.services.ServiceListResult;
 import com.kulikov.conference_app.services.ServiceResult;

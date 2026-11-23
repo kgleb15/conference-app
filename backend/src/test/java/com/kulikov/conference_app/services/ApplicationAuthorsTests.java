@@ -13,21 +13,21 @@ import org.junit.jupiter.api.Test;
 
 import com.kulikov.conference_app.auth.CurrentUser;
 import com.kulikov.conference_app.config.ConferenceProperties;
-import com.kulikov.conference_app.model.ApplicantCategory;
-import com.kulikov.conference_app.model.Application;
-import com.kulikov.conference_app.model.ApplicationAuthor;
-import com.kulikov.conference_app.model.ApplicationRequest;
-import com.kulikov.conference_app.model.ApplicationStatus;
-import com.kulikov.conference_app.model.CoAuthorRequest;
-import com.kulikov.conference_app.model.FundingType;
-import com.kulikov.conference_app.model.Organizer;
-import com.kulikov.conference_app.model.Participant;
-import com.kulikov.conference_app.model.ParticipantRequest;
-import com.kulikov.conference_app.model.StaffRequest;
-import com.kulikov.conference_app.model.SupervisorRequest;
-import com.kulikov.conference_app.repositories.InMemoryApplicationRepository;
-import com.kulikov.conference_app.repositories.InMemoryDirectionRepository;
-import com.kulikov.conference_app.repositories.InMemoryPersonRepository;
+import com.kulikov.conference_app.model.application.ApplicantCategory;
+import com.kulikov.conference_app.model.application.Application;
+import com.kulikov.conference_app.model.application.ApplicationAuthor;
+import com.kulikov.conference_app.dto.request.ApplicationRequest;
+import com.kulikov.conference_app.model.application.ApplicationStatus;
+import com.kulikov.conference_app.dto.request.CoAuthorRequest;
+import com.kulikov.conference_app.model.application.FundingType;
+import com.kulikov.conference_app.model.person.Organizer;
+import com.kulikov.conference_app.model.person.Participant;
+import com.kulikov.conference_app.dto.request.ParticipantRequest;
+import com.kulikov.conference_app.dto.request.StaffRequest;
+import com.kulikov.conference_app.dto.request.SupervisorRequest;
+import com.kulikov.conference_app.repositories.memory.InMemoryApplicationRepository;
+import com.kulikov.conference_app.repositories.memory.InMemoryDirectionRepository;
+import com.kulikov.conference_app.repositories.memory.InMemoryPersonRepository;
 
 /**
  * Тесты соавторов

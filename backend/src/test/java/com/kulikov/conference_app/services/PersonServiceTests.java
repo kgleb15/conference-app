@@ -5,14 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.kulikov.conference_app.model.Participant;
-import com.kulikov.conference_app.model.ParticipantRequest;
-import com.kulikov.conference_app.model.Person;
-import com.kulikov.conference_app.model.PersonRole;
-import com.kulikov.conference_app.model.Staff;
-import com.kulikov.conference_app.model.StaffRequest;
-import com.kulikov.conference_app.repositories.InMemoryDirectionRepository;
-import com.kulikov.conference_app.repositories.InMemoryPersonRepository;
+import com.kulikov.conference_app.model.person.Participant;
+import com.kulikov.conference_app.dto.request.ParticipantRequest;
+import com.kulikov.conference_app.model.person.Person;
+import com.kulikov.conference_app.model.person.PersonRole;
+import com.kulikov.conference_app.model.person.Staff;
+import com.kulikov.conference_app.dto.request.StaffRequest;
+import com.kulikov.conference_app.repositories.memory.InMemoryDirectionRepository;
+import com.kulikov.conference_app.repositories.memory.InMemoryPersonRepository;
 
 public class PersonServiceTests {
 

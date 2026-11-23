@@ -4,7 +4,7 @@ import { ApiError, fetchExpertApplications } from '../api/api'
 import type { ExpertApplication } from '../common/types'
 import { CATEGORY_LABELS } from '../common/statuses'
 import '../styles/App.css'
-import DirectionLabel from '../components/DirectionLabel'
+import DirectionLabel from '../components/DirectionLabel/DirectionLabel.tsx'
 import '../styles/Table.css'
 
 function errorText(e: unknown): string {

@@ -1,6 +1,6 @@
 package com.kulikov.conference_app.services;
 
-import com.kulikov.conference_app.model.Application;
+import com.kulikov.conference_app.model.application.Application;
 
 /**
  * Результат операции сервиса заявок

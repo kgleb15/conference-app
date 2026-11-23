@@ -5,6 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.List;
 
+import com.kulikov.conference_app.dto.request.ApplicationRequest;
+import com.kulikov.conference_app.dto.request.ParticipantRequest;
+import com.kulikov.conference_app.dto.request.SupervisorRequest;
+import com.kulikov.conference_app.dto.response.ExpertApplicationResponse;
+import com.kulikov.conference_app.model.application.ApplicantCategory;
+import com.kulikov.conference_app.model.application.Application;
+import com.kulikov.conference_app.model.application.FundingType;
+import com.kulikov.conference_app.model.person.Participant;
 import org.junit.jupiter.api.Test;
 
 public class ExpertApplicationResponseTests {
