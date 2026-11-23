@@ -3,6 +3,7 @@ import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { ApiError, fetchOrganizerApplications } from '../api/api'
 import type { EditedFilter, StatusFilter } from '../api/api'
 import type { Application, ApplicationStatus } from '../common/types'
+import DirectionLabel from '../components/DirectionLabel'
 import ApplicationDialog from '../components/ApplicationDialog'
 import { formatDate } from '../common/utils'
 import { STATUS_LABELS } from '../common/statuses'
@@ -41,6 +42,7 @@ export default function App() {
   return (
     <div className="page">
       <h1>Заявки на конференцию</h1>
+      <DirectionLabel />
 
       {error && <p className="error">{error}</p>}
 

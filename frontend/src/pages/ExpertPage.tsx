@@ -4,6 +4,7 @@ import { ApiError, fetchExpertApplications } from '../api/api'
 import type { ExpertApplication } from '../common/types'
 import { CATEGORY_LABELS } from '../common/statuses'
 import '../styles/App.css'
+import DirectionLabel from '../components/DirectionLabel'
 
 function errorText(e: unknown): string {
     if (e instanceof ApiError && e.status === 401) {
@@ -29,6 +30,8 @@ export default function ExpertPage() {
     return (
         <div className="page">
             <h1>Заявки для экспертизы</h1>
+            <DirectionLabel />
+            
             <p className="page_text">
                 В таблице находятся заявки, утверждённые организатором. Персональные данные авторов скрыты. Нажмите на строку, чтобы прочитать тезисы полностью.
             </p>
