@@ -60,6 +60,9 @@ public class Application {
     @ManyToOne(optional = false)
     private Direction direction;
 
+    @ManyToOne
+    private Direction transferTarget; // направление, куда заявку передают
+
     @OneToMany(mappedBy = "application", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @OrderBy("authorIndex")
     private List<ApplicationAuthor> authors = new ArrayList<>();
@@ -125,6 +128,7 @@ public class Application {
             throw new IllegalStateException("Заявку в статусе " + status + " нельзя отозвать");
         }
 
+        transferTarget = null; // если заявка передавалась передача отменяется
         status = ApplicationStatus.WITHDRAWN;
         updatedAt = Instant.now();
         withdrawnAt = updatedAt;
@@ -180,6 +184,46 @@ public class Application {
             throw new IllegalStateException("Заявку в статусе " + status + " нельзя перевести");
         }
         direction = newDirection;
+        updatedAt = now;
+    }
+
+    /**
+     * Начинает передачу заявки в другое направление
+     *
+     * @param target - направление, в которое передаём
+     * @param now    - время передачи
+     */
+    public void requestTransfer(Direction target, Instant now) {
+        if (!canBeModerated()) {
+            throw new IllegalStateException("Заявку в статусе " + status + " нельзя перевести");
+        }
+        status = ApplicationStatus.TRANSFER_PENDING;
+        transferTarget = target;
+        updatedAt = now;
+    }
+
+    /**
+     * Принимает передачу заявки
+     */
+    public void acceptTransfer(Instant now) {
+        if (status != ApplicationStatus.TRANSFER_PENDING) {
+            throw new IllegalStateException("Заявка в статусе " + status + " не передаётся");
+        }
+        direction = transferTarget;
+        transferTarget = null;
+        status = ApplicationStatus.SUBMITTED;
+        updatedAt = now;
+    }
+
+    /**
+     * Отменяет передачу
+     */
+    public void cancelTransfer(Instant now) {
+        if (status != ApplicationStatus.TRANSFER_PENDING) {
+            throw new IllegalStateException("Заявка в статусе " + status + " не передаётся");
+        }
+        transferTarget = null;
+        status = ApplicationStatus.SUBMITTED;
         updatedAt = now;
     }
 
@@ -280,6 +324,10 @@ public class Application {
 
     public Direction getDirection() {
         return direction;
+    }
+
+    public Direction getTransferTarget() {
+        return transferTarget;
     }
 
     public List<Supervisor> getSupervisors() {

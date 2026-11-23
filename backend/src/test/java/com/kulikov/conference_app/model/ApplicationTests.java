@@ -21,8 +21,8 @@ public class ApplicationTests {
     private static final Direction OTHER_DIRECTION = new Direction(8, "Экономика и управление");
 
     private static final List<SupervisorRequest> SUPERVISORS = List.of(
-        new SupervisorRequest("Дроботов Алексей Владимирович", "ВолгГТУ, каф. АПП"));
-        
+            new SupervisorRequest("Дроботов Алексей Владимирович", "ВолгГТУ, каф. АПП"));
+
     private Participant owner() {
         ParticipantRequest req = new ParticipantRequest("Иванов Иван Иванович",
                 "abc123@yandex.ru", "88000000000", "password123");
@@ -378,5 +378,108 @@ public class ApplicationTests {
         assertThrows(IllegalStateException.class, () -> withdrawn.transferTo(OTHER_DIRECTION, NOW));
         assertSame(DIRECTION, withdrawn.getDirection());
         assertEquals(ApplicationStatus.WITHDRAWN, withdrawn.getStatus());
+    }
+
+    @Test
+    void test_requestTransfer_waitsForAcceptance() {
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
+
+        a.requestTransfer(OTHER_DIRECTION, NOW);
+
+        assertEquals(ApplicationStatus.TRANSFER_PENDING, a.getStatus());
+        assertSame(DIRECTION, a.getDirection());
+        assertSame(OTHER_DIRECTION, a.getTransferTarget());
+        assertEquals(NOW, a.getUpdatedAt());
+        assertFalse(a.canBeEdited());
+        assertFalse(a.canBeModerated());
+
+        assertEquals(ApplicationStatus.TRANSFER_PENDING, a.getStatus());
+        assertEquals("Тема", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNull(a.getWithdrawnAt());
+        assertNull(a.getDecidedBy());
+        assertNull(a.getModerationComment());
+        assertNull(a.getDecidedAt());
+    }
+
+    @Test
+    void test_acceptTransfer_changesDirection() {
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
+        a.requestTransfer(OTHER_DIRECTION, NOW);
+
+        a.acceptTransfer(NOW.plusSeconds(60));
+
+        assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
+        assertSame(OTHER_DIRECTION, a.getDirection());
+        assertNull(a.getTransferTarget());
+        assertEquals(NOW.plusSeconds(60), a.getUpdatedAt());
+        assertTrue(a.canBeModerated());
+        assertEquals("Тема", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNull(a.getWithdrawnAt());
+        assertNull(a.getDecidedBy());
+        assertNull(a.getModerationComment());
+        assertNull(a.getDecidedAt());
+    }
+
+    @Test
+    void test_cancelTransfer_returnsToSubmitted() {
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
+        a.requestTransfer(OTHER_DIRECTION, NOW);
+
+        a.cancelTransfer(NOW.plusSeconds(60));
+
+        assertEquals(ApplicationStatus.SUBMITTED, a.getStatus());
+        assertSame(DIRECTION, a.getDirection());
+        assertNull(a.getTransferTarget());
+
+        assertEquals("Тема", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNull(a.getWithdrawnAt());
+        assertNull(a.getDecidedBy());
+        assertNull(a.getModerationComment());
+        assertNull(a.getDecidedAt());
+    }
+
+    @Test
+    void test_withdraw_whileTransferPending_clearsTarget() {
+        Application a = new Application(owner(), DIRECTION, request("Тема"));
+        a.requestTransfer(OTHER_DIRECTION, NOW);
+
+        a.withdraw();
+
+        assertEquals(ApplicationStatus.WITHDRAWN, a.getStatus());
+        assertNull(a.getTransferTarget());
+
+        assertEquals(ApplicationStatus.WITHDRAWN, a.getStatus());
+        assertEquals("Тема", a.getTitle());
+        assertEquals("Текст тезиса", a.getThesisText());
+        assertEquals("Аннотация", a.getAnnotation());
+        assertEquals("ПрИн-467", a.getGroupName());
+        assertEquals(ApplicantCategory.STUDENT, a.getApplicantCategory());
+        assertEquals(FundingType.BUDGET, a.getFundingType());
+        assertEquals(0, a.getEditCount());
+        assertNull(a.getLastEditedAt());
+        assertNull(a.getDecidedBy());
+        assertNull(a.getModerationComment());
+        assertNull(a.getDecidedAt());
     }
 }

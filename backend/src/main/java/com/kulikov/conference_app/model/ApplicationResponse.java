@@ -11,7 +11,7 @@ public record ApplicationResponse(String id, String title, String annotation, St
         ApplicationStatus status, Instant createdAt, Instant updatedAt,
         int editCount, Instant lastEditedAt, Instant withdrawnAt,
         String moderationComment, Instant decidedAt, String decidedByName, Integer directionId,
-        List<SupervisorResponse> supervisors, List<AuthorResponse> authors) {
+        List<SupervisorResponse> supervisors, List<AuthorResponse> authors, Integer transferDirectionId) {
 
     /**
      * Собирает ответ из сущности Application
@@ -24,6 +24,7 @@ public record ApplicationResponse(String id, String title, String annotation, St
                 a.getEditCount(), a.getLastEditedAt(), a.getWithdrawnAt(),
                 a.getModerationComment(), a.getDecidedAt(), decidedByName, a.getDirection().getId(),
                 a.getSupervisors().stream().map(SupervisorResponse::from).toList(),
-                a.getAuthors().stream().map(AuthorResponse::from).toList());
+                a.getAuthors().stream().map(AuthorResponse::from).toList(),
+                a.getTransferTarget() == null ? null : a.getTransferTarget().getId());
     }
 }
