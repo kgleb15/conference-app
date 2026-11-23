@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button } from '@mui/material'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { ApiError, fetchDirections, fetchMyApplications, withdrawApplication } from '../api/api'
 import { getPerson } from '../api/auth'
 import EditDialog from '../components/EditDialog'
@@ -23,6 +23,7 @@ export default function MyApplicationsPage() {
     const [data, setData] = useState<Application[] | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [editing, setEditing] = useState<Application | null>(null) // заявка в окне редактирования
+    const [withdrawing, setWithdrawing] = useState<Application | null>(null) // заявка, отзыв которой ждёт подтверждения
     const [reload, setReload] = useState(0) // увеличиваем, чтобы заново загрузить список
     const [directions, setDirections] = useState<Direction[]>([])
     const me = getPerson()
@@ -45,6 +46,15 @@ export default function MyApplicationsPage() {
             setError(withdrawErrorText(e))
         }
         setReload((r) => r + 1)
+    }
+
+    async function confirmWithdraw() {
+        if (withdrawing === null) {
+            return
+        }
+        const a = withdrawing
+        setWithdrawing(null)
+        await withdraw(a)
     }
 
     return (
@@ -84,7 +94,7 @@ export default function MyApplicationsPage() {
                                     <td>
                                         {canEdit && <Button size="small" onClick={() => setEditing(a)}>Изменить</Button>}
                                         {canWithdraw && (
-                                            <Button size="small" color="error" onClick={() => withdraw(a)}>Отозвать</Button>
+                                            <Button size="small" color="error" onClick={() => setWithdrawing(a)}>Отозвать</Button>
                                         )}
                                     </td>
                                 </tr>
@@ -93,6 +103,15 @@ export default function MyApplicationsPage() {
                     </tbody>
                 </table>
             )}
+
+            <Dialog open={withdrawing !== null} onClose={() => setWithdrawing(null)}>
+                <DialogTitle>Отзыв заявки</DialogTitle>
+                <DialogContent>Вы точно хотите отозвать заявку?</DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setWithdrawing(null)}>Отмена</Button>
+                    <Button color="error" onClick={confirmWithdraw}>Отозвать</Button>
+                </DialogActions>
+            </Dialog>
 
             <EditDialog application={editing} onClose={() => setEditing(null)}
                 onChanged={() => setReload((r) => r + 1)} />
