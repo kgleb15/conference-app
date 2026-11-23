@@ -1,15 +1,21 @@
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material'
+import { AppBar, Box, Button, IconButton, Toolbar, Typography } from '@mui/material'
 import { getPerson, logout } from '../api/auth'
 import { Link } from 'react-router'
 
 const ROLE_LABELS = { PARTICIPANT: 'участник', ORGANIZER: 'организатор', EXPERT: 'эксперт' }
 
-export default function Header() {
+export default function Header({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
     const person = getPerson()
 
     return (
         <AppBar position="static">
             <Toolbar>
+                {onToggleSidebar && (
+                    <IconButton color="inherit" edge="start" sx={{ mr: 1 }} onClick={onToggleSidebar}>
+                        <img src="/menu.png" alt="Меню" width={24} height={24} />
+                    </IconButton>
+                )}
+
                 <Box sx={{ flexGrow: 1 }}>
                     <Typography variant="h6" component={Link} to="/"
                         sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700, letterSpacing: '0.5px' }}>
