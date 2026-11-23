@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
+import { FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material'
 import { ApiError, fetchOrganizerApplications } from '../api/api'
 import type { EditedFilter, StatusFilter } from '../api/api'
 import type { Application, ApplicationStatus } from '../common/types'
@@ -26,6 +26,19 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<Application | null>(null) // открытая заявка
   const [reload, setReload] = useState(0) // увеличиваем, чтобы заново загрузить список
+  const [searchText, setSearchText] = useState('') // то, что набрано в поле поиска
+  const [search, setSearch] = useState('') // поиск, который применяется
+
+  // Debounce 500 мс
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchText), 500)
+    return () => clearTimeout(timer)
+  }, [searchText])
+
+  const query = search.trim().toLowerCase()
+  const shown = data === null ? null : data.filter((a) =>
+    query === '' || a.title.toLowerCase().includes(query)
+    || a.authors.some((x) => x.person.fullName.toLowerCase().includes(query)))
 
   // При смене фильтров или id запрос выполняется заново
   useEffect(() => {
@@ -67,12 +80,16 @@ export default function App() {
             <MenuItem value="false">Не менялись</MenuItem>
           </Select>
         </FormControl>
+
+        <TextField size="small" label="Поиск по названию или автору" style={{ minWidth: 320 }}
+          value={searchText} onChange={(e) => setSearchText(e.target.value)} />
       </div>
 
       {data === null && error === null && <p>Загрузка...</p>}
       {data && data.length === 0 && <p>Заявок нет</p>}
+      {data && data.length > 0 && shown && shown.length === 0 && <p>Ничего не найдено</p>}
 
-      {data && data.length > 0 && (
+      {shown && shown.length > 0 && (
         <table>
           <thead>
             <tr> <th>Заявка</th> <th>Авторы</th> <th>Контакты</th> <th>Статус</th> <th>Подана</th>
@@ -80,7 +97,7 @@ export default function App() {
             </tr>
           </thead>
           <tbody>
-            {data.map((a) => (
+            {shown.map((a) => (
               <tr key={a.id} className="row" onClick={() => setSelected(a)}>
                 <td>{a.title}</td>
                 <td>
