@@ -1,0 +1,51 @@
+services:
+
+  # База данных
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: conference_app
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-12345}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d conference_app" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Бэкенд
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/conference_app
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-12345}
+      CONFERENCE_ORGANIZER_EMAIL: ${ORGANIZER_EMAIL:-organizer@example.com}
+      CONFERENCE_ORGANIZER_PASSWORD: ${ORGANIZER_PASSWORD:-organizer123}
+      CONFERENCE_ORGANIZER_DIRECTION_ID: ${ORGANIZER_DIRECTION_ID:-7}
+      CONFERENCE_DEADLINET1: ${DEADLINE_T1:-2026-12-31T23:59:59Z}
+      CONFERENCE_DEADLINET2: ${DEADLINE_T2:-2027-01-15T23:59:59Z}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  # Фронтенд
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
